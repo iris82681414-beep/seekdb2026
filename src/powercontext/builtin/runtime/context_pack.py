@@ -21,7 +21,9 @@ import binascii
 import hashlib
 import json
 import re
+from collections.abc import Mapping
 from dataclasses import dataclass
+from typing import Any
 
 _PACK_SCHEMA = "powercontext.context-pack.v1"
 _DELTA_SCHEMA = "powercontext.context-pack-delta.v1"
@@ -32,7 +34,7 @@ class ContextPackError(ValueError):
     """Invalid context wire data, integrity metadata, or chunk boundaries."""
 
 
-def _canonical(value: dict) -> bytes:
+def _canonical(value: Mapping[str, object]) -> bytes:
     return json.dumps(value, sort_keys=True, separators=(",", ":")).encode("utf-8")
 
 
@@ -59,9 +61,9 @@ def _decoded(items: object) -> tuple[bytes, ...]:
     return tuple(result)
 
 
-def _load(data: bytes, fields: set[str], schema: str) -> dict:
-    def unique_object(pairs: list[tuple[str, object]]) -> dict:
-        result: dict = {}
+def _load(data: bytes, fields: set[str], schema: str) -> dict[str, Any]:
+    def unique_object(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
+        result: dict[str, Any] = {}
         for key, value in pairs:
             if key in result:
                 raise ContextPackError("duplicate context wire field")  # noqa: TRY003

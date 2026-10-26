@@ -24,7 +24,7 @@ from urllib.parse import quote
 from pydantic import BaseModel, model_validator
 
 from powercontext.limits import MAX_SOURCE_ID_LENGTH
-from powercontext.sources.definitions import AdapterSourceDefinition, SourceDefinition
+from powercontext.sources.definitions import AdapterSourceDefinition
 from powercontext.sources.models import Source, SourceMaterialization
 from powercontext.sources.projections import TEXT_EVIDENCE_PROJECTION_KEY, TextEvidence
 
@@ -125,9 +125,9 @@ def parse_csv_document(value: CSVDocumentInput) -> tuple[CSVRowInput, ...]:
 
 
 class _CSVRowAdapter:
-    input_class = CSVRowInput
+    input_class: type[CSVRowInput] = CSVRowInput
     name = "csv-row"
-    source_class = CSVRowSource
+    source_class: type[CSVRowSource] = CSVRowSource
 
     async def resolve(self, value: CSVRowInput, /) -> CSVRowSource:
         identity = csv_row_source_id(value.document_id, value.primary_key_value)
@@ -145,8 +145,8 @@ class _CSVRowAdapter:
 class _CSVRowTextProjection:
     name = TEXT_EVIDENCE_PROJECTION_KEY.name
     version = TEXT_EVIDENCE_PROJECTION_KEY.version
-    source_class = CSVRowSource
-    output_class = TextEvidence
+    source_class: type[CSVRowSource] = CSVRowSource
+    output_class: type[BaseModel] = TextEvidence
 
     def project(self, source: CSVRowSource, /) -> TextEvidence:
         row = dict(zip(source.columns, source.values, strict=True))
@@ -164,7 +164,7 @@ class _CSVRowTextProjection:
         )
 
 
-CSV_ROW_SOURCE_DEFINITION: SourceDefinition[CSVRowInput, CSVRowSource, CSVRowInput] = AdapterSourceDefinition(
+CSV_ROW_SOURCE_DEFINITION = AdapterSourceDefinition[CSVRowInput, CSVRowSource, CSVRowInput](
     _CSVRowAdapter(), projections=(_CSVRowTextProjection(),)
 )
 

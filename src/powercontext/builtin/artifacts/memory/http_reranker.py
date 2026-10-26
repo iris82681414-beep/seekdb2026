@@ -17,6 +17,7 @@
 from __future__ import annotations
 
 import math
+from typing import cast
 
 import httpx
 
@@ -26,17 +27,22 @@ from powercontext.builtin.inference import InferenceUsage
 
 
 def _validated_scores(payload: object, expected: set[int]) -> dict[int, float]:
-    if not isinstance(payload, dict) or set(payload) != {"scores"} or not isinstance(payload["scores"], list):
+    if not isinstance(payload, dict) or set(payload) != {"scores"}:
         raise ValueError("rerank response must contain only a scores array")  # noqa: TRY003
+    payload = cast(dict[str, object], payload)
+    raw_scores = payload["scores"]
+    if not isinstance(raw_scores, list):
+        raise ValueError("rerank response must contain a scores array")  # noqa: TRY003, TRY004
     scores: dict[int, float] = {}
-    for item in payload["scores"]:
+    for item in raw_scores:
         if not isinstance(item, dict) or set(item) != {"rank", "score"}:
             raise ValueError("rerank score must contain exactly rank and score")  # noqa: TRY003
+        item = cast(dict[str, object], item)
         rank, score = item["rank"], item["score"]
-        if type(rank) is not int or rank not in expected or rank in scores:
+        if not isinstance(rank, int) or isinstance(rank, bool) or rank not in expected or rank in scores:
             raise ValueError("rerank response has an invalid or duplicate rank")  # noqa: TRY003
-        if type(score) not in (int, float):
-            raise ValueError("rerank score must be a finite number")  # noqa: TRY003
+        if not isinstance(score, (int, float)) or isinstance(score, bool):
+            raise ValueError("rerank score must be a finite number")  # noqa: TRY003, TRY004
         try:
             finite_score = float(score)
         except OverflowError as error:
