@@ -1859,7 +1859,9 @@ int ObDMLResolver::resolve_basic_column_item(const TableItem &table_item,
   } else {
     bool is_uni = false;
     bool is_mul = false;
-    include_hidden |= session_info_->is_ai_column_internal_write();
+    include_hidden |= session_info_->is_ai_column_internal_write() ||
+        (session_info_->get_ai_column_retry_context().parent_ != nullptr &&
+         session_info_->get_ai_column_retry_context().table_id_ == table_item.ref_id_);
     //not resolve, so add column item to dml stmt
     const ObColumnSchemaV2 *col_schema = NULL;
     const ObTableSchema *table_schema = NULL;
@@ -5673,10 +5675,12 @@ int ObDMLResolver::resolve_partitions(const ParseNode *part_node,
   return ret;
 }
 
-int ObDMLResolver::check_ai_column_target(const ObColumnRefRawExpr *column, ObDMLStmt *stmt, bool &is_ai)
+int ObDMLResolver::check_ai_column_target(const ObColumnRefRawExpr *column, ObDMLStmt *stmt, bool &is_ai,
+    bool *retry_allowed)
 {
   int ret = OB_SUCCESS;
   is_ai = false;
+  if (retry_allowed != nullptr) { *retry_allowed = false; }
   const ColumnItem *item = column == nullptr || stmt == nullptr ? nullptr :
       stmt->get_column_item_by_id(column->get_table_id(), column->get_column_id());
   const TableItem *table = column == nullptr || stmt == nullptr ? nullptr :
@@ -5688,6 +5692,9 @@ int ObDMLResolver::check_ai_column_target(const ObColumnRefRawExpr *column, ObDM
   const ObColumnSchemaV2 *schema = nullptr;
   OZ(schema_checker_->get_column_schema(table_id, column_id, schema, true));
   if (OB_SUCC(ret)) { is_ai = schema != nullptr && schema->is_ai_column(); }
+  if (OB_SUCC(ret) && retry_allowed != nullptr && session_info_ != nullptr) {
+    *retry_allowed = session_info_->get_ai_column_retry_context().contains(table_id, column_id);
+  }
   return ret;
 }
 
@@ -5700,8 +5707,9 @@ int ObDMLResolver::check_basic_column_generated(const ObColumnRefRawExpr *col_ex
   const TableItem *table_item = NULL;
   const ColumnItem *view_column_item = NULL;
   bool is_ai = false;
-  if (OB_FAIL(check_ai_column_target(col_expr, dml_stmt, is_ai))) {
-  } else if (is_ai && !session_info_->is_ai_column_internal_write()) {
+  bool retry_allowed = false;
+  if (OB_FAIL(check_ai_column_target(col_expr, dml_stmt, is_ai, &retry_allowed))) {
+  } else if (is_ai && !session_info_->is_ai_column_internal_write() && !retry_allowed) {
     ret = OB_NOT_SUPPORTED;
   } else if (OB_ISNULL(col_expr) || OB_ISNULL(dml_stmt)) {
     ret = OB_ERR_UNEXPECTED;

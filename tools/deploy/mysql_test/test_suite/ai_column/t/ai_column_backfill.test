@@ -43,6 +43,8 @@ eval select $ready=1 as backfill_crosses_two_batches;
 eval select $partial=0 as backfill_groups_are_atomic;
 alter table ai_column_backfill.docs modify a varchar(200)
   AI COLUMN(AI_COMPLETE('ai_backfill_model',concat('new:',body))) WITH(max_retries=0);
+select count(*)=0 as modify_returns_without_old_results
+  from ai_column_backfill.docs where a=concat('mock:',body);
 --disable_result_log
 let $retry=200;
 let $ready=0;

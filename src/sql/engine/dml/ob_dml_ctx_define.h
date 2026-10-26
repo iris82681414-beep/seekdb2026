@@ -440,6 +440,7 @@ public:
   bool is_vec_hnsw_index_vid_opt_;
   bool has_ai_columns_;
   bool writes_ai_column_;
+  common::ObFixedArray<uint64_t, common::ObIAllocator> retry_ai_columns_;
 protected:
   ObDMLBaseCtDef(common::ObIAllocator &alloc,
                  ObDASDMLBaseCtDef &das_base_ctdef,
@@ -460,7 +461,8 @@ protected:
       trans_info_expr_(nullptr),
       is_vec_hnsw_index_vid_opt_(false),
       has_ai_columns_(false),
-      writes_ai_column_(false)
+      writes_ai_column_(false),
+      retry_ai_columns_(alloc)
   { }
 };
 

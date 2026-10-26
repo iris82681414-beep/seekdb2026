@@ -11,6 +11,8 @@
 #include "sql/resolver/expr/ob_raw_expr_util.h"
 #include "sql/engine/ob_physical_plan.h"
 #include "query/session/ob_inner_sql_connection_access.h"
+#include "share/ob_server_struct.h"
+#include "share/schema/ob_multi_version_schema_service.h"
 #include <map>
 #include <set>
 #include <vector>
@@ -45,6 +47,73 @@ int ai_text_literal(ObSqlString &sql, const ObString &value)
   OZ(sql.append("' USING utf8mb4)"));
   return ret;
 }
+}
+
+int AiColumnDml::retry_columns(ObExecContext &context, uint64_t table_id,
+    const ObIArray<uint64_t> &columns, const ObString &predicate, bool check_privilege)
+{
+  int ret = OB_SUCCESS;
+  ObSQLSessionInfo *session = context.get_my_session();
+  if (session == nullptr || context.get_sql_ctx() == nullptr || columns.empty()) { return OB_INVALID_ARGUMENT; }
+  // This is also called after a successful MODIFY. The outer DDL guard still
+  // pins its original schema, whereas the generated UPDATE must use the new one.
+  ObSchemaGetterGuard latest;
+  if (GCTX.schema_service_ == nullptr) { return OB_NOT_INIT; }
+  OZ(GCTX.schema_service_->get_runtime_schema_guard(latest));
+  ObSchemaGetterGuard *schema = &latest;
+  const ObTableSchema *table = nullptr;
+  const ObDatabaseSchema *database = nullptr;
+  OZ(schema->get_table_schema(table_id, table));
+  if (OB_SUCC(ret) && table == nullptr) { ret = OB_TABLE_NOT_EXIST; }
+  if (OB_SUCC(ret)) { OZ(schema->get_database_schema(table->get_database_id(), database)); }
+  if (OB_SUCC(ret) && database == nullptr) { ret = OB_ERR_UNEXPECTED; }
+  ObSqlString sql;
+  OZ(sql.append("UPDATE "));
+  if (OB_SUCC(ret)) { OZ(ai_identifier(sql, database->get_database_name_str())); }
+  OZ(sql.append("."));
+  if (OB_SUCC(ret)) { OZ(ai_identifier(sql, table->get_table_name_str())); }
+  OZ(sql.append(" SET "));
+  for (int64_t i = 0; OB_SUCC(ret) && i < columns.count(); ++i) {
+    const ObColumnSchemaV2 *column = table->get_column_schema(columns.at(i));
+    if (column == nullptr || !column->is_ai_column()) { ret = OB_NOT_SUPPORTED; }
+    else {
+      if (i != 0) { OZ(sql.append(",")); }
+      OZ(ai_identifier(sql, column->get_column_name_str()));
+      OZ(sql.append("="));
+      OZ(ai_identifier(sql, column->get_column_name_str()));
+    }
+  }
+  if (!predicate.empty()) { OZ(sql.append_fmt(" WHERE (%.*s)", predicate.length(), predicate.ptr())); }
+  bool autocommit = true;
+  OZ(session->get_autocommit(autocommit));
+  if (OB_SUCC(ret)) {
+    // ALTER already commits the preceding user transaction. Match CTAS's external
+    // session execution so the generated UPDATE commits all selected rows together.
+    const auto previous = session->get_ai_column_retry_context();
+    ObSQLSessionInfo::AiColumnRetryContext retry;
+    retry.parent_ = &context;
+    retry.table_id_ = table_id;
+    retry.columns_ = &columns;
+    ObBasicSessionInfo::UserScopeGuard user_scope(session->get_sql_scope_flags());
+    session->set_ai_column_retry_context(retry);
+    if (!autocommit) { OZ(session->set_autocommit(true)); }
+    {
+      common::sqlclient::ObISQLConnectionGuard connection;
+      OZ(query::ObInnerSQLConnectionAccess::create_connection_with_external_session(session, connection));
+      if (OB_SUCC(ret) && connection.get_ptr() == nullptr) { ret = OB_NOT_INIT; }
+      if (OB_SUCC(ret)) {
+        connection.get_ptr()->set_check_priv(check_privilege);
+        int64_t affected = 0;
+        OZ(connection.get_ptr()->execute_write(sql.ptr(), affected, true));
+      }
+    }
+    session->set_ai_column_retry_context(previous);
+    if (!autocommit) {
+      const int restore = session->set_autocommit(false);
+      if (OB_SUCC(ret)) { ret = restore; }
+    }
+  }
+  return ret;
 }
 
 int AiColumnDml::collect_reads(const ObDMLStmt &stmt, ObSchemaGetterGuard &schema,
@@ -115,6 +184,13 @@ int AiColumnDml::check_strict_read(ObExecContext &context)
   OZ(session->get_sys_variable(share::SYS_VAR_AI_COLUMN_STRICT_READ, enabled));
   if (OB_FAIL(ret) || enabled.get_int() == 0) { return ret; }
   const ObIArray<uint64_t> &reads = plan->get_ai_column_reads();
+  const auto &retry_context = session->get_ai_column_retry_context();
+  const bool retry_root = retry_context.parent_ != nullptr && context.get_parent_ctx() == retry_context.parent_;
+  bool needs_check = false;
+  for (int64_t i = 0; i + 1 < reads.count(); i += 2) {
+    needs_check |= !retry_root || !retry_context.contains(reads.at(i), reads.at(i + 1));
+  }
+  if (!needs_check) { return ret; }
   ObSchemaGetterGuard *schema = context.get_sql_ctx()->schema_guard_;
   if (reads.count() % 2 != 0 || schema == nullptr) { return OB_ERR_UNEXPECTED; }
   common::sqlclient::ObISQLConnectionGuard connection;
@@ -136,6 +212,7 @@ int AiColumnDml::check_strict_read(ObExecContext &context)
   }
   ObArenaAllocator allocator("AiColumnCheck");
   for (int64_t i = 0; OB_SUCC(ret) && i < reads.count(); i += 2) {
+    if (retry_root && retry_context.contains(reads.at(i), reads.at(i + 1))) { continue; }
     const ObTableSchema *table = nullptr;
     const ObDatabaseSchema *database = nullptr;
     OZ(schema->get_table_schema(reads.at(i), table));
@@ -186,6 +263,22 @@ int AiColumnDml::check_strict_read(ObExecContext &context)
   return ret;
 }
 
+bool AiColumnDml::is_retry_write(const ObDMLBaseCtDef &definition, ObExecContext &context)
+{
+  bool allowed = false;
+  const ObSQLSessionInfo *session = context.get_my_session();
+  if (session != nullptr && !definition.retry_ai_columns_.empty()) {
+    const auto &scope = session->get_ai_column_retry_context();
+    allowed = scope.parent_ != nullptr && context.get_parent_ctx() == scope.parent_ &&
+        scope.table_id_ == definition.das_base_ctdef_.index_tid_ && scope.columns_ != nullptr &&
+        scope.columns_->count() == definition.retry_ai_columns_.count();
+    for (int64_t i = 0; allowed && i < definition.retry_ai_columns_.count(); ++i) {
+      allowed = definition.retry_ai_columns_.at(i) == scope.columns_->at(i);
+    }
+  }
+  return allowed;
+}
+
 int AiColumnDml::after_row(ObDMLModifyRowNode &row)
 {
   int ret = OB_SUCCESS;
@@ -193,7 +286,9 @@ int AiColumnDml::after_row(ObDMLModifyRowNode &row)
   ObTableModifyOp &op = *row.dml_op_;
   const ObDMLBaseCtDef &ctdef = *row.dml_ctdef_;
   ObSQLSessionInfo *session = op.get_exec_ctx().get_my_session();
-  if (!ctdef.has_ai_columns_ || session == nullptr || session->is_ai_column_internal_write()) { return ret; }
+  const bool forced_retry = is_retry_write(ctdef, op.get_exec_ctx());
+  if (!ctdef.has_ai_columns_ || session == nullptr ||
+      (session->is_ai_column_internal_write() && !forced_retry)) { return ret; }
   ObArenaAllocator allocator("AiColumnT1");
   ObSchemaGetterGuard *schema = op.get_exec_ctx().get_sql_ctx()->schema_guard_;
   const ObTableSchema *table = nullptr;
@@ -295,7 +390,8 @@ int AiColumnDml::after_row(ObDMLModifyRowNode &row)
       else {
         owned.emplace_back(definition, [](AiColumnDefinition *value) { value->~AiColumnDefinition(); });
         OZ(definition->parse(allocator, column->get_ai_column_definition()));
-        bool dirty = inserting || key_changed;
+        bool dirty = inserting || key_changed ||
+            (forced_retry && has_exist_in_array(ctdef.retry_ai_columns_, column->get_column_id()));
         for (int64_t j = 0; OB_SUCC(ret) && !dirty && j < definition->dependencies_.count(); ++j) {
           ret = changed(definition->dependencies_.at(j), dirty);
         }

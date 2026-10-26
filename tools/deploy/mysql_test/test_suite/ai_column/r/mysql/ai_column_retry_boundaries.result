@@ -1,0 +1,10 @@
+retry_initial_results_ready
+1
+strict_retry_changes_only_selected_target
+1
+qualified_status_is_business_column
+1
+retry_restores_autocommit
+1
+ddl_retry_remains_committed_after_rollback
+1

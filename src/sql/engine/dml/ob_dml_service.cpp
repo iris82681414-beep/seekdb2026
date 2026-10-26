@@ -747,7 +747,8 @@ int ObDMLService::process_update_row(const ObUpdCtDef &upd_ctdef,
                                      ObTableModifyOp &dml_op)
 {
   int ret = OB_SUCCESS;
-  if (upd_ctdef.writes_ai_column_ && !dml_op.get_exec_ctx().get_my_session()->is_ai_column_internal_write()) {
+  if (upd_ctdef.writes_ai_column_ && !dml_op.get_exec_ctx().get_my_session()->is_ai_column_internal_write() &&
+      !AiColumnDml::is_retry_write(upd_ctdef, dml_op.get_exec_ctx())) {
     return OB_NOT_SUPPORTED;
   }
   is_skipped = false;

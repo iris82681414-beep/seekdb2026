@@ -2,6 +2,8 @@ backfill_crosses_two_batches
 1
 backfill_groups_are_atomic
 1
+modify_returns_without_old_results
+1
 modify_recomputes_existing_rows
 1
 backfill_tasks_removed

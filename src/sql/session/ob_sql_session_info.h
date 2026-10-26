@@ -590,6 +590,21 @@ public:
   int print_all_cursor();
 
   inline common::sqlclient::ObISQLConnection *get_inner_conn() { return inner_conn_; }
+  struct AiColumnRetryContext
+  {
+    ObExecContext *parent_ = nullptr;
+    uint64_t table_id_ = common::OB_INVALID_ID;
+    const common::ObIArray<uint64_t> *columns_ = nullptr;
+    bool contains(uint64_t table_id, uint64_t column_id) const {
+      bool found = false;
+      if (parent_ != nullptr && table_id_ == table_id && columns_ != nullptr) {
+        for (int64_t i = 0; !found && i < columns_->count(); ++i) { found = columns_->at(i) == column_id; }
+      }
+      return found;
+    }
+  };
+  const AiColumnRetryContext &get_ai_column_retry_context() const { return ai_column_retry_context_; }
+  void set_ai_column_retry_context(const AiColumnRetryContext &context) { ai_column_retry_context_ = context; }
   bool is_ai_column_internal_write() const { return ai_column_internal_write_; }
   void set_ai_column_internal_write(bool value) { ai_column_internal_write_ = value; }
   inline void set_inner_conn(common::sqlclient::ObISQLConnection *inner_conn)
@@ -973,6 +988,7 @@ private:
 
   common::sqlclient::ObISQLConnection *inner_conn_;
   bool ai_column_internal_write_ = false;
+  AiColumnRetryContext ai_column_retry_context_;
 
   ObSessionStat session_stat_;
 

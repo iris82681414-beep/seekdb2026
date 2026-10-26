@@ -149,6 +149,21 @@ int ObAlterTableResolver::resolve(const ParseNode &parse_tree)
       alter_table_stmt->get_alter_table_arg().alter_table_schema_.set_charset_type(table_schema_->get_charset_type());
       alter_table_stmt->get_alter_table_arg().alter_table_schema_.set_collation_type(table_schema_->get_collation_type());
     }
+    // RETRY is a local data operation and cannot share an ALTER action list.
+    if (OB_SUCC(ret) && parse_tree.children_[ACTION_LIST] != nullptr) {
+      const ParseNode &actions = *parse_tree.children_[ACTION_LIST];
+      for (int64_t i = 0; i < actions.num_child_; ++i) {
+        const ParseNode *action = actions.children_[i];
+        if (action != nullptr && action->type_ == T_RETRY_AI_COLUMN) {
+          if (actions.num_child_ != 1) {
+            LOG_USER_ERROR(OB_NOT_SUPPORTED, "combining AI COLUMN RETRY with another ALTER action");
+            return OB_NOT_SUPPORTED;
+          }
+          alter_table_stmt->inc_alter_table_action_count();
+          return resolve_ai_column_retry(*alter_table_stmt, *action);
+        }
+      }
+    }
     //resolve action list
     if (OB_SUCCESS == ret && NULL != parse_tree.children_[ACTION_LIST]){
       if (OB_FAIL(resolve_action_list(*(parse_tree.children_[ACTION_LIST])))) {

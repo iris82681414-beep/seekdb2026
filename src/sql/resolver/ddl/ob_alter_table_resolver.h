@@ -46,6 +46,7 @@ class ObAlterTableResolver : public ObDDLResolver
   static const int64_t ALTER_HINT = 3; // the hint.
   static const int64_t ALTER_INDEX_CHILD_NUM = 6;
 public:
+  int resolve_ai_column_retry(ObAlterTableStmt &statement, const ParseNode &action);
   explicit ObAlterTableResolver(ObResolverParams &params);
   virtual ~ObAlterTableResolver();
   virtual int resolve(const ParseNode &parse_tree);

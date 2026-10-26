@@ -2115,6 +2115,12 @@ int ObDmlCgService::generate_dml_base_ctdef(ObLogicalOperator &op,
         if (column != nullptr && column->is_ai_column()) { dml_base_ctdef.writes_ai_column_ = true; }
       }
     }
+    const auto &retry = cg_.opt_ctx_->get_session_info()->get_ai_column_retry_context();
+    if (OB_SUCC(ret) && dml_base_ctdef.dml_type_ == DAS_OP_TABLE_UPDATE && retry.parent_ != nullptr &&
+        retry.table_id_ == index_dml_info.ref_table_id_ && retry.columns_ != nullptr) {
+      OZ(dml_base_ctdef.retry_ai_columns_.assign(*retry.columns_));
+      dml_base_ctdef.writes_ai_column_ = true;
+    }
     if (dml_base_ctdef.has_ai_columns_) {
       cg_.phy_plan_->set_has_nested_sql(true);
       cg_.phy_plan_->set_need_serial_exec(true);

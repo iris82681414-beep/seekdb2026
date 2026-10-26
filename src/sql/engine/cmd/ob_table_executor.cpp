@@ -39,6 +39,8 @@
 #include "sql/resolver/ddl/ob_optimize_stmt.h"
 #include "sql/resolver/dml/ob_delete_resolver.h"
 #include "sql/engine/cmd/ob_partition_executor_utils.h"
+#include "sql/engine/dml/ob_ai_column_dml.h"
+#include "share/schema/ob_ai_column_schema.h"
 
 #include "sql/printer/ob_select_stmt_printer.h"
 #include "share/ob_structured_event_logger.h"
@@ -754,6 +756,13 @@ int ObAlterTableExecutor::alter_table_exchange_partition_rpc(obcall::ObExchangeP
 int ObAlterTableExecutor::execute(ObExecContext &ctx, ObAlterTableStmt &stmt)
 {
   int ret = OB_SUCCESS;
+  if (stmt.is_ai_column_retry()) {
+    ObSEArray<uint64_t, 1> columns;
+    OZ(columns.push_back(stmt.get_retry_ai_column_id()));
+    OZ(AiColumnDml::retry_columns(ctx, stmt.get_alter_table_arg().alter_table_schema_.get_table_id(),
+        columns, stmt.get_ai_retry_predicate()));
+    return ret;
+  }
   ObSqlExecutorCtx *task_exec_ctx = NULL;
   obcall::ObAlterTableArg &alter_table_arg = stmt.get_alter_table_arg();
   obcall::ObExchangePartitionArg &exchange_partition_arg = stmt.get_exchange_partition_arg();
@@ -865,6 +874,31 @@ int ObAlterTableExecutor::execute(ObExecContext &ctx, ObAlterTableStmt &stmt)
             res.task_id_, res.ddl_need_retry_at_executor_, my_session,
             *ctx.get_query_runtime_environment(), ctx.local_command_service(), is_support_cancel))) {
         }
+      }
+    }
+    if (OB_SUCC(ret)) {
+      ObSEArray<uint64_t, 4> changed_ai_columns;
+      ObSqlString stale;
+      const AlterTableSchema &alter = alter_table_arg.alter_table_schema_;
+      for (int64_t i = 0; OB_SUCC(ret) && i < alter.get_column_count(); ++i) {
+        const AlterColumnSchema *column = static_cast<const AlterColumnSchema *>(alter.get_column_schema_by_idx(i));
+        if (column != nullptr && column->is_ai_column() &&
+            (column->alter_type_ == OB_DDL_MODIFY_COLUMN || column->alter_type_ == OB_DDL_CHANGE_COLUMN)) {
+          AiColumnDefinition definition;
+          OZ(definition.parse(allocator, column->get_ai_column_definition()));
+          if (!changed_ai_columns.empty()) { OZ(stale.append(" OR ")); }
+          OZ(changed_ai_columns.push_back(column->get_column_id()));
+          OZ(stale.append_fmt("`__ai_%lu_result_spec` IS NULL OR `__ai_%lu_result_spec`<>'%lu'",
+              column->get_column_id(), column->get_column_id(), definition.definition_version_));
+        }
+      }
+      if (OB_SUCC(ret) && !changed_ai_columns.empty()) {
+        ObTimeoutCtx timeout;
+        OZ(timeout.set_timeout(OB_DEFAULT_RPC_TIMEOUT));
+        OZ(ObDDLExecutorUtil::wait_local_schema_visible(timeout, my_session, res.schema_version_));
+        // The fixed predicate comes only from resolved schema metadata. ALTER's
+        // existing privilege check authorizes this data invalidation.
+        OZ(AiColumnDml::retry_columns(ctx, alter.get_table_id(), changed_ai_columns, stale.string(), false));
       }
     }
     char table_info_buffer[256];

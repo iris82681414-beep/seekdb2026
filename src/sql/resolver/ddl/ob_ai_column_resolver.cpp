@@ -1,12 +1,14 @@
 /* Copyright (c) 2026 OceanBase. Licensed under the Apache License, Version 2.0. */
 #define USING_LOG_PREFIX SQL_RESV
 #include "sql/resolver/ddl/ob_ddl_resolver.h"
+#include "sql/resolver/ddl/ob_alter_table_resolver.h"
 #include "share/schema/ob_ai_column_schema.h"
 #include "sql/resolver/expr/ob_raw_expr_util.h"
 #include "sql/printer/ob_raw_expr_printer.h"
 #include "sql/ob_sql_utils.h"
 #include "query/vector/ob_vector_index_util.h"
 #include "sql/privilege_check/ob_ai_model_priv_util.h"
+#include <set>
 
 namespace oceanbase
 {
@@ -15,6 +17,65 @@ namespace sql
 using namespace common;
 using namespace share;
 using namespace share::schema;
+
+int ObAlterTableResolver::resolve_ai_column_retry(ObAlterTableStmt &statement, const ParseNode &action)
+{
+  int ret = OB_SUCCESS;
+  if (table_schema_ == nullptr || action.num_child_ != 2 || action.children_[0] == nullptr ||
+      !table_schema_->is_user_table() || table_schema_->is_view_table()) { return OB_NOT_SUPPORTED; }
+  const ParseNode &name = *action.children_[0];
+  const ObColumnSchemaV2 *column = table_schema_->get_column_schema(ObString(name.str_len_, name.str_value_));
+  if (column == nullptr || !column->is_ai_column()) {
+    LOG_USER_ERROR(OB_NOT_SUPPORTED, "retrying a column that is not an AI column");
+    return OB_NOT_SUPPORTED;
+  }
+  AiColumnDefinition definition;
+  OZ(definition.parse(*allocator_, column->get_ai_column_definition()));
+  ObSqlString rewritten;
+  if (OB_SUCC(ret) && action.children_[1] != nullptr) {
+    const ObString original(action.str_len_, action.str_value_);
+    ObSEArray<const ParseNode *, 16> nodes;
+    std::set<int64_t> positions;
+    OZ(nodes.push_back(action.children_[1]));
+    for (int64_t i = 0; OB_SUCC(ret) && i < nodes.count(); ++i) {
+      const ParseNode *node = nodes.at(i);
+      if (node == nullptr || node->type_ == T_SELECT) { continue; }
+      if (node->type_ == T_COLUMN_REF && node->num_child_ == 3 &&
+          node->children_[0] == nullptr && node->children_[1] == nullptr && node->children_[2] != nullptr) {
+        const ParseNode &identifier = *node->children_[2];
+        if (!identifier.is_input_quoted_ && ObString(identifier.str_len_, identifier.str_value_).case_compare("status") == 0) {
+          const int64_t offset = identifier.sql_str_off_ - action.value_;
+          if (offset < 0 || offset + 6 > original.length() ||
+              ObString(6, original.ptr() + offset).case_compare("status") != 0) { ret = OB_ERR_UNEXPECTED; }
+          else { positions.insert(offset); }
+        }
+      }
+      for (int64_t j = 0; OB_SUCC(ret) && j < node->num_child_; ++j) { OZ(nodes.push_back(node->children_[j])); }
+    }
+    const ObColumnSchemaV2 *state = table_schema_->get_column_schema(definition.state_column_id_);
+    const ObColumnSchemaV2 *spec = table_schema_->get_column_schema(definition.result_spec_column_id_);
+    if (OB_SUCC(ret) && (state == nullptr || spec == nullptr)) { ret = OB_ERR_UNEXPECTED; }
+    int64_t copied = 0;
+    // Hidden names are generated numeric identifiers, never caller-controlled SQL.
+    for (const int64_t offset : positions) {
+      OZ(rewritten.append(ObString(offset - copied, original.ptr() + copied)));
+      if (OB_SUCC(ret)) {
+        OZ(rewritten.append_fmt("(CASE WHEN `%.*s`=1 AND `%.*s`='%lu' THEN 'READY' "
+            "WHEN `%.*s`=2 AND `%.*s`='%lu' THEN 'FAILED' ELSE 'PENDING' END)",
+            state->get_column_name_str().length(), state->get_column_name_str().ptr(),
+            spec->get_column_name_str().length(), spec->get_column_name_str().ptr(), definition.definition_version_,
+            state->get_column_name_str().length(), state->get_column_name_str().ptr(),
+            spec->get_column_name_str().length(), spec->get_column_name_str().ptr(), definition.definition_version_));
+      }
+      copied = offset + 6;
+    }
+    OZ(rewritten.append(ObString(original.length() - copied, original.ptr() + copied)));
+  }
+  ObString predicate;
+  OZ(ob_write_string(*allocator_, rewritten.string(), predicate));
+  if (OB_SUCC(ret)) { statement.set_ai_column_retry(column->get_column_id(), predicate); }
+  return ret;
+}
 
 int ObDDLResolver::resolve_ai_column_definition(ObColumnSchemaV2 &column, const ParseNode &node)
 {

@@ -1,0 +1,72 @@
+# RETRY must retain native identity, transaction and user-write boundaries.
+connection default;
+--exec python3 mysql_test/test_suite/ai_column/include/ai_column_mock.py start 19134
+--disable_query_log
+--disable_result_log
+--disable_warnings
+drop database if exists ai_column_retry_boundaries;
+--enable_warnings
+create database ai_column_retry_boundaries;
+--error 0,11112
+call DBMS_AI_SERVICE.DROP_AI_MODEL_ENDPOINT('ai_retry_boundaries_ep');
+--error 0,11118
+call DBMS_AI_SERVICE.DROP_AI_MODEL('ai_retry_boundaries');
+call DBMS_AI_SERVICE.CREATE_AI_MODEL('ai_retry_boundaries','{"type":"completion","model_name":"mock-complete"}');
+call DBMS_AI_SERVICE.CREATE_AI_MODEL_ENDPOINT('ai_retry_boundaries_ep',
+  '{"ai_model_name":"ai_retry_boundaries","url":"http://127.0.0.1:19134/v1/chat/completions","access_key":"synthetic-retry-check","provider":"openai"}');
+create table ai_column_retry_boundaries.docs(
+  k varbinary(16), n int, status varchar(12), body varchar(100),
+  a varchar(300) AI COLUMN(AI_COMPLETE('ai_retry_boundaries',body)) WITH(max_retries=0),
+  b varchar(300) AI COLUMN(AI_COMPLETE('ai_retry_boundaries',body)) WITH(max_retries=0),
+  primary key(k,n)
+);
+insert into ai_column_retry_boundaries.docs(k,n,status,body)
+  values(X'61275c62e9',1,'active','one'),(X'61275c62e9',2,'active','two'),(X'7a',3,'inactive','three');
+let $retry=200;
+let $ready=0;
+while ($retry)
+{
+  let $ready=`select count(*)=3 and min(a is not null and b is not null) from ai_column_retry_boundaries.docs`;
+  if ($ready == 1) { let $retry=0; }
+  if ($ready == 0) { --real_sleep 0.1
+    dec $retry; }
+}
+--enable_result_log
+eval select $ready=1 as retry_initial_results_ready;
+--disable_result_log
+--exec python3 mysql_test/test_suite/ai_column/include/ai_column_mock.py stop 19134
+set session ai_column_strict_read=on;
+alter table ai_column_retry_boundaries.docs retry ai column a
+  where status='READY' and k=X'61275c62e9' and n=1;
+--error 1235
+update ai_column_retry_boundaries.docs set a=a;
+--error 1235
+insert into ai_column_retry_boundaries.docs(k,n,a) values(X'ff',4,null);
+set session ai_column_strict_read=off;
+--enable_result_log
+select count(*)=3 and sum(a is null)=1 and min(b is not null) as strict_retry_changes_only_selected_target
+  from ai_column_retry_boundaries.docs;
+--disable_result_log
+alter table ai_column_retry_boundaries.docs retry ai column a
+  where docs.status='active' and 'status'='status' and n=2;
+--enable_result_log
+select count(*)=3 and sum(a is null)=2 and min(b is not null) as qualified_status_is_business_column
+  from ai_column_retry_boundaries.docs;
+--disable_result_log
+set autocommit=0;
+alter table ai_column_retry_boundaries.docs retry ai column a where `status`='inactive';
+--enable_result_log
+select @@autocommit=0 as retry_restores_autocommit;
+--disable_result_log
+rollback;
+set autocommit=1;
+--enable_result_log
+select count(*)=3 and min(a is null and b is not null) as ddl_retry_remains_committed_after_rollback
+  from ai_column_retry_boundaries.docs;
+--disable_result_log
+drop database ai_column_retry_boundaries;
+call DBMS_AI_SERVICE.DROP_AI_MODEL_ENDPOINT('ai_retry_boundaries_ep');
+call DBMS_AI_SERVICE.DROP_AI_MODEL('ai_retry_boundaries');
+--enable_query_log
+--enable_result_log
+--exec python3 mysql_test/test_suite/ai_column/include/ai_column_mock.py stop 19134

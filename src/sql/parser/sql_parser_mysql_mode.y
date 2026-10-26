@@ -333,7 +333,7 @@ END_P SET_VAR DELIMITER
         QUANTIFIER_TABLE QUARTER QUERY QUEUE_TIME QUICK
 
         RECOVER REDUNDANT REFRESH RELAY RELAYLOG RELAY_LOG_FILE RELAY_LOG_POS RELAY_THREAD RELOAD REMOVE
-        REPEATABLE RESET RESPECT RESTART RESTORE RESUME RETURNED_SQLSTATE RETURNS RETURNING REVERSE
+        REPEATABLE RESET RESPECT RESTART RESTORE RESUME RETRY RETURNED_SQLSTATE RETURNS RETURNING REVERSE
         REWRITE ROLLBACK ROLLUP ROUTINE ROW ROWID ROW_COUNT ROW_FORMAT ROWS RTREE
         RUN RECYCLEBIN REPLICATION ROTATE ROW_NUMBER RUDUNDANT RECURSIVE RANDOM REDO_TRANSPORT_OPTIONS
         RANK READ_ONLY RECOVERY REJECT ROLE
@@ -14725,6 +14725,16 @@ opt_set table_option_list_space_seperated
   (void)$1;
   merge_nodes($$, result, T_TABLE_OPTION_LIST, $2);
 }
+| RETRY AI COLUMN column_name
+{
+  malloc_non_terminal_node($$, result->malloc_pool_, T_RETRY_AI_COLUMN, 2, $4, NULL);
+}
+| RETRY AI COLUMN column_name WHERE expr
+{
+  malloc_non_terminal_node($$, result->malloc_pool_, T_RETRY_AI_COLUMN, 2, $4, $6);
+  dup_expr_string($$, result, @6.first_column, @6.last_column);
+  $$->value_ = @6.first_column;
+}
 | CONVERT TO CHARACTER SET charset_name opt_collation
 {
   malloc_non_terminal_node($$, result->malloc_pool_, T_CONVERT_TO_CHARACTER, 2, $5, $6);
@@ -16340,6 +16350,7 @@ NAME_OB
 | unreserved_keyword
 {
   get_non_reserved_node($$, result->malloc_pool_, @1.first_column, @1.last_column);
+  $$->sql_str_off_ = @1.first_column;
 }
 ;
 
@@ -18068,6 +18079,7 @@ ACCOUNT
 |       RESTART
 |       RESTORE
 |       RESUME
+|       RETRY
 |       RETURNED_SQLSTATE
 |       RETURNING
 |       RETURNS

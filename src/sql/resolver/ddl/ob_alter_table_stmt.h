@@ -42,6 +42,13 @@ public:
   //check duplicate alter of same column in one clause
   bool is_column_modified(const common::ObString &column_name);
   bool is_comment_table() const { return is_comment_table_; }
+  bool is_ai_column_retry() const { return retry_ai_column_id_ != common::OB_INVALID_ID; }
+  uint64_t get_retry_ai_column_id() const { return retry_ai_column_id_; }
+  const common::ObString &get_ai_retry_predicate() const { return ai_retry_predicate_; }
+  void set_ai_column_retry(uint64_t column, const common::ObString &predicate) {
+    retry_ai_column_id_ = column;
+    ai_retry_predicate_ = predicate;
+  }
   void set_is_comment_table(const bool flag) { is_comment_table_ = flag; }
 
   uint64_t get_alter_table_action_count() { return alter_table_action_count_; }
@@ -114,6 +121,8 @@ private:
   obcall::ObAlterTriggerArg tg_arg_;
   uint64_t alter_table_action_count_;
   obcall::ObExchangePartitionArg exchange_partition_arg_;
+  uint64_t retry_ai_column_id_ = common::OB_INVALID_ID;
+  common::ObString ai_retry_predicate_;
 };
 
 inline int ObAlterTableStmt::set_tz_info_wrap(const common::ObTimeZoneInfoWrap &tz_info_wrap)

@@ -240,7 +240,8 @@ public:
   bool need_foreign_key_check(const ObDMLBaseCtDef &dml_ctdef) { return dml_ctdef.is_primary_index_ && dml_ctdef.fk_args_.count() > 0; }
   bool need_after_row_process(const ObDMLBaseCtDef &dml_ctdef) {
     return need_foreign_key_check(dml_ctdef) || has_after_row_trigger(dml_ctdef) ||
-        (dml_ctdef.has_ai_columns_ && !ctx_.get_my_session()->is_ai_column_internal_write());
+        (dml_ctdef.has_ai_columns_ && !ctx_.get_my_session()->is_ai_column_internal_write()) ||
+        !dml_ctdef.retry_ai_columns_.empty();
   }
   void set_execute_single_row() { execute_single_row_ = true; }
   void unset_execute_single_row() { execute_single_row_ = false; }
