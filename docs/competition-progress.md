@@ -6,7 +6,7 @@
 
 - seekdb 保留官方 `2026-competition` 历史，基线为 `5bce9e06d1281347ad61344e4b01fab9158c58a2`。用户私有仓库已建立 `main` 和 `2026-competition` 分支。
 - PowerContext 位于本地 `.competition/powercontext`，保留比赛分支及冻结产品提交 `9db1753434162c0aa7c9f1189a1722e617880a52`。
-- PowerContext 最新实现已推送至私有仓库 `powercontext-2026-competition`，完整提交为 `21adf786061d6708a4023e1381bcef2b7b956dac`。
+- PowerContext 最新实现已推送至私有仓库 `powercontext-2026-competition`，完整提交为 `26b9237315c0543c4c64c083eeb8152491e3b2ed`。
 - GitHub 仓库当前默认分支仍是 PowerContext 答题分支；正式提测须明确选取产品对应的分支和 commit。
 - 华为云现有实例为 Ubuntu 24.04 x86_64、4 核、约 15 GB 内存。专用目录 `/root/oceanbase2026`，日志位于 `logs`，测试产物位于 `results`。
 - 连接信息保存在仓库外 `/Users/liwangsheng/.config/oceanbase2026/server.env`，文件权限 600、目录权限 700。额外源码、下载数据和操作脚本均由本地排除规则排除，未提交到 Git。
@@ -26,7 +26,7 @@
 | PowerContext 仓库准备 | 10 | 冻结历史和私有分支已准备，待平台读取配置及核验 |
 | CSV 行级采集 | 20 | Linux 公开验收 17 项通过 |
 | Pi 会话采集 | 20 | Linux 公开验收 15 项通过 |
-| 财报 PDF | 50 | 503 页公开样例及新增回归共 10 项 Linux 验收通过；84 份完整年报共 12,013 页及 189 条标注完成 Linux 解析验证；长页入库已修复，同机对照召回从 47.06% 提升至 74.87%，尚非各组均达标 |
+| 财报 PDF | 50 | 503 页公开样例及新增回归共 12 项 Linux 验收通过，含原生 seekdb；84 份完整年报共 12,013 页及 189 条标注完成 Linux 解析验证；总体召回为 86.10%，仍有 4 个公司组未达标 |
 | HTTP 重排 | 20 | Linux 公开验收 10 项通过 |
 | 上下文增量传输 | 20 | Linux 公开验收 14 项通过；另已完成真实 QMSum 40 轮独立成本测量，正式序列待验证 |
 | 数量触发记忆处理 | 20 | Linux 公开验收 17 项通过，覆盖单窗、数量/时间 OR、重复身份、lineage、重启及故障恢复 |
@@ -55,13 +55,13 @@ AI 函数增强的六项实现已覆盖。Linux 原生实例使用未修改的 `
 
 同一新样本在 Linux 官方固定依赖、单核 CPU 配额和 2 GiB 内存限制下复现相同质量值，80 次测量池耗时 6.26 秒、内存峰值 217,664 KiB。Linux 的 3 项原版证据用例、14 项增量上下文用例及 3 项自有证据回归通过；本地相关测试共 74 项通过。新增回归证明重复通用词不能挤掉文档尾部的区分性证据，旧实现失败、修改版通过。修改文件的格式、lint 和类型检查通过；全仓类型检查仍有与未修改基线输出完全相同的 190 条诊断，未宣称全仓类型检查通过。记录为 `.competition/results/powercontext-evidence-idf-validation.json`、`evidence-selection-idf-linux.json`、`evidence-selection-idf-linux-baseline.json` 和 `powercontext-evidence-idf-acceptance.log`。
 
-PDF 扩展验证使用 FinanceBench 固定 revision `cc39aeb4afdf33909ee1412188bf89035950c2eb`，下载并逐文件校验其 150 个公开问题涉及的 84 份完整 PDF，约 165.5 MB。解析器按坐标重建文本行，处理字体映射为换行符或不换行空格的间隔字形；若版面提取与原提取的非空白字符多重集合不一致，保留原提取结果。Linux 在官方固定依赖、单核和 2 GiB 限制下，完整解析 12,013 个物理页，耗时 1,264.18 秒、内存峰值 188,876 KiB。189 条标注的证据词项召回和整页 F1 均达到 95% 门槛，最低值分别为 97.48% 和 96.27%。原版 6 项和新增 4 项 PDF 回归共 10 项通过，覆盖特殊字体映射、旋转文本、普通与连写报表标题、财务概念及报告期间的精确引用；旧实现会在新增回归中失败。平台未公开的非标注页冻结词项数仍不能核对，不将原始 pypdf 的词项数当成平台冻结值。这是更广公开语料上的独立研究，不等于复现平台未公开的五份文档组合。
+PDF 扩展验证使用 FinanceBench 固定 revision `cc39aeb4afdf33909ee1412188bf89035950c2eb`，下载并逐文件校验其 150 个公开问题涉及的 84 份完整 PDF，约 165.5 MB。解析器按坐标重建文本行，处理字体映射为换行符或不换行空格的间隔字形；若版面提取与原提取的非空白字符多重集合不一致，保留原提取结果。Linux 在官方固定依赖、单核和 2 GiB 限制下，完整解析 12,013 个物理页，耗时 1,264.18 秒、内存峰值 188,876 KiB。189 条标注的证据词项召回和整页 F1 均达到 95% 门槛，最低值分别为 97.48% 和 96.27%。原版 6 项和新增 6 项 PDF 回归共 12 项通过，覆盖特殊字体映射、旋转文本、普通与连写报表标题、财务概念及报告期间的精确引用。检索回归在 SQLite 与原生 seekdb 两种后端实际执行，验证关闭重启后的完整正文与精确 citation；旧实现会在新增回归中失败。平台未公开的非标注页冻结词项数仍不能核对，不将原始 pypdf 的词项数当成平台冻结值。这是更广公开语料上的独立研究，不等于复现平台未公开的五份文档组合。
 
 完整页面仍有 12 页的规范化文本投影超过 8,192 字节，最大为 9,209 字节。带有已校验 Source 引用的 Memory 条目现支持最多 65,536 字节，独立手工笔记仍限制为 8,192 字节；保存、搜索、修订和历史版本回读均使用同一规范化及内容摘要规则，不裁掉正文。SQLite 与原生 seekdb 的关闭重启、重复提交、尾部全文检索、修订和旧引用回查均通过。相关本地测试 114 项通过、14 项按环境条件跳过；Linux Memory 相关测试 89 项通过、13 项按环境条件跳过，包含原生 seekdb 实测。API 已从契约重新生成，49 项契约测试通过。记录为 `.competition/results/powercontext-source-capacity-local.log`、`powercontext-source-capacity-linux.log` 和 `powercontext-long-evidence-api.log`。
 
-扩展检索按公司分成 32 个独立数据范围，150 个问题全部完成真实 Runtime 入库、重启和逐条引用回查，无失败组。采用新版完整解析页面，在同一 Linux 数据库、相同 scope 和已入库身份上对照，财务概念扩展、报告期间偏好和主报表标题识别使证据页 Recall@20 从 88/187（47.06%）提高到 140/187（74.87%），47 个问题增加命中，没有问题减少命中。产品仅使用原问题、公开 Memory API 和已存页面，不读取标签或公司分组清单。
+扩展检索按公司分成 32 个独立数据范围，150 个问题全部完成真实 Runtime 入库、重启和逐条引用回查，无失败组。在同一 Linux 数据库、相同 scope 和已入库身份上，与提交 `21adf786` 对照，短近义词查询和多报表证据覆盖使 Recall@20 从 140/187（74.87%）提高到 161/187（86.10%），20 个问题增加命中，没有问题减少命中。开发组 83 个问题从 75.47% 提升至 89.62%，未参与这轮调整的另一组 67 个问题从 74.07% 提升至 81.48%。产品仅使用原问题、公开 Memory API 和已存页面，不读取标签或公司分组清单。新增回归覆盖目录条目与真实报表的区别、附注中的报表摘录、跨报表财务问题，以及只出现一种近义词的合法候选。
 
-这轮检索复测复用已完整入库并重启验证的数据库，在单核和 2 GiB 限制下耗时 181.01 秒、内存峰值 165,628 KiB，搜索延迟中位数为 872.93 ms。AMD、American Express、Boeing、Corning、Foot Locker、JPMorgan、Johnson & Johnson、Kraft Heinz、MGM Resorts、Netflix、Pfizer 和 Walmart 共 12 组仍低于 70%，不能用总体值代替各组门槛。PDF 题尚不具备完整得分证据。记录为 `.competition/results/financebench-full-parsing-validation.json`、`powercontext-pdf-capacity-ranking-validation.json`、`powercontext-pdf-compact-heading-linux.log`、`financebench-retrieval-layout-baseline-linux.log`、`financebench-retrieval-compact-linux.log`，以及本地 `.competition/financebench-quality/` 中的解析与检索详细测量。
+这轮检索复测复用已完整入库并重启验证的数据库，在单核和 2 GiB 限制下耗时 181.47 秒、内存峰值 168,112 KiB，搜索延迟中位数为 930.79 ms。仍低于 70% 的公司组为 Boeing（6/10）、JPMorgan（3/5）、Johnson & Johnson（6/10）和 MGM Resorts（6/9），不能用总体值代替各组门槛。独立测量以单公司范围分组，混合公司集合及平台五份文档的实际分组仍需核验；PDF 题尚不具备完整得分证据。记录为 `.competition/results/financebench-full-parsing-validation.json`、`powercontext-pdf-evidence-coverage-validation.json`、`powercontext-pdf-evidence-coverage-linux.log`、`powercontext-pdf-alternative-query-probe.json`、`financebench-evidence-coverage-linux.log`，以及本地 `.competition/financebench-quality/` 中的解析与检索详细测量。
 
 
 File SQL 已实现 CSV、JSONL、Parquet 的原生读取，SQL 命名选项、别名和动态类型，包含 DESCRIBE、文件发现、批量取数、重扫、聚合及 JOIN。COPY 支持表或查询输出、表头与 CSV 选项，目标已存在时拒绝覆盖；空查询也会发布表头，查询失败会清理临时文件。Linux 原版 `file_sql_basic` 和新增 `file_sql_queries` 两项 mysqltest 均通过；原版用例及原始数据保持原样。结果保存于 `.competition/results/seekdb-file-sql-final.json`。
