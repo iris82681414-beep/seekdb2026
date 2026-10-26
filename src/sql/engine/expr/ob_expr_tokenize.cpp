@@ -33,6 +33,7 @@
 #include "data_plane/fts/ob_fts_parser_property.h"
 
 #define USING_LOG_PREFIX SQL_ENG
+#include "sql/engine/expr/ob_expr_lob_utils.h"
 #include "sql/engine/expr/ob_expr_json_func_helper.h" // file not self-contained, there're logs inside.
 
 namespace oceanbase
@@ -82,7 +83,7 @@ int ObExprTokenize::tokenize_fulltext(const TokenizeParam &param,
 {
   int ret = OB_SUCCESS;
   storage::ObFTParseHelper tokenize_helper;
-  const int64_t ft_word_bkt_cnt = MIN(MAX(param.fulltext_.length() / 2, 2), 997);
+  const int64_t ft_word_bkt_cnt = MIN(MAX(param.fulltext_size_estimate_ / 2, 2), 997);
   int64_t doc_len = 0;
   storage::ObFTWordMap token_map;
 
@@ -128,6 +129,7 @@ ObExprTokenize::TokenizeParam ::TokenizeParam()
     parser_name_(ObString(OB_DEFAULT_FULLTEXT_PARSER_NAME)),
     meta_(),
     fulltext_(),
+    fulltext_size_estimate_(0),
     output_mode_(OUTPUT_MODE::DEFAULT)
 {
 }
@@ -305,7 +307,15 @@ int ObExprTokenize::parse_fulltext(const ObExpr &expr, ObEvalCtx &ctx, TokenizeP
       // do nothing, return empty result
       param.fulltext_ = ObString::make_empty_string();
     } else {
-      param.fulltext_ = fulltext_datum->get_string();
+      const int64_t input_length = fulltext_datum->get_string().length();
+      if (OB_FAIL(ObTextStringHelper::read_real_string_data(
+                     ctx.exec_ctx_, param.allocator_, *fulltext_datum,
+                     expr.args_[0]->datum_meta_, expr.args_[0]->obj_meta_.has_lob_header(),
+                     param.fulltext_))) {
+      } else {
+        // Preserve in-row token ordering while sizing for materialized out-row text.
+        param.fulltext_size_estimate_ = MAX(input_length, param.fulltext_.length());
+      }
     }
     param.meta_.set_varchar(); // as we hardcoded in fts_index
     param.meta_.set_collation_type(expr.args_[0]->obj_meta_.get_collation_type());
@@ -325,9 +335,12 @@ int ObExprTokenize::parse_parser_name(const ObExpr &expr, ObEvalCtx &ctx, Tokeni
   } else {
     if (parser_datum->is_null()) {
       raw_parser_name = ObString::make_string(OB_DEFAULT_FULLTEXT_PARSER_NAME);
+    } else if (OB_FAIL(ObTextStringHelper::read_real_string_data(
+                   ctx.exec_ctx_, param.allocator_, *parser_datum,
+                   expr.args_[1]->datum_meta_, expr.args_[1]->obj_meta_.has_lob_header(),
+                   raw_parser_name))) {
     } else {
-      ObString name = parser_datum->get_string();
-      raw_parser_name = name.trim();
+      raw_parser_name = raw_parser_name.trim();
     }
   }
 

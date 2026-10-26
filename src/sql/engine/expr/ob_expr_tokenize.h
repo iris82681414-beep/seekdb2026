@@ -73,6 +73,7 @@ private:
     ObString properties_;
     ObObjMeta meta_;
     ObString fulltext_;
+    int64_t fulltext_size_estimate_;
     enum OUTPUT_MODE
     {
       DEFAULT,
