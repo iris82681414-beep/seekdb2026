@@ -5,7 +5,7 @@
 ## 环境与提交
 
 - seekdb 保留官方 `2026-competition` 历史，基线为 `5bce9e06d1281347ad61344e4b01fab9158c58a2`。用户私有仓库已建立 `main` 和 `2026-competition` 分支。
-- seekdb 最新内核实现提交为 `40d1b4d2e608aab521b8aeecd567f468ac80cb69`，包含按文档独占词频表的 FTS 锁优化，已推送私有仓库。
+- seekdb 最新内核实现提交为 `d38f79a7c793f4dfb60cfffce501bcda7a256042`，包含 FTS 锁优化和大赛指定 Bug #1477 修复。独立 Bug 分支提交为 `34b696a50198bdb8d5280f3f881ede6405d96625`，基于官方 master，保存在用户私有仓库。
 - PowerContext 位于本地 `.competition/powercontext`，保留比赛分支及冻结产品提交 `9db1753434162c0aa7c9f1189a1722e617880a52`。
 - PowerContext 最新实现已推送至私有仓库 `powercontext-2026-competition`，完整提交为 `5c7e7450d11377db2ea94f7b63312af777b97a0d`。
 - GitHub 仓库当前默认分支仍是 PowerContext 答题分支；正式提测须明确选取产品对应的分支和 commit。
@@ -16,7 +16,7 @@
 
 | 项目 | 分值 | 已取得的证据及剩余事项 |
 | --- | ---: | --- |
-| seekdb 基础实践 | 30 | 原生实例已部署；telemetry 已发送。公开 Fork、官方 Bug PR、本队验证行和平台核验待完成 |
+| seekdb 基础实践 | 30 | 原生实例已部署；telemetry 已发送。指定 Bug #1477 已私有修复并通过原生回归和 576 组独立对照；公开 Fork、官方 PR、本队验证行和平台核验暂缓 |
 | AI_PROMPT | 10 | JSON、TEXT/LOB 和重复占位符实现已编译；原版完整 mysqltest 及新增真实 HTTP 回归通过 |
 | AI_EMBED 单行、AI_COMPLETE | 20 | 请求/响应核心实现通过长文本、空配置、JSON 配置、维度及 17 组异常响应的原生回归，待正式完整验收 |
 | Ollama Provider | 10 | 原生免 Key、可选认证、生成、参数和向量路径回归通过；同轮 12 项 mysqltest 全通过 |
@@ -101,9 +101,13 @@ Strict Read 已增加 `ai_column_strict_read` 开关，默认关闭。开启后�
 
 17 项独立检查进一步验证二进制组合主键、隐藏主键重复行、条件错误时回滚、关闭自动提交时的 DDL 提交边界、普通账号重试及拒绝越权子查询，以及 VSAG 索引失效与重新发布。另复现并修复修改定义后的旧结果窗口：同一组 256 行数据，修复前操作返回后有 4 行仍返回旧结果，修复后为 0；修改操作会同步失效尚未登记新版本的行，后台继续计算。记录为 `.competition/results/seekdb-ai-column-retry-independent.json`、`seekdb-ai-column-ddl-visibility-before.json` 和 `seekdb-ai-column-ddl-visibility-after.json`。这组行为验证使用副本 `seekdb-ai-column-retry-behavior-validated`，SHA-256 为 `178694a048bec4058f8413cb65471acbfdac5fae09490b4101a6df8930808c5a`；随后只修正两处非法重试语句的错误文字。最终回归副本为 `/root/oceanbase2026/seekdb-ai-column-retry-final`，SHA-256 为 `dea2203fd8b9b1582b62298c056b3713765bf6bfec45c55a306479d65c9356d6`，现运行于上述 strict 测试目录，管理路径保持不变。尚不据此宣称平台 50 分。 最终副本的同轮 12 项 AI 函数与 2 项 File SQL 回归亦全部通过，记录为 `.competition/results/seekdb-ai-after-ai-column-retry.json` 和 `seekdb-file-after-ai-column-retry.json`。
 
+## 基础实践指定 Bug 修复
+
+已按官方赛题标签要求准备 [#1477](https://github.com/oceanbase/seekdb/issues/1477)：IFNULL 遇到标量子查询及偶数层 NOT / LIKE 时会报 4016。两处 NOT 简化替换现使用既有辅助函数保留原表达式类型，避免父表达式重新推导时重复添加隐式转换。独立提交仅含一个 C++ 文件和一对 subquery 原生回归文件。新增用例修复前报错、修复后通过，原版 `datatype.bool` 与 `subquery.subquery_sj_firstmatch` 同轮前后均通过。576 组独立查询在修复前有 54 组报错，修复后返回值及线协议列类型码全部与 SQL 三值语义、`NO_REWRITE` 对照一致。Linux RelWithDebInfo 整合构建成功，103 个已变更构建输入与服务器逐文件一致；整合版本的 AI 函数 12、AI 列 10、File SQL 2 和 FTS 5 项用例共 29 项均通过。首次 File SQL 因样例复制所需的本机连接配置未就绪而失败，补齐配置后两项通过，原失败记录保留。该记录不是完整 master 构建或官方 CI。详细复现、提交与证据范围见 [Bug 修复材料](issue-1477-fix.md)。
+
 ## 后续工作
 
-1. 保留 seekdb 已实现代码及同版本验证快照，继续准备基础实践所需的真实 Bug 修复材料。
+1. 保留 seekdb 已实现代码、验证快照及指定 Bug #1477 的独立私有分支。公开 Fork、官方 Bug PR 与本队验证行按用户后续指示处理。
 2. 保留 PowerContext 最新 95 项整体验证和独立质量、成本记录；正式质量序列与冻结非标注字数仍待平台核验。
 3. AI 生态题暂缓，保留已有私有材料。
 4. 正式提测暂不执行。保留可复现交付物和测试记录，后续按用户指示安排。
