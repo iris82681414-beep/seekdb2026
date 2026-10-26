@@ -478,6 +478,7 @@ def _rerank_pages(
     quarter = re.search(r"(?:\b|(?<=\d))q([1-4])\b|\bq([1-4])(?=(?:19|20)\d{2})", question.lower())
     requested_quarter = next((value for value in quarter.groups() if value), None) if quarter else None
     headings = [heading for intent, heading, _vocabulary in _STATEMENT_INTENTS if re.search(intent, question.lower())]
+    adjusted_metric = bool(re.search(r"\b(?:adjusted|non[ -]?gaap|ebitdar)\b", question, re.IGNORECASE))
     scores = []
     for position, (hit, document) in enumerate(zip(hits, documents, strict=True)):
         length = sum(document.values())
@@ -498,6 +499,11 @@ def _rerank_pages(
             score *= 1.4
             if requested_quarter and period.group(2) == requested_quarter:
                 score *= 1.4
+        # Earnings releases commonly carry the reported non-GAAP results,
+        # while annual reports also contain definitions and risk discussion.
+        # Treat an explicit report label as a soft preference, like its period.
+        if adjusted_metric and re.search(r"(?:^|[_ -])earnings(?:[_ -]|$)", hit.text.split("\n", 1)[0], re.IGNORECASE):
+            score *= 1.5
         scores.append((score, hit.score, -position, hit))
     ranked = tuple(item[-1] for item in sorted(scores, key=lambda item: item[:3], reverse=True))
     return _cover_statements(ranked, headings, requested_years, requested_quarter, question)

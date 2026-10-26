@@ -248,3 +248,62 @@ def test_statement_coverage_uses_the_named_company_in_a_mixed_scope(
                 assert len(record.entry.sources) == 1
 
     asyncio.run(scenario())
+
+
+@pytest.mark.parametrize("backend", ["sqlite", "seekdb"])
+def test_adjusted_metric_prefers_reported_results_over_annual_discussion(
+    tmp_path: Path, backend: Literal["sqlite", "seekdb"]
+) -> None:
+    if backend == "seekdb" and importlib.util.find_spec("pylibseekdb") is None:
+        pytest.skip("native seekdb runtime is unavailable")
+
+    async def scenario() -> None:
+        config = BuiltinConfig(
+            database=(
+                SQLiteConfig(url=f"sqlite+aiosqlite:///{tmp_path / 'results.db'}")
+                if backend == "sqlite"
+                else SeekDBConfig(path=tmp_path / "seekdb")
+            )
+        )
+        registry = SourceDefinitionRegistry((PDF_PAGE_SOURCE_DEFINITION,))
+        pages = (
+            (
+                "ACME_2022_10K",
+                "Discussion of results\nAdjusted EBITDAR is used to assess performance. "
+                "Adjusted EBITDAR excludes selected items and may differ from other companies' definitions.",
+            ),
+            (
+                "ACME_2022Q4_EARNINGS",
+                "Full year results\nAdjusted EBITDAR\n2022 2021\nNorth 120 100\nSouth 80 70\nTotal 200 170",
+            ),
+        )
+        async with open_builtin_runtime(config, candidate_pipeline=_LiteralPages()) as runtime:
+            assert runtime.scopes is not None
+            scope = await runtime.scopes.create(
+                ScopeDraft(title="Results", summary="Reported metrics and annual discussion", idempotency_key="results")
+            )
+            await runtime.ingestion.register(manifest_for_definition(PDF_PAGE_SOURCE_DEFINITION))
+            for document, text in pages:
+                page = PDFPageInput(
+                    document_id=document,
+                    document_sha256=hashlib.sha256(document.encode()).hexdigest(),
+                    page_number=1,
+                    text=text,
+                )
+                observation = project_source_for_transport(registry, await registry.resolve(page))
+                await runtime.ingestion.submit(
+                    SubmitSourceObservation(scope_id=scope.scope_id, observation=observation)
+                )
+            memory = runtime.memory.for_scope(scope.scope_id)
+            while (await memory.flush()).processed:
+                pass
+
+        async with open_builtin_runtime(config) as runtime:
+            memory = runtime.memory.for_scope(scope.scope_id)
+            citations = await search_pdf_pages(memory, "What was ACME's adjusted EBITDAR for FY2022?", limit=1)
+            assert len(citations) == 1
+            record = await memory.get(GetMemoryEntryRequest(citation=citations[0]))
+            assert record.entry.text == "\n".join(pages[1])
+            assert len(record.entry.sources) == 1
+
+    asyncio.run(scenario())
