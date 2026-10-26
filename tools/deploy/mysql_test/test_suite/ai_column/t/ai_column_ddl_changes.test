@@ -1,0 +1,63 @@
+# Definition changes must persist in the schema transaction without allocating
+# duplicate hidden columns or leaving active metadata for a dropped AI column.
+connection default;
+--disable_query_log
+--disable_result_log
+--disable_warnings
+drop database if exists ai_column_ddl_changes;
+--enable_warnings
+--error 0,11118
+call DBMS_AI_SERVICE.DROP_AI_MODEL('ai_ddl_changes_complete');
+call DBMS_AI_SERVICE.CREATE_AI_MODEL('ai_ddl_changes_complete',
+  '{"type":"completion","model_name":"unused-model"}');
+create database ai_column_ddl_changes;
+create table ai_column_ddl_changes.docs(
+  id bigint primary key,
+  body varchar(100),
+  score bigint AI COLUMN(AI_COMPLETE('ai_ddl_changes_complete',body)) WITH(max_retries=2)
+);
+set @ai_table_id=(select t.table_id from oceanbase.__all_table t
+  join oceanbase.__all_database d on d.database_id=t.database_id
+  where d.database_name='ai_column_ddl_changes' and t.table_name='docs');
+--enable_result_log
+select count(*)=1 and min(max_retries)=2 as initial_definition
+  from oceanbase.__all_ai_column where table_id=@ai_table_id;
+set @ai_state=(select state_column_id from oceanbase.__all_ai_column where table_id=@ai_table_id);
+set @ai_request=(select request_column_id from oceanbase.__all_ai_column where table_id=@ai_table_id);
+set @ai_spec=(select result_spec_column_id from oceanbase.__all_ai_column where table_id=@ai_table_id);
+set @ai_version=(select definition_version from oceanbase.__all_ai_column where table_id=@ai_table_id);
+alter table ai_column_ddl_changes.docs modify score bigint AI COLUMN(
+  AI_COMPLETE('ai_ddl_changes_complete',concat('new: ',body))) WITH(max_retries=7);
+select max_retries=7 and state_column_id=@ai_state and request_column_id=@ai_request
+  and result_spec_column_id=@ai_spec and definition_version<>@ai_version as modify_persisted
+  from oceanbase.__all_ai_column where table_id=@ai_table_id;
+alter table ai_column_ddl_changes.docs add note varchar(50), add extra varchar(100)
+  AI COLUMN(AI_COMPLETE('ai_ddl_changes_complete',body));
+select count(*)=2 as multi_add from oceanbase.__all_ai_column where table_id=@ai_table_id;
+--disable_result_log
+--error 1235
+alter table ai_column_ddl_changes.docs drop body;
+--enable_result_log
+alter table ai_column_ddl_changes.docs drop extra;
+select count(*)=1 as dropped_definition_removed from oceanbase.__all_ai_column where table_id=@ai_table_id;
+select count(*)=3 as dropped_hidden_columns_inactive from oceanbase.__all_column
+  where table_id=@ai_table_id and is_hidden=1 and (column_flags & 2097152)=0;
+alter table ai_column_ddl_changes.docs modify note varchar(50)
+  AI COLUMN(AI_COMPLETE('ai_ddl_changes_complete',body));
+select count(*)=2 as converted_column_definition from oceanbase.__all_ai_column where table_id=@ai_table_id;
+select count(*)=6 as converted_hidden_columns from oceanbase.__all_column
+  where table_id=@ai_table_id and is_hidden=1 and (column_flags & 2097152)=0;
+--disable_result_log
+--error 1210
+create table ai_column_ddl_changes.invalid(body varchar(100), result varchar(100)
+  AI COLUMN(AI_COMPLETE('ai_ddl_changes_complete',body)) WITH(max_retries=1,max_retries=2));
+--error 1235
+create table ai_column_ddl_changes.invalid(body varchar(100), result varchar(100)
+  AI COLUMN(AI_COMPLETE('ai_ddl_changes_complete',AI_COMPLETE('ai_ddl_changes_complete',body))));
+--enable_result_log
+select count(*)=0 as invalid_ddl_atomic from oceanbase.__all_table
+  where database_id=(select database_id from oceanbase.__all_database
+    where database_name='ai_column_ddl_changes') and table_name='invalid';
+drop database ai_column_ddl_changes;
+call DBMS_AI_SERVICE.DROP_AI_MODEL('ai_ddl_changes_complete');
+--enable_query_log

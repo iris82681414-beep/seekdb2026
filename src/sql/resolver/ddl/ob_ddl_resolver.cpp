@@ -1966,6 +1966,12 @@ int ObDDLResolver::resolve_column_definition(ObColumnSchemaV2 &column,
       }
     }
   }
+  if (OB_SUCC(ret) && AI_COLUMN_DEFINITION_NUM_CHILD == node->num_child_) {
+    if (resolve_stat.is_primary_key_ || resolve_stat.is_autoincrement_ ||
+        resolve_stat.is_set_default_value_ || !column.is_nullable()) {
+      ret = OB_NOT_SUPPORTED;
+    } else { ret = resolve_ai_column_definition(column, *node); }
+  }
   return ret;
 }
 

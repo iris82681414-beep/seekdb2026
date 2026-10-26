@@ -342,7 +342,8 @@ all_column_def = dict(
       ('sub_data_type', 'int', 'false', '0'),
       ('skip_index_attr', 'int', 'false', '0'),
       ('lob_chunk_size', 'int', 'false', 'OB_DEFAULT_LOB_CHUNK_SIZE'),
-      ('local_session_vars', 'longtext', 'true')
+      ('local_session_vars', 'longtext', 'true'),
+      ('ai_column_definition', 'longtext', 'true')
   ]
   )
 
@@ -2446,6 +2447,25 @@ all_ai_model_endpoint_def = dict(
     ]
 )
 def_table_schema(**all_ai_model_endpoint_def)
+
+
+def_table_schema(
+    owner='competition', table_name='__all_ai_column_task', table_id='1131',
+    table_type='SYSTEM_TABLE', gm_columns=['gmt_create', 'gmt_modified'],
+    is_cluster_private=False, meta_record_in_sys=False,
+    rowkey_columns=[('table_id', 'int'), ('rowkey_hash', 'varchar:64'), ('column_id', 'int')],
+    normal_columns=[
+      ('request_id', 'varchar:64', 'false'),
+      ('definition_version', 'uint', 'false'),
+      ('rowkey_predicate', 'longtext', 'false'),
+      ('state', 'int', 'false', '0'),
+      ('retry_count', 'int', 'false', '0'),
+      ('eligible_ts', 'timestamp:6', 'false'),
+      ('lease_owner', 'varchar:64', 'true'),
+      ('lease_expire_ts', 'timestamp:6', 'true'),
+      ('result', 'longtext', 'true'),
+      ('result_is_null', 'int', 'false', '0'),
+      ('last_error', 'int', 'false', '0')])
 
 
 all_objauth_mysql_def = dict(
@@ -13867,6 +13887,23 @@ def_table_schema(
     FROM oceanbase.__all_virtual_change_stream_refresh_stat
   """.replace("\n", " ")
 )
+
+# AI definitions are stored in __all_column and share its schema transaction.
+def_table_schema(
+    owner='competition', table_name='__all_ai_column', table_id='21690',
+    table_type='SYSTEM_VIEW', gm_columns=[], rowkey_columns=[], normal_columns=[],
+    view_definition="""
+      SELECT table_id, column_id, column_name,
+        JSON_UNQUOTE(JSON_EXTRACT(ai_column_definition, '$.normalized_expr')) AS normalized_expr,
+        CAST(JSON_EXTRACT(ai_column_definition, '$.max_retries') AS UNSIGNED) AS max_retries,
+        CAST(JSON_EXTRACT(ai_column_definition, '$.state_column_id') AS UNSIGNED) AS state_column_id,
+        CAST(JSON_EXTRACT(ai_column_definition, '$.request_column_id') AS UNSIGNED) AS request_column_id,
+        CAST(JSON_EXTRACT(ai_column_definition, '$.result_spec_column_id') AS UNSIGNED) AS result_spec_column_id,
+        JSON_EXTRACT(ai_column_definition, '$.dependencies') AS dependencies,
+        CAST(JSON_EXTRACT(ai_column_definition, '$.definition_version') AS UNSIGNED) AS definition_version
+      FROM oceanbase.__all_column WHERE LENGTH(ai_column_definition) > 0
+    """.replace("\n", " "))
+
 
 # Reserved position (placeholder before this line)
 # Placeholder suggestion for this section: Use the actual view name for placeholder

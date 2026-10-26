@@ -25,6 +25,7 @@
 #include "sql/session/ob_local_session_var.h"
 #include "query/command/ob_root_command_service.h"
 #include "query/vector/ob_vector_index_util.h"
+#include "share/schema/ob_ai_column_schema.h"
 
 namespace oceanbase
 {
@@ -324,6 +325,20 @@ int ObAlterTableResolver::check_alter_column_schemas_valid(ObAlterTableStmt &stm
                                                                           root_expr_type,
                                                                           columns_names))) {
         } else if (OB_FAIL(append(dependent_columns, columns_names))) {
+        }
+      }
+    }
+    for (int64_t i = 0; OB_SUCC(ret) && !drop_columns.empty() && i < table_schema_->get_column_count(); ++i) {
+      const ObColumnSchemaV2 *column = table_schema_->get_column_schema_by_idx(i);
+      if (column != nullptr && column->is_ai_column() &&
+          !has_exist_in_array(drop_columns, column->get_column_name_str())) {
+        AiColumnDefinition definition;
+        OZ(definition.parse(*allocator_, column->get_ai_column_definition()));
+        for (int64_t j = 0; OB_SUCC(ret) && j < definition.dependencies_.count(); ++j) {
+          const ObColumnSchemaV2 *dependency = table_schema_->get_column_schema(definition.dependencies_.at(j));
+          if (dependency != nullptr && has_exist_in_array(drop_columns, dependency->get_column_name_str())) {
+            ret = OB_NOT_SUPPORTED;
+          }
         }
       }
     }
@@ -3454,10 +3469,36 @@ int ObAlterTableResolver::resolve_add_column(const ParseNode &node, ObColumnName
         }
 
         //add column
+        ObSEArray<ObColumnSchemaV2, 3> ai_hidden;
+        if (OB_SUCC(ret) && alter_column_schema.is_ai_column()) {
+          ObTableSchema ai_table;
+          uint64_t max_id = table_schema_->get_max_used_column_id();
+          const ObTableSchema &pending = alter_table_stmt->get_alter_table_schema();
+          OZ(ai_table.assign(*table_schema_));
+          for (int64_t j = 0; OB_SUCC(ret) && j < pending.get_column_count(); ++j) {
+            const AlterColumnSchema *existing = static_cast<const AlterColumnSchema *>(pending.get_column_schema_by_idx(j));
+            if (existing == nullptr || existing->alter_type_ != OB_DDL_ADD_COLUMN) { ret = OB_NOT_SUPPORTED; }
+            else {
+              ObColumnSchemaV2 copy;
+              OZ(copy.assign(*existing));
+              copy.set_column_id(++max_id);
+              OZ(ai_table.add_column(copy));
+            }
+          }
+          alter_column_schema.set_column_id(++max_id);
+          OZ(ai_table.add_column(alter_column_schema));
+          OZ(finalize_ai_column(alter_column_schema, ai_table, max_id, ai_hidden));
+        }
         if (OB_SUCC(ret)) {
           if (OB_FAIL(alter_table_stmt->add_column(alter_column_schema))) {
           } else if (FALSE_IT(alter_table_stmt->set_sql_mode(session_info_->get_sql_mode()))) {
           }
+        }
+        for (int64_t j = 0; OB_SUCC(ret) && j < ai_hidden.count(); ++j) {
+          AlterColumnSchema physical;
+          OZ(physical.ObColumnSchemaV2::assign(ai_hidden.at(j)));
+          physical.alter_type_ = OB_DDL_ADD_COLUMN;
+          OZ(alter_table_stmt->add_column(physical));
         }
       }
     }
@@ -3531,6 +3572,28 @@ int ObAlterTableResolver::resolve_alter_table_column_definition(AlterColumnSchem
               allow_has_default))) {
   } else { // add column level constraint
     add_or_modify_check_cst_times_ += alter_table_schema.get_constraint_count() - cst_cnt;
+  }
+  if (OB_SUCC(ret) && column.is_ai_column() && column.alter_type_ != OB_DDL_ADD_COLUMN) {
+    const ObString &old_name = column.get_origin_column_name().empty() ?
+        column.get_column_name_str() : column.get_origin_column_name();
+    const ObColumnSchemaV2 *original = table_schema_->get_column_schema(old_name);
+    if (original == nullptr) { ret = OB_ERR_BAD_FIELD_ERROR; }
+    else {
+      column.set_column_id(original->get_column_id());
+      uint64_t max_id = table_schema_->get_max_used_column_id();
+      for (int64_t i = 0; OB_SUCC(ret) && i < alter_table_schema.get_column_count(); ++i) {
+        const AlterColumnSchema *pending = static_cast<const AlterColumnSchema *>(alter_table_schema.get_column_schema_by_idx(i));
+        if (pending->alter_type_ == OB_DDL_ADD_COLUMN) { ++max_id; }
+      }
+      ObSEArray<ObColumnSchemaV2, 3> hidden;
+      OZ(finalize_ai_column(column, tmp_table_schema, max_id, hidden, original));
+      for (int64_t i = 0; OB_SUCC(ret) && i < hidden.count(); ++i) {
+        AlterColumnSchema physical;
+        OZ(physical.ObColumnSchemaV2::assign(hidden.at(i)));
+        physical.alter_type_ = OB_DDL_ADD_COLUMN;
+        OZ(alter_table_stmt->add_column(physical));
+      }
+    }
   }
   // else if (OB_FAIL(process_default_value(stat, column))) {
   //   SQL_RESV_LOG(WARN, "failed to set default value", K(ret));
@@ -4228,6 +4291,24 @@ int ObAlterTableResolver::resolve_drop_column(
         } else if (OB_FAIL(check_drop_column_is_partition_key(*table_schema_,
                                                               alter_column_schema.get_origin_column_name()))) {
         } else if (OB_FAIL(alter_table_stmt->add_column(alter_column_schema))){
+        } else {
+          const ObColumnSchemaV2 *column = table_schema_->get_column_schema(alter_column_schema.get_origin_column_name());
+          if (column != nullptr && column->is_ai_column()) {
+            AiColumnDefinition definition;
+            OZ(definition.parse(*allocator_, column->get_ai_column_definition()));
+            const uint64_t ids[] = {definition.state_column_id_, definition.request_column_id_, definition.result_spec_column_id_};
+            for (int j = 0; OB_SUCC(ret) && j < 3; ++j) {
+              const ObColumnSchemaV2 *hidden = table_schema_->get_column_schema(ids[j]);
+              if (hidden == nullptr || !hidden->is_hidden()) { ret = OB_ERR_UNEXPECTED; }
+              else {
+                AlterColumnSchema drop;
+                OZ(drop.set_column_name(hidden->get_column_name_str()));
+                OZ(drop.set_origin_column_name(hidden->get_column_name_str()));
+                drop.alter_type_ = OB_DDL_DROP_COLUMN;
+                OZ(alter_table_stmt->add_column(drop));
+              }
+            }
+          }
         }
       }
       if (OB_SUCC(ret)) {
