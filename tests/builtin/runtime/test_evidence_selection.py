@@ -68,3 +68,31 @@ def test_evidence_budget_probe_measures_the_selected_complete_envelope() -> None
     assert probe.delivered_items == len(result.origins)
     assert probe.unused_bytes == request.max_bytes - result.context.content_bytes
     assert all(fragment.text == text[fragment.start : fragment.end] for fragment in result.fragments)
+
+
+def test_repeated_shared_words_do_not_displace_distinctive_tail_evidence() -> None:
+    target = (
+        "Device measurements contain recorded metrics. "
+        + "Historical administrative notes. " * 30
+        + "Zircon crystals stabilize the oscillator."
+    )
+    result = PreparedContextBuilder().build_scopes_result(
+        request=PrepareContextRequest(query="zircon device measurements", evidence_selection=True, max_bytes=800),
+        current_scope_id="target",
+        memory_candidates=(
+            _group("general-a", "Device measurements calibrate the device measurements. " * 15),
+            _group("target", target),
+            _group("general-b", "Device measurements quantify the device measurements. " * 15),
+        ),
+    )
+    assert any(
+        fragment.address.memory.scope_id == "target" and "Zircon crystals" in fragment.text
+        for fragment in result.fragments
+    )
+    assert result.context.content is not None
+    assert result.context.content_bytes == len(result.context.content.encode("utf-8")) <= 800
+    assert all(
+        fragment.text == target[fragment.start : fragment.end]
+        for fragment in result.fragments
+        if fragment.address.memory.scope_id == "target"
+    )

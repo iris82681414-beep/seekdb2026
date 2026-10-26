@@ -144,7 +144,9 @@ def _candidates(documents: tuple[_Document, ...], query: str) -> tuple[_Span, ..
     frequencies: Counter[str] = Counter()
     for document in documents:
         frequencies.update(set(_terms(document.text)))
-    weights = {term: math.log1p((len(documents) + 1) / (frequencies[term] + 0.5)) for term in query_terms}
+    weights = {
+        term: math.log1p((len(documents) - frequencies[term] + 0.5) / (frequencies[term] + 0.5)) for term in query_terms
+    }
     spans = []
     for index, document in enumerate(documents):
         for start, end in _intervals(document.text):
