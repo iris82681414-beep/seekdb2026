@@ -5,6 +5,7 @@
 ## 环境与提交
 
 - seekdb 保留官方 `2026-competition` 历史，基线为 `5bce9e06d1281347ad61344e4b01fab9158c58a2`。用户私有仓库已建立 `main` 和 `2026-competition` 分支。
+- seekdb 最新内核实现提交为 `40d1b4d2e608aab521b8aeecd567f468ac80cb69`，包含按文档独占词频表的 FTS 锁优化，已推送私有仓库。
 - PowerContext 位于本地 `.competition/powercontext`，保留比赛分支及冻结产品提交 `9db1753434162c0aa7c9f1189a1722e617880a52`。
 - PowerContext 最新实现已推送至私有仓库 `powercontext-2026-competition`，完整提交为 `7f6d071978d4ea4b60cfca193c44a014ed718058`。
 - GitHub 仓库当前默认分支仍是 PowerContext 答题分支；正式提测须明确选取产品对应的分支和 commit。
@@ -22,7 +23,7 @@
 | AI_RERANK、跨行批量 AI_EMBED | 20 | 原生 SQL 实现及回归已通过；重排跨三批完整排序、14 类异常响应；向量按模型/维度分组、NULL/LOB、乱序响应和实际合并请求已验证 |
 | 文件即数据库 | 50 | 原生三格式读取、批量/重扫、DESCRIBE、glob、CSV COPY 已实现；原版及新增 2 项 mysqltest、8 项 Rust 测试、30 项独立 SQL 专项通过，隐藏边界继续核验 |
 | AI 列 | 50 | 五组功能均已实现，10 项原版及新增 AI COLUMN 回归通过；另有重试权限、事务、组合主键和向量索引等 17 项独立检查通过；平台隐藏测试及统一性能计分尚未验证 |
-| 全文索引性能 | 50 | 冻结原版二进制已完成原版默认规模测量、命中一致；本机按固定 CI 基线计算已为 100/100，不作为本实现的优化收益或正式成绩 |
+| 全文索引性能 | 50 | 文档独占词频表锁优化已完成原生同版本 A/B/A 对照：中文分词耗时下降 8.01%，五项原版用例双路径通过，384 次并发结果一致；固定 CI 内部报告三轮均为 100/100，不作为正式成绩 |
 | PowerContext 仓库准备 | 10 | 冻结历史和私有分支已准备，待平台读取配置及核验 |
 | CSV 行级采集 | 20 | Linux 公开验收 17 项通过 |
 | Pi 会话采集 | 20 | Linux 公开验收 15 项通过 |
@@ -48,6 +49,10 @@ seekdb 官方基线、AI_PROMPT 及后续请求/响应修改均已在服务器�
 AI 函数增强的六项实现已覆盖。Linux 原生实例使用未修改的 `ai_function_enhancement` 综合用例与其他原版回归，以及新增的重排、批量向量等用例，共 12 项 mysqltest 通过。HTTP 响应由本地确定性协议 fixture 生成，未使用平台 Mock 或真实在线模型；该记录不替代平台隐藏测试。完整结果位于 `.competition/results/seekdb-ai-complete.json`。Endpoint 的 `max_concurrency` 已补齐 1..1024 整数校验、默认值 8、系统表存储、视图和复制语义；在全新实例上，包含原版 Endpoint DDL 及新增边界回归的 12 项 mysqltest 全通过。该修改只交付参数存储，AI COLUMN 后台实际限流尚待实现。
 
 全文索引冻结基线使用独立实例和原版 benchmark，配置为 20,000 行、分词 3,000 轮、查询 200 轮、3 个样本和 30 轮预热。四类查询命中为 8001、11000、7332、20，与固定基线一致，配置差异为空。原始二进制相对仓库内固定 CI 基线的内部报告已为 100/100，说明该分数受本机环境影响，不能据此宣称产品优化或正式 50 分。测量保存于 `.competition/results/fts-baseline-score.json`，后续性能修改仍须同机前后比较。
+
+FTS 锁优化只改变每次分词独占的词频表，统一优化器、当前 DAS 和 legacy 查询初始化中的表类型；全局停用词、词典缓存与节点分配器的同步方式保持原样。以已包含 AI COLUMN、File SQL 等实现的提交 `408c7ac8` 为直接对照，使用同一管理实例和相同配置，按“对照—修改—对照”执行未改动的原版默认负载：20,000 行、分词 3,000 轮、每条查询 200 轮、3 个样本及 30 轮预热。进程配置为 memory_limit 4G、log_disk_size 4G；计时期间使用 CPUQuota 400%、MemoryMax 5G，未与编译或 PowerContext 质量测量重叠。以两次对照均值比较，中文分词从 0.07805 ms 降到 0.0718 ms（8.01%），英文从 0.03775 ms 降到 0.0360 ms（4.64%）。三类索引构建分别观测下降 1.52%、3.01%、3.83%；查询变化为下降 0.39% 至 1.78%，其中中文查询观测退化 1.14%，不宣称查询已获得稳定的整体加速。
+
+四类查询仍命中 8,001、11,000、7,332、20；三轮分别完成 128 次并发结果核对，共 384 次，中文/英文词项与词频、全文查询结果全部一致。原版 basic_dml、cn_word、parser_properties、simple_query、tokenize_function 五项用例在对照与修改二进制上均通过。构建和原版测试通过后保存快照 `/root/oceanbase2026/seekdb-fts-local-map-candidate`，SHA-256 为 `e6be5e0b3adebd43a35905d9e1dab459aa03ac08ef7577b58c10ad5deeafdc31`。对照二进制为已有最终 AI COLUMN 快照 `dea2203f…`；早先的冻结旧二进制仅用于定位热点，不混入本次单项收益对照。原版工作负载、SQL、计时、评分与固定基线文件未改动，三轮相对固定 CI 的内部报告均为 100/100；本机已达到该报告上限，不能据此宣称正式 50 分。记录为 `.competition/results/seekdb-fts-local-map-validation.json` 与 `.competition/fts-quality/current-comparison/`。
 
 新增边界验证还覆盖 OpenAI、Ollama、Dashscope 的空 Completion，以及 Dashscope 错误 JSON 结构，均按错误返回。跨行向量回归包含过滤、倒序和 LIMIT，以及 1,100 行跨执行批次、35 个 NULL 的原始行映射；同轮 12 项用例通过，另有 17 组异常响应被拒绝且实例保持可用。该二进制运行于新建测试实例 `/root/oceanbase2026/instances/core-endpoints`，原始实例及冻结二进制继续保留。
 
