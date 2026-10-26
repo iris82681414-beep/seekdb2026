@@ -1,0 +1,12 @@
+select max_concurrency = 8 as default_concurrency from oceanbase.DBA_OB_AI_MODEL_ENDPOINTS where endpoint_name='concurrency_ep';
+default_concurrency
+1
+select max_concurrency = 1 as minimum_concurrency from oceanbase.DBA_OB_AI_MODEL_ENDPOINTS where endpoint_name='concurrency_ep';
+minimum_concurrency
+1
+select max_concurrency = 1024 as preserved_maximum from oceanbase.DBA_OB_AI_MODEL_ENDPOINTS where endpoint_name='concurrency_ep';
+preserved_maximum
+1
+select max_concurrency = 1024 as invalid_alters_are_atomic from oceanbase.DBA_OB_AI_MODEL_ENDPOINTS where endpoint_name='concurrency_ep';
+invalid_alters_are_atomic
+1

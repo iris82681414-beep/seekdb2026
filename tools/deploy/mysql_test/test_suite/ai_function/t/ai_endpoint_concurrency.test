@@ -1,0 +1,50 @@
+connection default;
+--disable_query_log
+--disable_result_log
+--error 0,11112
+call DBMS_AI_SERVICE.DROP_AI_MODEL_ENDPOINT('concurrency_ep');
+--error 0,11118
+call DBMS_AI_SERVICE.DROP_AI_MODEL('concurrency_model');
+call DBMS_AI_SERVICE.CREATE_AI_MODEL('concurrency_model', '{"type":"completion","model_name":"fixture"}');
+call DBMS_AI_SERVICE.CREATE_AI_MODEL_ENDPOINT('concurrency_ep', '{"ai_model_name":"concurrency_model","url":"http://127.0.0.1:19120/unused","access_key":"","provider":"ollama"}');
+--enable_result_log
+--enable_query_log
+select max_concurrency = 8 as default_concurrency from oceanbase.DBA_OB_AI_MODEL_ENDPOINTS where endpoint_name='concurrency_ep';
+--disable_query_log
+call DBMS_AI_SERVICE.ALTER_AI_MODEL_ENDPOINT('concurrency_ep', '{"max_concurrency":1}');
+--enable_query_log
+select max_concurrency = 1 as minimum_concurrency from oceanbase.DBA_OB_AI_MODEL_ENDPOINTS where endpoint_name='concurrency_ep';
+--disable_query_log
+call DBMS_AI_SERVICE.ALTER_AI_MODEL_ENDPOINT('concurrency_ep', '{"MAX_CONCURRENCY":1024}');
+call DBMS_AI_SERVICE.ALTER_AI_MODEL_ENDPOINT('concurrency_ep', '{"url":"http://127.0.0.1:19120/still-unused"}');
+--enable_query_log
+select max_concurrency = 1024 as preserved_maximum from oceanbase.DBA_OB_AI_MODEL_ENDPOINTS where endpoint_name='concurrency_ep';
+--disable_query_log
+--disable_result_log
+--error 11116
+call DBMS_AI_SERVICE.ALTER_AI_MODEL_ENDPOINT('concurrency_ep', '{"max_concurrency":0}');
+--error 11116
+call DBMS_AI_SERVICE.ALTER_AI_MODEL_ENDPOINT('concurrency_ep', '{"max_concurrency":-1}');
+--error 11116
+call DBMS_AI_SERVICE.ALTER_AI_MODEL_ENDPOINT('concurrency_ep', '{"max_concurrency":1025}');
+--error 11116
+call DBMS_AI_SERVICE.ALTER_AI_MODEL_ENDPOINT('concurrency_ep', '{"max_concurrency":18446744073709551615}');
+--error 11116
+call DBMS_AI_SERVICE.ALTER_AI_MODEL_ENDPOINT('concurrency_ep', '{"max_concurrency":1.0}');
+--error 11116
+call DBMS_AI_SERVICE.ALTER_AI_MODEL_ENDPOINT('concurrency_ep', '{"max_concurrency":true}');
+--error 11116
+call DBMS_AI_SERVICE.ALTER_AI_MODEL_ENDPOINT('concurrency_ep', '{"max_concurrency":null}');
+--error 11116
+call DBMS_AI_SERVICE.ALTER_AI_MODEL_ENDPOINT('concurrency_ep', '{"max_concurrency":"8"}');
+--error 11116
+call DBMS_AI_SERVICE.ALTER_AI_MODEL_ENDPOINT('concurrency_ep', '{"max_concurrency":[]}');
+--error 11116
+call DBMS_AI_SERVICE.ALTER_AI_MODEL_ENDPOINT('concurrency_ep', '{"max_concurrency":{}}');
+--enable_result_log
+--enable_query_log
+select max_concurrency = 1024 as invalid_alters_are_atomic from oceanbase.DBA_OB_AI_MODEL_ENDPOINTS where endpoint_name='concurrency_ep';
+--disable_query_log
+--disable_result_log
+call DBMS_AI_SERVICE.DROP_AI_MODEL_ENDPOINT('concurrency_ep');
+call DBMS_AI_SERVICE.DROP_AI_MODEL('concurrency_model');
