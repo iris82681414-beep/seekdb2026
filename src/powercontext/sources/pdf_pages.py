@@ -164,7 +164,18 @@ _STOP_WORDS = frozenset([
 ])
 # General accounting vocabulary expands terminology, never document-specific answers.
 _FINANCIAL_TERMS = (
-    frozenset({"geography", "geographies", "geographic", "geographical", "region", "regions", "segments", "countries"}),
+    frozenset({
+        "geography",
+        "geographies",
+        "geographic",
+        "geographical",
+        "region",
+        "regional",
+        "regions",
+        "segment",
+        "segments",
+        "countries",
+    }),
     frozenset({"legal", "litigation", "lawsuit", "lawsuits", "proceedings", "battles"}),
     frozenset({"capex", "expenditures", "purchases", "property", "equipment"}),
     frozenset({"ebitda", "depreciation", "amortization", "operating", "income"}),
@@ -177,10 +188,19 @@ _ACCOUNTING_CONCEPTS = (
     (r"\b(?:ppne|ppe|pp\s*&\s*e|fixed\s+assets?)\b", "property plant equipment assets balance sheet"),
     (r"\b(?:ar|accounts?\s+receivables?)\b", "accounts trade receivables balance sheet"),
     (r"\b(?:working\s+capital|quick\s+ratio|liquidity)\b", "balance sheet current assets liabilities cash receivables"),
-    (r"\b(?:gross|operating)\s+margin\b", "income operations revenue sales cost profit operating"),
+    (r"\b(?:gross|operating)\s+margin\b", "income operations revenue revenues sales cost profit operating"),
     (r"\b(?:cogs|cost\s+of\s+goods)\b", "cost goods sales revenue"),
-    (r"\bcapital[ -]intensive\b", "property plant equipment assets revenue capital expenditures cash flows"),
-    (r"\b(?:ebitdar?|cash\s*flow\s+conversion)\b", "income operations cash flow depreciation amortization"),
+    (r"\bcapital[ -]intensive\b", "property plant equipment assets revenue revenues capital expenditures cash flows"),
+    (r"\b(?:ebit|ebitda|ebitdar)\b", "ebit ebitda ebitdar income operating cash flow depreciation amortization rent"),
+    (r"\bcash\s*flow\s+conversion\b", "income operations cash flow depreciation amortization"),
+    (r"\btop[ -]?line\b", "revenue revenues sales growth"),
+    (r"\b(?:ceo|chief\s+executive)\b", "chief executive officer president appointment succession experience"),
+    (
+        r"\b(?:acquired|acquisitions?|business\s+combinations?)\b",
+        "acquired acquisition acquisitions business combinations",
+    ),
+    (r"\b(?:products?|services?)\s+categor(?:y|ies)\b", "business segment segments products services revenue"),
+    (r"\bcyclic(?:al|ality)?\b", "cyclical cyclicality cycle demand economic cycles"),
 )
 _STATEMENT_INTENTS = (
     (
@@ -191,9 +211,9 @@ _STATEMENT_INTENTS = (
     ),
     (
         r"\b(?:income\s+statement|statement\s+of\s+(?:income|operations)|p\s*&\s*l|"
-        r"(?:gross|operating)\s+margin|ebitdar?|asset\s+turnover|capital[ -]intensive)\b",
+        r"(?:gross|operating)\s+margin|net\s+income|effective\s+tax\s+rate|ebitdar?|asset\s+turnover|capital[ -]intensive)\b",
         r"(?:statements?\s+of\s+(?:(?:net|comprehensive)\s+)*(?:income|earnings|operations)|income\s+statements?)",
-        "income earnings operations",
+        "income revenues earnings operations",
     ),
     (
         r"\b(?:cash\s*flows?|capex|capital\s+expenditures?|ebitdar?|cash\s+dividends?)\b",
@@ -341,20 +361,70 @@ def _query_variants(question: str) -> tuple[tuple[str, ...], tuple[str, ...], tu
     terms = tuple(dict.fromkeys(term for term in _TOKEN.findall(normalized) if term not in _STOP_WORDS))
     expanded = set(terms)
     queries = [question, " ".join(terms)]
+    topics = []
     for group in _FINANCIAL_TERMS:
         if group.intersection(terms):
             expanded.update(group)
-            queries.append(" ".join(sorted(group)))
+            topics.append(tuple(sorted(group)))
     for pattern, vocabulary in _ACCOUNTING_CONCEPTS:
         if re.search(pattern, normalized):
             expanded.update(vocabulary.split())
-            queries.append(vocabulary)
+            topics.append(tuple(vocabulary.split()))
     for intent, _heading, vocabulary in _STATEMENT_INTENTS:
         if re.search(intent, normalized):
-            queries.append(vocabulary)
+            topics.append(tuple(vocabulary.split()))
+    # Short alternative queries admit either synonym under Memory's lexical
+    # coverage policy. Round-robin topics retain several accounting facets.
+    for start in range(0, max((len(topic) for topic in topics), default=0), 2):
+        queries.extend(" ".join(topic[start : start + 2]) for topic in topics if start < len(topic))
     if len(terms) > 8:
         queries.extend(" ".join(terms[start : start + 6]) for start in range(0, len(terms), 6))
     return terms, tuple(sorted(expanded - set(terms))), tuple(dict.fromkeys(query for query in queries if query))[:10]
+
+
+def _statement_heading(text: str, heading: str) -> re.Match[str] | None:
+    header = text.split("\n", 1)[-1][:1200]
+    matches = re.finditer(
+        r"(?im)^\s*(?:(?:consolidated|combined|condensed|unaudited|and)\s*){0,5}(?:"
+        + heading.replace(r"\s+", r"\s*")
+        + r")\b",
+        header,
+    )
+    for match in matches:
+        tail = header[match.end() :].split("\n", 1)[0]
+        if not re.search(r"(?<!\d)\d{1,3}\s*$", tail):
+            return match
+    return None
+
+
+def _report_period(text: str) -> re.Match[str] | None:
+    return re.search(r"(?<!\d)((?:19|20)\d{2})(?:[_ -]?q([1-4]))?", text.split("\n", 1)[0].lower())
+
+
+def _cover_statements(
+    ranked: tuple[MemoryHit, ...], headings: list[str], requested_years: set[int], requested_quarter: str | None
+) -> tuple[MemoryHit, ...]:
+    selected = []
+    selected_ranks = set()
+    for heading in headings:
+        matches = []
+        for rank, hit in enumerate(ranked):
+            match = _statement_heading(hit.text, heading)
+            if match is None or rank in selected_ranks:
+                continue
+            period = _report_period(hit.text)
+            latest_requested = bool(period and requested_years and int(period.group(1)) == max(requested_years))
+            quarter_match = bool(period and requested_quarter and period.group(2) == requested_quarter)
+            primary_income = "comprehensive" not in match.group(0).lower()
+            consolidated = bool(re.search(r"consolidated|combined|condensed", match.group(0), re.IGNORECASE))
+            matches.append((latest_requested, quarter_match, primary_income, consolidated, -match.start(), -rank, hit))
+        if matches:
+            best = max(matches, key=lambda item: item[:6])
+            selected.append(best[-1])
+            selected_ranks.add(-best[-2])
+    # A ratio can require several different statements. Keep one primary page
+    # per requested statement before filling the remaining lexical ranking.
+    return tuple(selected) + tuple(hit for rank, hit in enumerate(ranked) if rank not in selected_ranks)
 
 
 def _rerank_pages(
@@ -381,27 +451,19 @@ def _rerank_pages(
                 inverse_frequency = math.log1p((len(documents) - frequencies[term] + 0.5) / (frequencies[term] + 0.5))
                 saturation = count * 2.2 / (count + 1.2 * (0.25 + 0.75 * length / max(average_length, 1)))
                 score += weight * inverse_frequency * saturation
-        header = hit.text.split("\n", 1)[-1][:1200]
-        if any(
-            re.search(
-                r"(?im)^\s*(?:(?:consolidated|combined|condensed|unaudited|and)\s*){0,5}(?:"
-                + heading.replace(r"\s+", r"\s*")
-                + r")\b",
-                header,
-            )
-            for heading in headings
-        ):
+        if any(_statement_heading(hit.text, heading) for heading in headings):
             score *= 2.0
         # The projection's first line is the caller's document ID. When it
         # explicitly names a report period, use it as a soft preference; body
         # years often describe historical comparisons or future obligations.
-        period = re.search(r"(?<!\d)((?:19|20)\d{2})(?:[_ -]?q([1-4]))?", hit.text.split("\n", 1)[0].lower())
+        period = _report_period(hit.text)
         if requested_years and period and int(period.group(1)) in requested_years:
             score *= 1.4
             if requested_quarter and period.group(2) == requested_quarter:
                 score *= 1.4
         scores.append((score, hit.score, -position, hit))
-    return tuple(item[-1] for item in sorted(scores, key=lambda item: item[:3], reverse=True))
+    ranked = tuple(item[-1] for item in sorted(scores, key=lambda item: item[:3], reverse=True))
+    return _cover_statements(ranked, headings, requested_years, requested_quarter)
 
 
 async def search_pdf_pages(
