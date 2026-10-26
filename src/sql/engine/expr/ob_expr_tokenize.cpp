@@ -307,14 +307,17 @@ int ObExprTokenize::parse_fulltext(const ObExpr &expr, ObEvalCtx &ctx, TokenizeP
       // do nothing, return empty result
       param.fulltext_ = ObString::make_empty_string();
     } else {
-      const int64_t input_length = fulltext_datum->get_string().length();
-      if (OB_FAIL(ObTextStringHelper::read_real_string_data(
-                     ctx.exec_ctx_, param.allocator_, *fulltext_datum,
-                     expr.args_[0]->datum_meta_, expr.args_[0]->obj_meta_.has_lob_header(),
-                     param.fulltext_))) {
-      } else {
-        // Preserve in-row token ordering while sizing for materialized out-row text.
-        param.fulltext_size_estimate_ = MAX(input_length, param.fulltext_.length());
+      param.fulltext_ = fulltext_datum->get_string();
+      param.fulltext_size_estimate_ = param.fulltext_.length();
+      if (ob_is_text_tc(expr.args_[0]->datum_meta_.type_)) {
+        if (OB_FAIL(ObTextStringHelper::read_real_string_data(
+                       ctx.exec_ctx_, param.allocator_, *fulltext_datum,
+                       expr.args_[0]->datum_meta_, expr.args_[0]->obj_meta_.has_lob_header(),
+                       param.fulltext_))) {
+        } else {
+          // Preserve in-row token ordering while sizing for materialized out-row text.
+          param.fulltext_size_estimate_ = MAX(param.fulltext_size_estimate_, param.fulltext_.length());
+        }
       }
     }
     param.meta_.set_varchar(); // as we hardcoded in fts_index
@@ -335,6 +338,8 @@ int ObExprTokenize::parse_parser_name(const ObExpr &expr, ObEvalCtx &ctx, Tokeni
   } else {
     if (parser_datum->is_null()) {
       raw_parser_name = ObString::make_string(OB_DEFAULT_FULLTEXT_PARSER_NAME);
+    } else if (!ob_is_text_tc(expr.args_[1]->datum_meta_.type_)) {
+      raw_parser_name = parser_datum->get_string().trim();
     } else if (OB_FAIL(ObTextStringHelper::read_real_string_data(
                    ctx.exec_ctx_, param.allocator_, *parser_datum,
                    expr.args_[1]->datum_meta_, expr.args_[1]->obj_meta_.has_lob_header(),
