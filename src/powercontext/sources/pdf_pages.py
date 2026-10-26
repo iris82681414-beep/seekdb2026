@@ -373,10 +373,25 @@ def _query_variants(question: str) -> tuple[tuple[str, ...], tuple[str, ...], tu
     for intent, _heading, vocabulary in _STATEMENT_INTENTS:
         if re.search(intent, normalized):
             topics.append(tuple(vocabulary.split()))
+    query_stems = {_stem(term) for term in terms}
+    topics = [
+        tuple(
+            sorted(
+                topic,
+                key=lambda term: (
+                    term not in terms,
+                    _stem(term) not in query_stems,
+                    not any(term.startswith(stem) for stem in query_stems),
+                ),
+            )
+        )
+        for topic in topics
+    ]
     # Short alternative queries admit either synonym under Memory's lexical
     # coverage policy. Round-robin topics retain several accounting facets.
     for start in range(0, max((len(topic) for topic in topics), default=0), 2):
         queries.extend(" ".join(topic[start : start + 2]) for topic in topics if start < len(topic))
+    queries.extend(f"{term} {_stem(term)}" for term in terms if len(term) > 4 and _stem(term) != term)
     if len(terms) > 8:
         queries.extend(" ".join(terms[start : start + 6]) for start in range(0, len(terms), 6))
     return terms, tuple(sorted(expanded - set(terms))), tuple(dict.fromkeys(query for query in queries if query))[:10]
@@ -402,8 +417,18 @@ def _report_period(text: str) -> re.Match[str] | None:
 
 
 def _cover_statements(
-    ranked: tuple[MemoryHit, ...], headings: list[str], requested_years: set[int], requested_quarter: str | None
+    ranked: tuple[MemoryHit, ...],
+    headings: list[str],
+    requested_years: set[int],
+    requested_quarter: str | None,
+    question: str,
 ) -> tuple[MemoryHit, ...]:
+    question_words = re.findall(r"[a-z0-9]+", question.lower())
+    named_labels = {
+        "".join(question_words[start:end])
+        for start in range(len(question_words))
+        for end in range(start + 1, min(start + 5, len(question_words)) + 1)
+    }
     selected = []
     selected_ranks = set()
     for heading in headings:
@@ -413,13 +438,25 @@ def _cover_statements(
             if match is None or rank in selected_ranks:
                 continue
             period = _report_period(hit.text)
+            document = hit.text.split("\n", 1)[0].lower()
+            label = re.sub(r"[^a-z0-9]", "", document[: period.start()] if period else document)
+            named_document = label in named_labels
             latest_requested = bool(period and requested_years and int(period.group(1)) == max(requested_years))
             quarter_match = bool(period and requested_quarter and period.group(2) == requested_quarter)
             primary_income = "comprehensive" not in match.group(0).lower()
             consolidated = bool(re.search(r"consolidated|combined|condensed", match.group(0), re.IGNORECASE))
-            matches.append((latest_requested, quarter_match, primary_income, consolidated, -match.start(), -rank, hit))
+            matches.append((
+                named_document,
+                latest_requested,
+                quarter_match,
+                primary_income,
+                consolidated,
+                -match.start(),
+                -rank,
+                hit,
+            ))
         if matches:
-            best = max(matches, key=lambda item: item[:6])
+            best = max(matches, key=lambda item: item[:7])
             selected.append(best[-1])
             selected_ranks.add(-best[-2])
     # A ratio can require several different statements. Keep one primary page
@@ -463,7 +500,7 @@ def _rerank_pages(
                 score *= 1.4
         scores.append((score, hit.score, -position, hit))
     ranked = tuple(item[-1] for item in sorted(scores, key=lambda item: item[:3], reverse=True))
-    return _cover_statements(ranked, headings, requested_years, requested_quarter)
+    return _cover_statements(ranked, headings, requested_years, requested_quarter, question)
 
 
 async def search_pdf_pages(

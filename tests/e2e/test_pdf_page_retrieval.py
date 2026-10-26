@@ -90,6 +90,12 @@ def test_financial_concepts_and_requested_report_period_retrieve_exact_page_cita
                 "Notes to financial statements\nINCOME STATEMENT\n"
                 "Operating margin, revenue, sales, cost, profit, income, earnings, depreciation and amortization",
             ),
+            ("SUPPLEMENT_2022_10K", 1, "Segment summary\nRegional sales\nNorth 10\nSouth 20"),
+            (
+                "CUSTOMER_NOTE_2022",
+                1,
+                "Distribution summary\nCustomer concentration by geography\nNorth America 60\nEurope 40",
+            ),
         ]
         if compact_headings:
             bodies = [
@@ -157,5 +163,88 @@ def test_financial_concepts_and_requested_report_period_retrieve_exact_page_cita
             assert {record.entry.text for record in records} == {
                 expected[source_by_page["REPORT_2022_10K", number]] for number in (1, 2)
             }
+            regional = await search_pdf_pages(
+                memory, "Compare topline, EBITDA and capital expenditures for each region.", limit=5
+            )
+            regional_records = [await memory.get(GetMemoryEntryRequest(citation=citation)) for citation in regional]
+            assert expected[source_by_page["SUPPLEMENT_2022_10K", 1]] in {
+                record.entry.text for record in regional_records
+            }
+            customers = await search_pdf_pages(memory, "Where are customers concentrated?", limit=1)
+            assert len(customers) == 1
+            customer_record = await memory.get(GetMemoryEntryRequest(citation=customers[0]))
+            assert customer_record.entry.text == expected[source_by_page["CUSTOMER_NOTE_2022", 1]]
+
+    asyncio.run(scenario())
+
+
+@pytest.mark.parametrize("backend", ["sqlite", "seekdb"])
+def test_statement_coverage_uses_the_named_company_in_a_mixed_scope(
+    tmp_path: Path, backend: Literal["sqlite", "seekdb"]
+) -> None:
+    if backend == "seekdb" and importlib.util.find_spec("pylibseekdb") is None:
+        pytest.skip("native seekdb runtime is unavailable")
+
+    async def scenario() -> None:
+        config = BuiltinConfig(
+            database=(
+                SQLiteConfig(url=f"sqlite+aiosqlite:///{tmp_path / 'mixed.db'}")
+                if backend == "sqlite"
+                else SeekDBConfig(path=tmp_path / "seekdb")
+            )
+        )
+        registry = SourceDefinitionRegistry((PDF_PAGE_SOURCE_DEFINITION,))
+        pages = (
+            (
+                "ACME_2022_10K",
+                "ACME Corporation\nCONSOLIDATED STATEMENTS OF INCOME\n2022 2021\nRevenues 500\nOperating income 100",
+            ),
+            (
+                "OTHER_2022_10K",
+                "CONSOLIDATED STATEMENTS OF INCOME\n2022 2021\n"
+                "Revenues 900\nOperating income 800\nIncome, sales, cost and profit",
+            ),
+            (
+                "ACME_2023Q2_10Q",
+                "ACME Corporation\nCONDENSED CONSOLIDATED BALANCE SHEETS\n2023\n"
+                "Current assets 200\nCurrent liabilities 100",
+            ),
+            (
+                "OTHER_2023Q2_10Q",
+                "CONDENSED CONSOLIDATED BALANCE SHEETS\n2023\nCurrent assets 900\nCurrent liabilities 800",
+            ),
+        )
+        async with open_builtin_runtime(config, candidate_pipeline=_LiteralPages()) as runtime:
+            assert runtime.scopes is not None
+            scope = await runtime.scopes.create(
+                ScopeDraft(title="Mixed reports", summary="Different companies in one scope", idempotency_key="mixed")
+            )
+            await runtime.ingestion.register(manifest_for_definition(PDF_PAGE_SOURCE_DEFINITION))
+            for document, text in pages:
+                page = PDFPageInput(
+                    document_id=document,
+                    document_sha256=hashlib.sha256(document.encode()).hexdigest(),
+                    page_number=1,
+                    text=text,
+                )
+                observation = project_source_for_transport(registry, await registry.resolve(page))
+                await runtime.ingestion.submit(
+                    SubmitSourceObservation(scope_id=scope.scope_id, observation=observation)
+                )
+            memory = runtime.memory.for_scope(scope.scope_id)
+            while (await memory.flush()).processed:
+                pass
+
+        async with open_builtin_runtime(config) as runtime:
+            memory = runtime.memory.for_scope(scope.scope_id)
+            for question, document, body in (
+                ("How did ACME's operating margin change in FY2022?", *pages[0]),
+                ("Does ACME have a healthy quick ratio in Q2 of FY2023?", *pages[2]),
+            ):
+                citations = await search_pdf_pages(memory, question, limit=1)
+                assert len(citations) == 1
+                record = await memory.get(GetMemoryEntryRequest(citation=citations[0]))
+                assert record.entry.text == f"{document}\n{body}"
+                assert len(record.entry.sources) == 1
 
     asyncio.run(scenario())
