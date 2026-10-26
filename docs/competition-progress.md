@@ -5,7 +5,7 @@
 ## 环境与提交
 
 - seekdb 保留官方 `2026-competition` 历史，基线为 `5bce9e06d1281347ad61344e4b01fab9158c58a2`。用户私有仓库已建立 `main` 和 `2026-competition` 分支。
-- seekdb 最新内核实现提交为 `148d0c737ceffb5c3d3c4ced21800ee0ce7199f9`，包含 FTS 锁优化、大赛指定 Bug #1477 及 TOKENIZE 大字段参数修复。独立 Bug 分支提交为 `34b696a50198bdb8d5280f3f881ede6405d96625`，基于官方 master，保存在用户私有仓库。
+- seekdb 最新内核实现提交为 `3c2738049ea434300517356249ee4bbe897861bb`，包含 FTS 锁优化、大赛指定 Bug #1477、TOKENIZE 大字段及空配置崩溃修复。独立 Bug 分支提交为 `34b696a50198bdb8d5280f3f881ede6405d96625`，基于官方 master，保存在用户私有仓库。
 - PowerContext 位于本地 `.competition/powercontext`，保留比赛分支及冻结产品提交 `9db1753434162c0aa7c9f1189a1722e617880a52`。
 - PowerContext 最新实现已推送至私有仓库 `powercontext-2026-competition`，完整提交为 `5c7e7450d11377db2ea94f7b63312af777b97a0d`。
 - GitHub 仓库当前默认分支仍是 PowerContext 答题分支；正式提测须明确选取产品对应的分支和 commit。
@@ -112,6 +112,18 @@ Strict Read 已增加 `ai_column_strict_read` 开关，默认关闭。开启后�
 初版直接解码后曾有一项原版用例仅词项排列不同，最终容量估算已保留既有顺序；独立对照中无类型 NULL 的参考字符集差异也已修正并重新核对。对照旧版产生的非法 UTF-8 错误输出以原始字节捕获，未修改原生用例来绕过错误。早期失败、最终成功和构建产物记录命名修正均保存在本地 `.competition/tokenize-lob/`，最终功能记录为 `results/tokenize-lob-fast-validation.json`。
 
 修复的首轮同机性能对照曾观测普通字符串分词耗时上升 6.76% 和 9.38%，因此增加 VARCHAR 直接读取路径，并对最终版本重新进行完整 A/B/A 对照。原版默认负载、20,000 行、3,000 次分词、每项查询 200 轮、3 组样本和 30 轮预热均保持原样，使用 CPUQuota 400%、MemoryMax 5G 的同一隔离实例；未与编译或其他质量测量重叠。中文分词对照均值和最终版本均为 0.0751 ms；英文从 0.03535 ms 到 0.0348 ms（观测下降 1.56%）。四类查询命中仍为 8,001、11,000、7,332、20。查询计时变化作为原始测量保留，本项交付以修复大字段读取并维持常规分词性能为依据。记录为 `results/tokenize-lob-fast-performance.json`，完整保留首轮负向结果及两轮对照日志。
+
+## TOKENIZE 可选配置空值与运行实例
+
+最小复现 `SELECT TOKENIZE('alpha beta','space',NULL)` 在上一版原生实例上返回 2013（查询期间连接丢失），随后普通查询返回 2002（无法连接），隔离实例进程退出；探测进程已确认 core 文件上限为 0。[官方参数说明](https://www.oceanbase.com/docs/common-oceanbase-database-ai-1000000006781801)将第三个配置参数定义为可选 JSON 数组。本次修复检查 JSON 读取辅助函数返回的 SQL NULL 标志，将 SQL NULL 配置按省略参数处理；JSON 文档中的 `null`、非数组和非法数组元素仍按原规则拒绝。
+
+提交 `3c2738049ea434300517356249ee4bbe897861bb` 新增一对原生回归文件，覆盖字面量、变量、表达式、TEXT/JSON 字段中的 SQL NULL，以及预备语句在 NULL、all 输出配置和再次 NULL 之间切换。192 组对照（四种分词器、六种输入、八种空值来源）、六组错误配置及其后的连接可用性检查、六项独立词数断言和 128 次并发核对全部通过。该轮进程身份在验证前后相同，未以重启恢复来代替持续可用。
+
+同一二进制的 31 项原生用例全部通过：AI 函数 12、AI 列 10、File SQL 2、FTS 7。File SQL 使用现有本机 SSH 样例复制方式，临时授权已清理；模型 HTTP 响应来自本地确定性 fixture。原版测试、期望文件、负载和评分文件保持原样。最终 RelWithDebInfo 构建耗时 14.41 秒，105 个构建输入与服务器逐文件一致；源码清单 SHA-256 为 `2a9243c7f99d279a599cf08eb9ae0317b7c19f6165008b7412c3063f2e41cd16`。
+
+验证快照为 `/root/oceanbase2026/seekdb-tokenize-null`，SHA-256 为 `970e2a68101a5053602fb95b130d3fce945dcd4e545f544bbc95f804f719042d`。现已更新原测试主实例 `/root/oceanbase2026/instances/core-ai-column-strict`，管理路径保持 `seekdb-ai-column-strict-initial`，SQL 端口 2881。更新前无其他活动查询，待处理任务为 0；旧版 `dea2203f…` 快照保留可回退。更新用时 2.38 秒，89 个 AI 列的表/列 ID 与定义版本摘要、严格读取设置和空任务队列均保持一致，部署标识文件中的 ID 保持 `8df70a0e-f2ad-8202-8b3b-ad658ab165d9`。实际运行实例已通过空配置和 #1477 最小查询检查。
+
+原始构建、对照、31 项原生测试、源码核对、运行实例更新与连接关闭后的独立检查，保存在本地 `.competition/tokenize-null/`。正式提测与公开仍按用户要求暂缓。
 
 ## 基础实践指定 Bug 修复
 
