@@ -1,0 +1,39 @@
+connection default;
+--exec python3 mysql_test/test_suite/ai_function/include/ai_embed_batch_mock.py start 19131
+--disable_query_log
+--disable_result_log
+--error 0,11112
+call DBMS_AI_SERVICE.DROP_AI_MODEL_ENDPOINT('batch_embed_a_ep');
+--error 0,11118
+call DBMS_AI_SERVICE.DROP_AI_MODEL('batch_embed_a');
+call DBMS_AI_SERVICE.CREATE_AI_MODEL('batch_embed_a', '{"type":"dense_embedding","model_name":"model_a"}');
+call DBMS_AI_SERVICE.CREATE_AI_MODEL_ENDPOINT('batch_embed_a_ep', '{"ai_model_name":"batch_embed_a","url":"http://127.0.0.1:19131/embeddings","access_key":"synthetic-fixture","provider":"openai"}');
+--error 0,11112
+call DBMS_AI_SERVICE.DROP_AI_MODEL_ENDPOINT('batch_embed_b_ep');
+--error 0,11118
+call DBMS_AI_SERVICE.DROP_AI_MODEL('batch_embed_b');
+call DBMS_AI_SERVICE.CREATE_AI_MODEL('batch_embed_b', '{"type":"dense_embedding","model_name":"model_b"}');
+call DBMS_AI_SERVICE.CREATE_AI_MODEL_ENDPOINT('batch_embed_b_ep', '{"ai_model_name":"batch_embed_b","url":"http://127.0.0.1:19131/embeddings","access_key":"synthetic-fixture","provider":"openai"}');
+drop table if exists embed_batch_rows;
+create table embed_batch_rows(id int primary key, model varchar(30), content longtext, dim int);
+insert into embed_batch_rows values(1,'batch_embed_a',null,3),(2,'batch_embed_a','2:text',2),(3,'batch_embed_b',concat('3:',repeat('x',50000)),3),(4,'batch_embed_a','4:text',2),(5,'batch_embed_a','5:text',3),(6,'batch_embed_b','6:text',2),(7,'batch_embed_a','7:text',3),(8,'batch_embed_a','8:text',2),(9,'batch_embed_b','9:text',3),(10,'batch_embed_a','10:text',2),(11,'batch_embed_a','11:text',3),(12,'batch_embed_b','12:text',2),(13,'batch_embed_a','13:text',3),(14,'batch_embed_a','14:text',2),(15,'batch_embed_b','15:text',3),(16,'batch_embed_a','16:text',2),(17,'batch_embed_a','17:text',3),(18,'batch_embed_b','18:text',2),(19,'batch_embed_a','19:text',3),(20,'batch_embed_a','20:text',2),(21,'batch_embed_b','21:text',3),(22,'batch_embed_a','22:text',2),(23,'batch_embed_a',null,3),(24,'batch_embed_b','24:text',2),(25,'batch_embed_a','25:text',3),(26,'batch_embed_a','26:text',2),(27,'batch_embed_b','27:text',3),(28,'batch_embed_a','28:text',2),(29,'batch_embed_a','29:text',3),(30,'batch_embed_b','30:text',2),(31,'batch_embed_a','31:text',3),(32,'batch_embed_a','32:text',2),(33,'batch_embed_b','33:text',3),(34,'batch_embed_a','34:text',2),(35,'batch_embed_a','35:text',3),(36,'batch_embed_b','36:text',2),(37,'batch_embed_a','37:text',3),(38,'batch_embed_a','38:text',2),(39,'batch_embed_b','39:text',3),(40,'batch_embed_a','40:text',2),(41,'batch_embed_a','41:text',3),(42,'batch_embed_b','42:text',2),(43,'batch_embed_a','43:text',3),(44,'batch_embed_a','44:text',2),(45,'batch_embed_b','45:text',3),(46,'batch_embed_a',null,2);
+--enable_result_log
+--enable_query_log
+select count(*) = 46 and sum(v is null) = 3 and sum(if(content is not null, cast(json_extract(v,'$[0]') as signed) = id + if(model='batch_embed_b',10000,0),0)) = 43 and sum(if(content is not null,json_length(v) = dim,0)) = 43 as mixed_groups_and_nulls from (select id,model,content,dim,ai_embed(model,content,dim) as v from embed_batch_rows) x;
+select ai_embed('batch_embed_a', null) is null as scalar_null;
+select count(*) = 43 and sum(cast(json_extract(v,'$[0]') as signed) = id) = 43 as constant_model_order from (select id,ai_embed('batch_embed_a',content) as v from embed_batch_rows where content is not null) x;
+--exec python3 mysql_test/test_suite/ai_function/include/ai_embed_batch_mock.py assert-batched 19131
+--disable_query_log
+--disable_result_log
+call DBMS_AI_SERVICE.ALTER_AI_MODEL_ENDPOINT('batch_embed_a_ep', '{"url":"http://127.0.0.1:19131/changing-dimension"}');
+--error 4070
+select ai_embed('batch_embed_a',content) from embed_batch_rows where content is not null;
+call DBMS_AI_SERVICE.ALTER_AI_MODEL_ENDPOINT('batch_embed_a_ep', '{"url":"http://127.0.0.1:19131/invalid-batch"}');
+--error 4070
+select ai_embed('batch_embed_a',content) from embed_batch_rows where content is not null;
+drop table embed_batch_rows;
+call DBMS_AI_SERVICE.DROP_AI_MODEL_ENDPOINT('batch_embed_a_ep');
+call DBMS_AI_SERVICE.DROP_AI_MODEL('batch_embed_a');
+call DBMS_AI_SERVICE.DROP_AI_MODEL_ENDPOINT('batch_embed_b_ep');
+call DBMS_AI_SERVICE.DROP_AI_MODEL('batch_embed_b');
+--exec python3 mysql_test/test_suite/ai_function/include/ai_embed_batch_mock.py stop 19131

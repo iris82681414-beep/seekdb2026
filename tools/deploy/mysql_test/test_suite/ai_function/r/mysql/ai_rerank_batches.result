@@ -1,0 +1,15 @@
+select json_length(@r) = 46 and json_extract(@r, '$[0].index') = 45 and json_extract(@r, '$[45].index') = 0 as complete_global_order;
+complete_global_order
+1
+select json_extract(@r, '$[0].index') = 0 and json_extract(@r, '$[20].index') = 20 and json_extract(@r, '$[45].index') = 45 as stable_ties;
+stable_ties
+1
+select json_length(@r) = 46 and json_extract(@r, '$[0].id') = 45 and json_extract(@r, '$[0].extra.keep') = true and json_extract(@r, '$[45]._model_score') = 0.25 as object_payload_preserved;
+object_payload_preserved
+1
+select json_length(ai_rerank('batch_rerank',q,@objects,k)) = 46 as lob_query_and_key from rerank_lobs;
+lob_query_and_key
+1
+select json_length(@r) = 46 and json_extract(@r, '$[0].index') = 45 as dashscope_batch_order;
+dashscope_batch_order
+1

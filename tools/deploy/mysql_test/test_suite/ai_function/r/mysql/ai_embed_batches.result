@@ -1,0 +1,9 @@
+select count(*) = 46 and sum(v is null) = 3 and sum(if(content is not null, cast(json_extract(v,'$[0]') as signed) = id + if(model='batch_embed_b',10000,0),0)) = 43 and sum(if(content is not null,json_length(v) = dim,0)) = 43 as mixed_groups_and_nulls from (select id,model,content,dim,ai_embed(model,content,dim) as v from embed_batch_rows) x;
+mixed_groups_and_nulls
+1
+select ai_embed('batch_embed_a', null) is null as scalar_null;
+scalar_null
+1
+select count(*) = 43 and sum(cast(json_extract(v,'$[0]') as signed) = id) = 43 as constant_model_order from (select id,ai_embed('batch_embed_a',content) as v from embed_batch_rows where content is not null) x;
+constant_model_order
+1
