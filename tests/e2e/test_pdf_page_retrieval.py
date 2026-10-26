@@ -307,3 +307,64 @@ def test_adjusted_metric_prefers_reported_results_over_annual_discussion(
             assert len(record.entry.sources) == 1
 
     asyncio.run(scenario())
+
+
+@pytest.mark.parametrize("backend", ["sqlite", "seekdb"])
+def test_business_categories_and_customer_aliases_retrieve_the_reported_evidence(
+    tmp_path: Path, backend: Literal["sqlite", "seekdb"]
+) -> None:
+    if backend == "seekdb" and importlib.util.find_spec("pylibseekdb") is None:
+        pytest.skip("native seekdb runtime is unavailable")
+
+    async def scenario() -> None:
+        config = BuiltinConfig(
+            database=(
+                SQLiteConfig(url=f"sqlite+aiosqlite:///{tmp_path / 'business.db'}")
+                if backend == "sqlite"
+                else SeekDBConfig(path=tmp_path / "seekdb")
+            )
+        )
+        registry = SourceDefinitionRegistry((PDF_PAGE_SOURCE_DEFINITION,))
+        bodies = (
+            "Summary of Business Segment Data\nRevenues 2022 2021\nIndustrial 70 60\nTransport 30 25\nTotal 100 85",
+            "Business discussion\nProduct categories and service categories can change. "
+            "The company reviews the revenue contribution of each product category during 2022. "
+            "Primary customers influence product categories.",
+            "Sales concentration\nMajor clients include North Rail and West Air under long-term contracts. "
+            "These contracts account for most sales revenue.",
+        )
+        async with open_builtin_runtime(config, candidate_pipeline=_LiteralPages()) as runtime:
+            assert runtime.scopes is not None
+            scope = await runtime.scopes.create(
+                ScopeDraft(
+                    title="Business", summary="Business categories and counterparties", idempotency_key="business"
+                )
+            )
+            await runtime.ingestion.register(manifest_for_definition(PDF_PAGE_SOURCE_DEFINITION))
+            for number, body in enumerate(bodies, 1):
+                page = PDFPageInput(
+                    document_id="ACME_2022_10K",
+                    document_sha256=hashlib.sha256(b"business report").hexdigest(),
+                    page_number=number,
+                    text=body,
+                )
+                observation = project_source_for_transport(registry, await registry.resolve(page))
+                await runtime.ingestion.submit(
+                    SubmitSourceObservation(scope_id=scope.scope_id, observation=observation)
+                )
+            memory = runtime.memory.for_scope(scope.scope_id)
+            while (await memory.flush()).processed:
+                pass
+
+        async with open_builtin_runtime(config) as runtime:
+            memory = runtime.memory.for_scope(scope.scope_id)
+            for question, body, limit in (
+                ("Do any product categories exceed 20% of ACME's FY2022 revenue?", bodies[0], 1),
+                ("Who are the primary customers?", bodies[2], 2),
+            ):
+                citations = await search_pdf_pages(memory, question, limit=limit)
+                records = [await memory.get(GetMemoryEntryRequest(citation=citation)) for citation in citations]
+                assert "ACME_2022_10K\n" + body in {record.entry.text for record in records}
+                assert all(len(record.entry.sources) == 1 for record in records)
+
+    asyncio.run(scenario())

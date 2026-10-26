@@ -200,6 +200,7 @@ _ACCOUNTING_CONCEPTS = (
         "acquired acquisition acquisitions business combinations",
     ),
     (r"\b(?:products?|services?)\s+categor(?:y|ies)\b", "business segment segments products services revenue"),
+    (r"\b(?:customers?|clients?)\b", "customers customer clients client concentration contracts revenue sales"),
     (r"\bcyclic(?:al|ality)?\b", "cyclical cyclicality cycle demand economic cycles"),
 )
 _STATEMENT_INTENTS = (
@@ -219,6 +220,11 @@ _STATEMENT_INTENTS = (
         r"\b(?:cash\s*flows?|capex|capital\s+expenditures?|ebitdar?|cash\s+dividends?)\b",
         r"statements?\s+of\s+cash\s+flows?",
         "cash flow activities",
+    ),
+    (
+        r"\b(?:products?|services?)\s+categor(?:y|ies)\b",
+        r"(?:summary\s+of\s+)?(?:business\s+)?segment\s+(?:data|information)",
+        "segment revenues sales",
     ),
 )
 
