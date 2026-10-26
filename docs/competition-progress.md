@@ -21,7 +21,7 @@
 | Ollama Provider | 10 | 原生免 Key、可选认证、生成、参数和向量路径回归通过；同轮 12 项 mysqltest 全通过 |
 | AI_RERANK、跨行批量 AI_EMBED | 20 | 原生 SQL 实现及回归已通过；重排跨三批完整排序、14 类异常响应；向量按模型/维度分组、NULL/LOB、乱序响应和实际合并请求已验证 |
 | 文件即数据库 | 50 | 原生三格式读取、批量/重扫、DESCRIBE、glob、CSV COPY 已实现；原版及新增 2 项 mysqltest、8 项 Rust 测试、30 项独立 SQL 专项通过，隐藏边界继续核验 |
-| AI 列 | 50 | DDL、事务任务、后台计算和回填已实现；7 项 AI COLUMN 及 12 项 AI 函数回归、15 项后台独立检查和实例中断恢复通过；Strict Read 与手动 RETRY 继续实现，尚未完成该题 |
+| AI 列 | 50 | DDL、事务任务、后台计算、回填和 Strict Read 已实现；8 项 AI COLUMN、12 项 AI 函数及 2 项文件查询回归通过；手动 RETRY 与剩余定义切换边界继续实现，尚未完成该题 |
 | 全文索引性能 | 50 | 冻结原版二进制已完成原版默认规模测量、命中一致；本机按固定 CI 基线计算已为 100/100，不作为本实现的优化收益或正式成绩 |
 | PowerContext 仓库准备 | 10 | 冻结历史和私有分支已准备，待平台读取配置及核验 |
 | CSV 行级采集 | 20 | Linux 公开验收 17 项通过 |
@@ -71,6 +71,10 @@ AI COLUMN 的业务写入现已在同一事务内清空受影响结果、更新�
 AI COLUMN 后台计算已接入原生服务生命周期，支持持久任务认领、实际 Endpoint 并发限制、重试、过期任务隔离和同一行结果的事务发布。新增或修改 AI 列会对已有数据分批计算，使用主键游标避免反复扫描已处理的行。输出通过原生类型和精度检查；唯一索引或检查约束拒绝某列时，该列结束为失败，其余有效列仍在同一事务中发布。原版 DDL、T1、Worker、向量索引用例及新增 DDL、事务、回填回归，共 7 项 AI COLUMN mysqltest 全部通过；同轮 12 项 AI 函数回归全部通过。新增回填用例覆盖 65 行、同组原子可见、修改定义重算、AI_PROMPT 与普通文本区分、请求配置保护、约束失败收尾及无显式主键的重复行。
 
 15 项独立后台检查全部通过，包括两个共享 URL 的 Endpoint 实测并发峰值分别为 2 和 1、非法整数/日期/JSON/超长文本/数值溢出收尾，以及二进制、UTF-8 和时间戳主键的写入及回填。另一次真实测试实例中断验证在 HTTP 请求进行中发送 SIGKILL，重启后 7.958 秒完成租约恢复和任务清理；这些是自建协议 fixture 的结果，不是平台提测。记录为 `.competition/results/seekdb-ai-column-worker.json`、`seekdb-ai-column-worker-independent.json`、`seekdb-ai-column-worker-restart.json` 和 `seekdb-ai-after-ai-column-worker.json`。两项 File SQL 回归同轮通过，记录为 `.competition/results/seekdb-file-after-ai-column-worker.json`。当前验证副本为 `/root/oceanbase2026/seekdb-ai-column-worker-constraints2`，SHA-256 为 `8e45e4ce0d6c09ea30b06b0e6bf82fbf418d7b651abd6f058fab7cc2d05814a3`；管理路径继续为 `seekdb-ai-column-ddl`。Strict Read 和手动 RETRY 仍待实现，不宣称 AI 列题完成。
+
+Strict Read 已增加 `ai_column_strict_read` 开关，默认关闭。开启后，在语句使用的事务快照中，对实际引用的 AI 列做全列就绪检查；待处理、失败或定义版本过期时返回 11120。普通列、独立就绪列、空表和已就绪的 NULL 结果可读；缓存计划每次执行都遵守当前开关。新增回归通过 13 项输出断言和 9 项预期错误检查，包含视图、投影裁剪、别名、子查询、拒绝写入、缓存 PREPARE 切换及空向量。另有 16 项独立检查通过，覆盖自己的未提交写入、其他会话隔离、可重复读快照、全局设置继承和定义版本过期。实际重启后，全局设置和 READY NULL / FAILED NULL 的区别均恢复，4 项检查通过。
+
+严格读取版本在全新测试目录 `/root/oceanbase2026/instances/core-ai-column-strict` 上验证，使用 `/root/oceanbase2026/seekdb-ai-column-strict-initial`，SHA-256 为 `5ff6bda6a7cca37ac1f8c1584eea16efdd6e471b21cb5787e0c2a04324ad275b`。旧目录保留停机，原管理路径已恢复为上一阶段的 Worker 验证副本；本轮未验证旧变量目录直接使用新增开关版本。完整回归为 8 项 AI COLUMN、12 项 AI 函数、2 项 File SQL 全通过；记录为 `.competition/results/seekdb-ai-column-strict.json`、`seekdb-ai-column-strict-independent.json`、`seekdb-ai-column-strict-restart.json`、`seekdb-ai-after-ai-column-strict.json` 和 `seekdb-file-after-ai-column-strict.json`。原有 720 项系统变量定义逐项保持一致，新增开关使用新 ID。手动 RETRY 和剩余定义切换边界仍在实现。
 
 ## 后续工作
 

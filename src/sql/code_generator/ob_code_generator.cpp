@@ -20,6 +20,7 @@
 #include "sql/code_generator/ob_code_generator.h"
 #include "sql/code_generator/ob_static_engine_cg.h"
 #include "sql/engine/ob_physical_plan.h"
+#include "sql/engine/dml/ob_ai_column_dml.h"
 
 namespace oceanbase
 {
@@ -39,6 +40,13 @@ int ObCodeGenerator::generate(const ObLogPlan &log_plan,
   if (OB_FAIL(ret)) {
   } else if (OB_FAIL(generate_exprs(log_plan, phy_plan))) {
   } else if (OB_FAIL(generate_operators(log_plan, phy_plan))) {
+  }
+  if (OB_SUCC(ret) && log_plan.get_stmt() != nullptr) {
+    common::ObSEArray<uint64_t, 8> reads;
+    OZ(AiColumnDml::collect_reads(*log_plan.get_stmt(),
+        *log_plan.get_optimizer_context().get_schema_guard(), reads));
+    OZ(phy_plan.set_ai_column_reads(reads));
+    if (OB_SUCC(ret) && !reads.empty()) { phy_plan.set_has_nested_sql(true); }
   }
 
   return ret;

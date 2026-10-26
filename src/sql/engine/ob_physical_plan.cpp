@@ -68,6 +68,7 @@ ObPhysicalPlan::ObPhysicalPlan(MemoryContext &mem_context /* = CURRENT_CONTEXT *
     session_id_(0),
     table_locations_(allocator_),
     das_table_locations_(allocator_),
+    ai_column_reads_(allocator_),
     row_param_map_(allocator_),
     is_update_uniq_index_(false),
     contain_index_location_(false),
@@ -129,6 +130,7 @@ void ObPhysicalPlan::reset()
   signature_ = 0;
   field_columns_.reset();
   param_columns_.reset();
+  ai_column_reads_.reset();
   autoinc_params_.reset();
   stmt_need_privs_.reset();
   vars_.reset();
@@ -649,7 +651,8 @@ OB_SERIALIZE_MEMBER(ObPhysicalPlan,
                     need_switch_to_table_lock_worker_,
                     data_complement_gen_doc_id_,
                     px_parallel_rule_,
-                    px_worker_share_plan_enabled_);
+                    px_worker_share_plan_enabled_,
+                    ai_column_reads_);
 
 int ObPhysicalPlan::set_table_locations(const ObTablePartitionInfoArray &infos,
                                         ObSchemaGetterGuard &schema_guard)

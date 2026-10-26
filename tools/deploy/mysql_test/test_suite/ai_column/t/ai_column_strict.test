@@ -1,0 +1,117 @@
+# Strict reads are per referenced column, column-wide, and checked on cached plans.
+connection default;
+--exec python3 mysql_test/test_suite/ai_column/include/ai_column_mock.py start 19132
+--disable_query_log
+--disable_result_log
+--disable_warnings
+drop database if exists ai_column_strict;
+--enable_warnings
+--error 0,11112
+call DBMS_AI_SERVICE.DROP_AI_MODEL_ENDPOINT('ai_strict_ready_ep');
+--error 0,11112
+call DBMS_AI_SERVICE.DROP_AI_MODEL_ENDPOINT('ai_strict_failed_ep');
+--error 0,11118
+call DBMS_AI_SERVICE.DROP_AI_MODEL('ai_strict_ready');
+--error 0,11118
+call DBMS_AI_SERVICE.DROP_AI_MODEL('ai_strict_failed');
+--error 0,11118
+call DBMS_AI_SERVICE.DROP_AI_MODEL('ai_strict_embed');
+call DBMS_AI_SERVICE.CREATE_AI_MODEL('ai_strict_ready','{"type":"completion","model_name":"mock-complete"}');
+call DBMS_AI_SERVICE.CREATE_AI_MODEL('ai_strict_failed','{"type":"completion","model_name":"mock-complete"}');
+call DBMS_AI_SERVICE.CREATE_AI_MODEL('ai_strict_embed','{"type":"dense_embedding","model_name":"mock-embed"}');
+call DBMS_AI_SERVICE.CREATE_AI_MODEL_ENDPOINT('ai_strict_ready_ep',
+  '{"ai_model_name":"ai_strict_ready","url":"http://127.0.0.1:19132/v1/chat/completions","access_key":"synthetic-strict-key","provider":"openai"}');
+call DBMS_AI_SERVICE.CREATE_AI_MODEL_ENDPOINT('ai_strict_failed_ep',
+  '{"ai_model_name":"ai_strict_failed","url":"http://127.0.0.1:19132/v1/always-fail/completions","access_key":"synthetic-strict-key","provider":"openai"}');
+create database ai_column_strict;
+create table ai_column_strict.docs(
+  id bigint primary key, body varchar(100),
+  a varchar(200) AI COLUMN(AI_COMPLETE('ai_strict_failed',body)) WITH(max_retries=0),
+  b varchar(200) AI COLUMN(AI_COMPLETE('ai_strict_ready',body)) WITH(max_retries=0)
+);
+insert into ai_column_strict.docs(id,body) values(1,'one'),(2,'two'),(3,'three');
+let $retry=150;
+let $ready=0;
+while ($retry)
+{
+  let $ready=`select count(*)=3 and min(a is null and b is not null and b=concat('mock:',body)) from ai_column_strict.docs`;
+  if ($ready == 1) { let $retry=0; }
+  if ($ready == 0) { --real_sleep 0.1
+    dec $retry; }
+}
+--enable_result_log
+eval select $ready=1 as independent_column_outcomes;
+select @@ai_column_strict_read=0 as strict_defaults_off;
+set session ai_column_strict_read=on;
+select count(*)=3 as ordinary_columns_allowed from ai_column_strict.docs;
+select b='mock:one' as ready_column_allowed from ai_column_strict.docs where id=1;
+create view ai_column_strict.projected as select id,body,a,b from ai_column_strict.docs;
+select count(*)=3 as view_ordinary_projection_allowed from ai_column_strict.projected;
+select b='mock:one' as view_ready_projection_allowed from ai_column_strict.projected where id=1;
+select count(*)=2 as unused_derived_ai_projection_allowed
+  from(select id,a from ai_column_strict.docs order by id limit 2) d;
+--disable_result_log
+--error 11120
+select a from ai_column_strict.projected where id=2;
+--error 11120
+select a from(select id,a from ai_column_strict.docs order by id limit 2) d;
+--error 11120
+select a from ai_column_strict.docs where id=999;
+--error 11120
+select id from ai_column_strict.docs where a is null;
+--error 11120
+select id from ai_column_strict.docs where id in(select id from ai_column_strict.docs where a is null);
+--error 11120
+select d.a from ai_column_strict.docs d join ai_column_strict.docs x on d.id=x.id where x.id=2;
+--error 11120
+update ai_column_strict.docs set body='forbidden' where a is null;
+--error 11120
+delete from ai_column_strict.docs where a is null;
+--enable_result_log
+select count(*)=3 and min(body<>'forbidden') as rejected_writes_preserve_rows from ai_column_strict.docs;
+update ai_column_strict.docs set body=body where id=1;
+delete from ai_column_strict.docs where id=999;
+select count(*)=3 as ordinary_writes_allowed from ai_column_strict.docs;
+--disable_result_log
+set session ai_column_strict_read=off;
+prepare ai_cached_read from 'select a from ai_column_strict.docs where id=1';
+execute ai_cached_read;
+set session ai_column_strict_read=on;
+--error 11120
+execute ai_cached_read;
+set session ai_column_strict_read=off;
+execute ai_cached_read;
+deallocate prepare ai_cached_read;
+--enable_result_log
+select count(*)=3 as cached_plan_toggle_preserves_session from ai_column_strict.docs;
+create table ai_column_strict.empty_docs(id bigint primary key,body varchar(100),
+  a varchar(100) AI COLUMN(AI_COMPLETE('ai_strict_failed',body)) WITH(max_retries=0));
+set session ai_column_strict_read=on;
+select count(a)=0 as empty_column_is_ready from ai_column_strict.empty_docs;
+set session ai_column_strict_read=off;
+create table ai_column_strict.null_vectors(id bigint primary key,body varchar(100),
+  emb vector(4) AI COLUMN(AI_EMBED('ai_strict_embed',body,4)) WITH(max_retries=0));
+insert into ai_column_strict.null_vectors(id,body) values(1,null);
+--disable_result_log
+let $retry=150;
+let $tasks=1;
+while ($retry)
+{
+  let $tasks=`select count(*) from oceanbase.__all_ai_column_task task join oceanbase.__all_table t on t.table_id=task.table_id join oceanbase.__all_database d on d.database_id=t.database_id where d.database_name='ai_column_strict' and t.table_name='null_vectors'`;
+  if ($tasks == 0) { let $retry=0; }
+  if ($tasks != 0) { --real_sleep 0.1
+    dec $retry; }
+}
+--enable_result_log
+eval select $tasks=0 as null_vector_task_finished;
+set session ai_column_strict_read=on;
+select emb is null as ready_null_is_readable from ai_column_strict.null_vectors where id=1;
+set session ai_column_strict_read=off;
+drop database ai_column_strict;
+call DBMS_AI_SERVICE.DROP_AI_MODEL_ENDPOINT('ai_strict_ready_ep');
+call DBMS_AI_SERVICE.DROP_AI_MODEL_ENDPOINT('ai_strict_failed_ep');
+call DBMS_AI_SERVICE.DROP_AI_MODEL('ai_strict_ready');
+call DBMS_AI_SERVICE.DROP_AI_MODEL('ai_strict_failed');
+call DBMS_AI_SERVICE.DROP_AI_MODEL('ai_strict_embed');
+--enable_query_log
+--exec python3 mysql_test/test_suite/ai_column/include/ai_column_mock.py stop 19132

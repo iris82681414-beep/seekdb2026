@@ -22,6 +22,7 @@
 #include "rpc/obmysql/ob_mysql_field.h"
 #include "sql/engine/px/ob_px_admission.h"
 #include "sql/engine/ob_physical_plan.h"
+#include "sql/engine/dml/ob_ai_column_dml.h"
 #include "src/sql/plan_cache/ob_plan_cache.h"
 #include "sql/resolver/dml/ob_select_stmt.h"
 #include "sql/monitor/show_trace/ob_show_trace.h"
@@ -462,6 +463,7 @@ OB_INLINE int ObResultSet::do_open_plan(ObExecContext &ctx)
 
   if (OB_FAIL(ret)) {
   } else if (OB_FAIL(start_stmt())) {
+  } else if (OB_FAIL(AiColumnDml::check_strict_read(ctx))) {
   } else {
     /* Set exec_result_ to the executor's runtime environment for returning data */
     /* execute plan,

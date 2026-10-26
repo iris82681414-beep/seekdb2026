@@ -233,6 +233,8 @@ public:
   common::ObIArray<ObTableLocation> &get_table_locations() { return table_locations_; }
   const common::ObIArray<ObTableLocation> &get_table_locations() const { return table_locations_; }
   const common::ObIArray<ObTableLocation> &get_das_table_locations() const { return das_table_locations_; }
+  int set_ai_column_reads(const common::ObIArray<uint64_t> &reads) { return ai_column_reads_.assign(reads); }
+  const common::ObIArray<uint64_t> &get_ai_column_reads() const { return ai_column_reads_; }
 
   inline const share::schema::ObStmtNeedPrivs &get_stmt_need_privs() const { return stmt_need_privs_; }
   int set_stmt_need_privs(const share::schema::ObStmtNeedPrivs& stmt_need_privs);
@@ -452,6 +454,7 @@ private:
   //for plan cache, not need serialize
   TableLocationFixedArray table_locations_; // ordinary table's table location, participate in plan cache plan selection
   TableLocationFixedArray das_table_locations_; // DAS table's table location, used for calculating DAS partition information
+  common::ObFixedArray<uint64_t, common::ObIAllocator> ai_column_reads_; // table/column ID pairs
 
   PhyRowParamMap row_param_map_;
   bool is_update_uniq_index_;
