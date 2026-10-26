@@ -384,7 +384,9 @@ def _rerank_pages(
         header = hit.text.split("\n", 1)[-1][:1200]
         if any(
             re.search(
-                r"(?im)^\s*(?:(?:consolidated|combined|condensed|unaudited|and)\s+){0,5}(?:" + heading + r")\b",
+                r"(?im)^\s*(?:(?:consolidated|combined|condensed|unaudited|and)\s*){0,5}(?:"
+                + heading.replace(r"\s+", r"\s*")
+                + r")\b",
                 header,
             )
             for heading in headings

@@ -5,6 +5,8 @@ import asyncio
 import hashlib
 from pathlib import Path
 
+import pytest
+
 from powercontext.builtin.artifacts.memory import MemoryCandidateRequest, MemoryEntryInput
 from powercontext.builtin.persistence.sqlite import SQLiteConfig
 from powercontext.builtin.runtime import (
@@ -37,7 +39,10 @@ class _LiteralPages:
         )
 
 
-def test_financial_concepts_and_requested_report_period_retrieve_exact_page_citations(tmp_path: Path) -> None:
+@pytest.mark.parametrize("compact_headings", [False, True])
+def test_financial_concepts_and_requested_report_period_retrieve_exact_page_citations(
+    tmp_path: Path, compact_headings: bool
+) -> None:
     async def scenario() -> None:
         config = BuiltinConfig(database=SQLiteConfig(url=f"sqlite+aiosqlite:///{tmp_path / 'reports.db'}"))
         registry = SourceDefinitionRegistry((PDF_PAGE_SOURCE_DEFINITION,))
@@ -54,6 +59,12 @@ def test_financial_concepts_and_requested_report_period_retrieve_exact_page_cita
                 "CONSOLIDATED STATEMENTS OF INCOME\nRevenue 500\nCost of sales 300\nOperating income 100",
             ),
         ]
+        if compact_headings:
+            bodies = [
+                (document, number, heading.replace(" ", "") + "\n" + rows)
+                for document, number, text in bodies
+                for heading, _separator, rows in (text.partition("\n"),)
+            ]
         bodies.extend(
             (
                 "REPORT_2024_10K",
