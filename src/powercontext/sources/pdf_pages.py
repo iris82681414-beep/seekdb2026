@@ -188,6 +188,11 @@ _ACCOUNTING_CONCEPTS = (
     (r"\b(?:ppne|ppe|pp\s*&\s*e|fixed\s+assets?)\b", "property plant equipment assets balance sheet"),
     (r"\b(?:ar|accounts?\s+receivables?)\b", "accounts trade receivables balance sheet"),
     (r"\b(?:working\s+capital|quick\s+ratio|liquidity)\b", "balance sheet current assets liabilities cash receivables"),
+    (r"\binventory\s+turnover\b", "inventory inventories cost goods sales balance sheet income operations"),
+    (
+        r"\b(?:liquidat(?:e[ds]?|ion|ing)|book\s+value)\b",
+        "tangible book value tbvps bvps common equity shareholders shares",
+    ),
     (r"\b(?:gross|operating)\s+margin\b", "income operations revenue revenues sales cost profit operating"),
     (r"\b(?:cogs|cost\s+of\s+goods)\b", "cost goods sales revenue"),
     (r"\bcapital[ -]intensive\b", "property plant equipment assets revenue revenues capital expenditures cash flows"),
@@ -206,13 +211,14 @@ _ACCOUNTING_CONCEPTS = (
 _STATEMENT_INTENTS = (
     (
         r"\b(?:balance\s+sheet|financial\s+position|quick\s+ratio|working\s+capital|ppne|ppe|pp\s*&\s*e|"
-        r"net\s+ar|asset\s+turnover|capital[ -]intensive)\b",
+        r"net\s+ar|asset\s+turnover|inventory\s+turnover|capital[ -]intensive)\b",
         r"balance\s+sheets?|statements?\s+of\s+financial\s+position",
         "balance sheet financial position",
     ),
     (
         r"\b(?:income\s+statement|statement\s+of\s+(?:income|operations)|p\s*&\s*l|"
-        r"(?:gross|operating)\s+margin|net\s+income|effective\s+tax\s+rate|ebitdar?|asset\s+turnover|capital[ -]intensive)\b",
+        r"(?:gross|operating)\s+margin|net\s+income|effective\s+tax\s+rate|ebitdar?|asset\s+turnover|"
+        r"inventory\s+turnover|capital[ -]intensive)\b",
         r"(?:statements?\s+of\s+(?:(?:net|comprehensive)\s+)*(?:income|earnings|operations)|income\s+statements?)",
         "income revenues earnings operations",
     ),

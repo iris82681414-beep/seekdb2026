@@ -66,6 +66,7 @@ def test_financial_concepts_and_requested_report_period_retrieve_exact_page_cita
                 1,
                 "CONDENSED CONSOLIDATED BALANCE SHEETS\nCurrent assets 200\nCurrent liabilities 100",
             ),
+            ("REPORT_2021Q1_10Q", 1, "Selected capital-related metrics\nTBVPS 42"),
             (
                 "REPORT_2022_10K",
                 1,
@@ -75,6 +76,11 @@ def test_financial_concepts_and_requested_report_period_retrieve_exact_page_cita
                 "REPORT_2022_10K",
                 2,
                 "CONSOLIDATED STATEMENTS OF CASH FLOWS\nOperating cash flow 200\nDepreciation and amortization 25",
+            ),
+            (
+                "REPORT_2022_10K",
+                3,
+                "CONSOLIDATED BALANCE SHEETS\nInventories 80\nCurrent assets 200\nCurrent liabilities 100",
             ),
             (
                 "REPORT_2022_10K",
@@ -163,6 +169,19 @@ def test_financial_concepts_and_requested_report_period_retrieve_exact_page_cita
             assert {record.entry.text for record in records} == {
                 expected[source_by_page["REPORT_2022_10K", number]] for number in (1, 2)
             }
+            turnover = await search_pdf_pages(memory, "Calculate the FY2022 inventory turnover ratio.", limit=2)
+            turnover_records = [await memory.get(GetMemoryEntryRequest(citation=citation)) for citation in turnover]
+            assert {record.entry.text for record in turnover_records} == {
+                expected[source_by_page["REPORT_2022_10K", number]] for number in (1, 3)
+            }
+            liquidation = await search_pdf_pages(
+                memory,
+                "How much could shareholders receive per share if assets were liquidated in Q1 of FY2021?",
+                limit=1,
+            )
+            assert len(liquidation) == 1
+            liquidation_record = await memory.get(GetMemoryEntryRequest(citation=liquidation[0]))
+            assert liquidation_record.entry.text == expected[source_by_page["REPORT_2021Q1_10Q", 1]]
             regional = await search_pdf_pages(
                 memory, "Compare topline, EBITDA and capital expenditures for each region.", limit=5
             )
