@@ -6,7 +6,7 @@
 
 - seekdb 保留官方 `2026-competition` 历史，基线为 `5bce9e06d1281347ad61344e4b01fab9158c58a2`。用户私有仓库已建立 `main` 和 `2026-competition` 分支。
 - PowerContext 位于本地 `.competition/powercontext`，保留比赛分支及冻结产品提交 `9db1753434162c0aa7c9f1189a1722e617880a52`。
-- PowerContext 最新实现已推送至私有仓库 `powercontext-2026-competition`，完整提交为 `4898d93e7b3f6b34255f9f35953e0daf2e771525`。
+- PowerContext 最新实现已推送至私有仓库 `powercontext-2026-competition`，完整提交为 `2df23cdfee6ef4dfbc048e81638f97ec888d6a67`。
 - GitHub 仓库当前默认分支仍是 PowerContext 答题分支；正式提测须明确选取产品对应的分支和 commit。
 - 华为云现有实例为 Ubuntu 24.04 x86_64、4 核、约 15 GB 内存。专用目录 `/root/oceanbase2026`，日志位于 `logs`，测试产物位于 `results`。
 - 连接信息保存在仓库外 `/Users/liwangsheng/.config/oceanbase2026/server.env`，文件权限 600、目录权限 700。额外源码、下载数据和操作脚本均由本地排除规则排除，未提交到 Git。
@@ -26,7 +26,7 @@
 | PowerContext 仓库准备 | 10 | 冻结历史和私有分支已准备，待平台读取配置及核验 |
 | CSV 行级采集 | 20 | Linux 公开验收 17 项通过 |
 | Pi 会话采集 | 20 | Linux 公开验收 15 项通过 |
-| 财报 PDF | 50 | 全部 503 页公开样例及 6 项 Linux 验收通过；正式解析质量及 Recall@20 待验证 |
+| 财报 PDF | 50 | 503 页公开样例及新增回归共 8 项 Linux 验收通过；189 条独立标注的抽取质量达标；大语料长页入库和 Recall@20 尚未达标，完整 Linux 扩展验证仍在进行 |
 | HTTP 重排 | 20 | Linux 公开验收 10 项通过 |
 | 上下文增量传输 | 20 | Linux 公开验收 14 项通过；另已完成真实 QMSum 40 轮独立成本测量，正式序列待验证 |
 | 数量触发记忆处理 | 20 | Linux 公开验收 17 项通过，覆盖单窗、数量/时间 OR、重复身份、lineage、重启及故障恢复 |
@@ -54,6 +54,10 @@ AI 函数增强的六项实现已覆盖。Linux 原生实例使用未修改的 `
 预算证据选择已调整候选文档频率权重，降低所有摘要共同出现的词对排序的影响，保留查询特有证据。SciFact 固定下载包 SHA-256 为 `11c621288d41ac144d29b13b0f8503b3820b7d6e8b1f6ff24dff335c196d76be`。原开发样本 48 次请求的平均证据词项召回从 62.27% 升到 65.80%，完整覆盖从 41.67% 升到 45.83%。另以种子 20261028 排除此前使用过的 75 条 claim，建立未参与调整的样本；从 40 条 claim 的 80 次测量中按证据预算可行性选取 24 条、两档预算共 48 次计分请求，每次仍包含三篇原始摘要。基线和修改版输入逐项相同；召回从 63.65% 升到 68.08%，完整覆盖从 56.25% 升到 64.58%，超过题面 65% 和 40% 的门槛。全部候选经真实 SQLite Runtime 入库、选择和引用回查；标注仅用于外部计分，不传入产品。该序列仍不替代平台正式质量验收。
 
 同一新样本在 Linux 官方固定依赖、单核 CPU 配额和 2 GiB 内存限制下复现相同质量值，80 次测量池耗时 6.26 秒、内存峰值 217,664 KiB。Linux 的 3 项原版证据用例、14 项增量上下文用例及 3 项自有证据回归通过；本地相关测试共 74 项通过。新增回归证明重复通用词不能挤掉文档尾部的区分性证据，旧实现失败、修改版通过。修改文件的格式、lint 和类型检查通过；全仓类型检查仍有与未修改基线输出完全相同的 190 条诊断，未宣称全仓类型检查通过。记录为 `.competition/results/powercontext-evidence-idf-validation.json`、`evidence-selection-idf-linux.json`、`evidence-selection-idf-linux-baseline.json` 和 `powercontext-evidence-idf-acceptance.log`。
+
+PDF 扩展验证使用 FinanceBench 固定 revision `cc39aeb4afdf33909ee1412188bf89035950c2eb`，下载并逐文件校验其 150 个公开问题涉及的 84 份完整 PDF，约 165.5 MB。旧解析器完整返回 12,013 个物理页，但 189 条标注中有 15 条证据词项召回、16 条整页词项 F1 低于 95%。修复改用按坐标重建文本行，并处理字体映射为换行符或不换行空格的间隔字形；若版面提取与原提取的非空白字符多重集合不一致，保留原提取结果。修改版在全部 189 条标注页的独立抽取检查中均达到两项 95% 门槛，原版 6 项及新增 2 项 Linux PDF 回归通过。新增用例覆盖带特殊字体映射的表格及旋转文本，旧实现会在表格回归中失败。更大的完整 Linux 12,013 页验证仍在运行；平台未公开的非标注页冻结词项数尚不能核对。这是更广公开语料上的独立研究，不等于复现平台未公开的五份文档组合。
+
+扩展检索基线按公司分成 32 个独立数据范围：7 组因完整页面超过既有单条 Memory 的 8,192 字节上限而无法完成入库；其余 25 组实际执行 104 个问题，证据页 Recall@20 为 46.62%。若将全部 150 个问题的标注页作为覆盖分母，实际命中覆盖仅 33.16%；未执行的问题没有被记作已通过。空白规范化后仍有 12 个完整页面超过既有上限，后续需解决长页持久化与检索排序，不能裁掉正文来通过入库。PDF 题尚不具备完整得分证据。记录为 `.competition/results/financebench-parser-validation.json`、`financebench-pdf-acceptance.log`，以及本地 `.competition/financebench-quality/` 中的解析与检索详细测量。
 
 
 File SQL 已实现 CSV、JSONL、Parquet 的原生读取，SQL 命名选项、别名和动态类型，包含 DESCRIBE、文件发现、批量取数、重扫、聚合及 JOIN。COPY 支持表或查询输出、表头与 CSV 选项，目标已存在时拒绝覆盖；空查询也会发布表头，查询失败会清理临时文件。Linux 原版 `file_sql_basic` 和新增 `file_sql_queries` 两项 mysqltest 均通过；原版用例及原始数据保持原样。结果保存于 `.competition/results/seekdb-file-sql-final.json`。
