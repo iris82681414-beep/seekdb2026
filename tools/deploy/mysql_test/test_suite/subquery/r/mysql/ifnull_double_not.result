@@ -1,0 +1,61 @@
+SELECT 1 FROM dual WHERE IFNULL((SELECT FALSE), !(!(1 LIKE 'x')));
+1
+SELECT 1 FROM dual WHERE IFNULL((SELECT FALSE), !(1 LIKE 'x'));
+1
+SELECT 1 FROM dual WHERE IFNULL(FALSE, !(!(1 LIKE 'x')));
+1
+SELECT 1 FROM dual WHERE IFNULL((SELECT TRUE), !(!(1 LIKE 'x')));
+1
+1
+SELECT IFNULL((SELECT NULL), !(!(1 LIKE 'x'))) AS res;
+res
+0
+SELECT IFNULL((SELECT NULL), !(!('x' LIKE 'x'))) AS res;
+res
+1
+SELECT IFNULL((SELECT NULL), !(!(NULL LIKE 'x'))) AS res;
+res
+NULL
+SELECT IFNULL((SELECT FALSE), !(!(!(!(1 LIKE 'x'))))) AS res;
+res
+0
+SELECT IFNULL((SELECT NULL), !(!(!(1 LIKE 'x')))) AS res;
+res
+1
+SELECT IFNULL(!(!(1 LIKE 'x')), (SELECT TRUE)) AS res;
+res
+0
+SELECT IFNULL(!(!(NULL LIKE 'x')), (SELECT TRUE)) AS res;
+res
+1
+SELECT IFNULL((SELECT NULL), !(!(2))) AS res;
+res
+1
+SELECT IFNULL((SELECT NULL), !(!(-2))) AS res;
+res
+1
+SELECT IFNULL((SELECT NULL), !(!(0))) AS res;
+res
+0
+SELECT IFNULL((SELECT NULL), !(!(NULL))) AS res;
+res
+NULL
+DROP TABLE IF EXISTS ifnull_not_values;
+CREATE TABLE ifnull_not_values (id INT PRIMARY KEY, v VARCHAR(10), n INT);
+INSERT INTO ifnull_not_values VALUES (1, 'x', 2), (2, 'y', 0), (3, NULL, NULL);
+SELECT id, IFNULL((SELECT NULL), !(!(v LIKE 'x'))) AS fallback,
+IFNULL(!(!(v LIKE 'x')), (SELECT 7)) AS first_arg,
+IFNULL((SELECT NULL), !(!(n))) AS numeric_value
+FROM ifnull_not_values ORDER BY id;
+id	fallback	first_arg	numeric_value
+1	1	1	1
+2	0	0	0
+3	NULL	7	NULL
+SELECT id FROM ifnull_not_values
+WHERE IFNULL((SELECT FALSE), !(!(v LIKE 'x'))) ORDER BY id;
+id
+SELECT id FROM ifnull_not_values
+WHERE IFNULL((SELECT NULL), !(!(v LIKE 'x'))) ORDER BY id;
+id
+1
+DROP TABLE ifnull_not_values;
