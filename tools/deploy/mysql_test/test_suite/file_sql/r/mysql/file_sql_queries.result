@@ -1,0 +1,34 @@
+# filter, expression, order, and LIMIT retain original rows
+id	name
+3	CHEN
+rows_found
+3
+# native CSV/JSON and CSV/Parquet joins
+matched	id_sum
+3	6
+pairs	csv_sum	parquet_sum
+21	42	63
+# join seekdb table; nested loop can restart its file cursor
+id	name	weight
+1	Alice	10
+3	Chen	30
+csv_rows	matches	weight_sum
+3	2	40
+# COPY table and query retain expressions, quoted data, and NULLs
+id	weight
+1	10
+3	30
+4	40
+id	name	note	day
+2	Bob	plain	NULL
+3	Chen	say "hi"	2026-08-03
+unchanged_sum
+80
+# empty COPY produces a valid header without phantom data
+empty_count
+0
+# query errors remove temporary and destination files
+failed_targets
+0
+temporary_files
+0

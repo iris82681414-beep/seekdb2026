@@ -4,7 +4,7 @@ seekdb_apply_standalone_inventory(ob_sql_extra SEEKDB_SQL_EXTRA)
 
 ob_add_new_object_target(ob_sql ob_sql)
 ob_add_new_object_target(ob_sql_extra ob_sql_extra)
-target_link_libraries(ob_sql PUBLIC ob_base config)
+target_link_libraries(ob_sql PUBLIC ob_base config file_scan)
 target_link_libraries(ob_sql_extra PUBLIC ob_base_without_pass config)
 
 seekdb_apply_unity_inventory(ob_sql_simd SEEKDB_SQL_SIMD_UNITY)
@@ -13,6 +13,15 @@ if(ARCHITECTURE STREQUAL "x86_64" OR ARCHITECTURE STREQUAL "amd64")
   target_compile_options(ob_sql_simd PRIVATE
     -mtune=core-avx2 -mavx2 -mfma -mbmi2 -mavx512vl -mavx512bw)
 endif()
+
+# Regenerate generated parser sources when grammar or item IDs change during
+# an incremental build, as well as during the initial configuration.
+set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
+  "${PROJECT_SOURCE_DIR}/src/sql/parser/sql_parser_mysql_mode.y"
+  "${PROJECT_SOURCE_DIR}/src/sql/parser/sql_parser_mysql_mode.l"
+  "${PROJECT_SOURCE_DIR}/src/sql/parser/ftsparser.y"
+  "${PROJECT_SOURCE_DIR}/src/sql/parser/ftsblex.l"
+  "${PROJECT_SOURCE_DIR}/src/query/api/query/parser/ob_item_type.h")
 
 if(WIN32)
   find_program(PWSH_EXE NAMES pwsh pwsh.exe powershell powershell.exe REQUIRED)

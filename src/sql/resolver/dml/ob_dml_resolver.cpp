@@ -2712,6 +2712,10 @@ int ObDMLResolver::resolve_table(const ParseNode &parse_tree,
         }
         break;
       }
+      case T_FILE_SQL_TABLE_EXPRESSION: {
+        OZ (resolve_file_sql_table_item(*table_node, table_item));
+        break;
+      }
       case T_HYBRID_SEARCH_EXPRESSION: {
         if (OB_ISNULL(session_info_)) {
           ret = OB_INVALID_ARGUMENT;
@@ -6779,9 +6783,12 @@ int ObDMLResolver::resolve_function_table_column_item(const TableItem &table_ite
     //exist, ignore resolve...
   } else {
     ObSEArray<ColumnItem, 16> col_items;
-    OZ (ObResolverUtils::check_function_table_column_exist(table_item,
-                                                           params_,
-                                                           column_name));
+    if (table_item.is_file_sql_) {
+      ret = OB_ERR_BAD_FIELD_ERROR;
+      LOG_USER_ERROR(OB_ERR_BAD_FIELD_ERROR, column_name.length(), column_name.ptr(), "field list");
+    } else {
+      OZ (ObResolverUtils::check_function_table_column_exist(table_item, params_, column_name));
+    }
     OZ (resolve_function_table_column_item(table_item, col_items));
     for (int64_t i = 0; OB_SUCC(ret) && i < stmt->get_column_size(); ++i) {
       ColumnItem* column_item = stmt->get_column_item(i);
@@ -7475,7 +7482,9 @@ int ObDMLResolver::resolve_function_table_column_item(const TableItem &table_ite
   CK (OB_LIKELY(table_item.is_function_table()));
   CK (OB_NOT_NULL(table_item.function_table_expr_));
   if (OB_SUCC(ret)) {
-    if (table_item.function_table_expr_->get_result_type().is_ext()) {
+    if (table_item.is_file_sql_) {
+      ret = resolve_file_sql_columns(table_item, col_items);
+    } else if (table_item.function_table_expr_->get_result_type().is_ext()) {
       ret = resolve_function_table_column_item_udf(table_item, col_items);
     } else {
       ret = resolve_function_table_column_item_sys_func(table_item, col_items);
@@ -8366,6 +8375,12 @@ int ObDMLResolver::get_columns_from_table_item(const TableItem *table_item, ObIA
       const SelectItem &select_item = table_ref->get_select_item(i);
       if (OB_FAIL(column_names.push_back(select_item.alias_name_))) {
       }
+    }
+  } else if (table_item->is_file_sql_) {
+    ObSEArray<ColumnItem, 16> columns;
+    OZ (resolve_file_sql_columns(*table_item, columns));
+    for (int64_t i = 0; OB_SUCC(ret) && i < columns.count(); ++i) {
+      ret = column_names.push_back(columns.at(i).column_name_);
     }
   } else if (table_item->is_function_table()) {
     OZ (ObResolverUtils::get_all_function_table_column_names(*table_item,

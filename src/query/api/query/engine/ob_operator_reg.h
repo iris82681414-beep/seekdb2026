@@ -513,6 +513,11 @@ class ObFunctionTableOp;
 REGISTER_OPERATOR(ObLogFunctionTable, PHY_FUNCTION_TABLE, ObFunctionTableSpec,
                   ObFunctionTableOp, NOINPUT);
 
+class FileSqlScanSpec;
+class FileSqlScanOp;
+REGISTER_OPERATOR(ObLogFunctionTable, PHY_FILE_SQL_SCAN, FileSqlScanSpec,
+                  FileSqlScanOp, NOINPUT, VECTORIZED_OP);
+
 class ObLogStatCollector;
 class ObStatCollectorSpec;
 class ObStatCollectorOp;

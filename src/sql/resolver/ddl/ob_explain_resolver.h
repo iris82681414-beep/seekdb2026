@@ -33,6 +33,9 @@ namespace sql
     virtual ~ObExplainResolver() {}
     virtual int resolve(const ParseNode &parse_tree);
     ObExplainStmt *get_explain_stmt();
+  private:
+    int resolve_file_sql_description(const ObSelectStmt &query);
+  public:
     int resolve_columns(ObRawExpr *&expr, common::ObArray<ObQualifiedName> &columns)
     {
       UNUSED(expr);

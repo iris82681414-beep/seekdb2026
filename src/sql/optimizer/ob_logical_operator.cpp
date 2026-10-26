@@ -31,6 +31,7 @@
 #include "ob_log_subplan_filter.h"
 #include "ob_log_join_filter.h"
 #include "ob_log_insert.h"
+#include "ob_log_select_into.h"
 #include "ob_log_temp_table_access.h"
 #include "sql/rewrite/ob_transform_utils.h"
 #include "sql/optimizer/ob_del_upd_log_plan.h"
@@ -3898,8 +3899,11 @@ int ObLogicalOperator::allocate_startup_expr_post(int64_t child_idx)
   if (OB_ISNULL(child)) {
     ret = OB_ERR_UNEXPECTED;
   } else if (is_dml_operator() ||
-            log_op_def::LOG_TEMP_TABLE_INSERT == get_type()) {
-    //do nothing
+            log_op_def::LOG_TEMP_TABLE_INSERT == get_type() ||
+            (log_op_def::LOG_SELECT_INTO == get_type() &&
+             static_cast<const ObLogSelectInto *>(this)->get_into_type() == T_INTO_FILE_SQL_COPY)) {
+    // A COPY sink must run even for an empty child so it can publish its header.
+    // Leave the child's startup predicates below this side-effecting operator.
   } else if (child->get_startup_exprs().empty()) {
     //do nothing
   } else {

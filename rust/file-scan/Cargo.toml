@@ -1,0 +1,19 @@
+[package]
+name = "file_scan"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[lib]
+crate-type = ["rlib", "staticlib"]
+
+[dependencies]
+cxx = "1"
+libc = "0.2"
+serde = { version = "1", features = ["derive"] }
+serde_json = { version = "1", features = ["arbitrary_precision", "raw_value"] }
+parquet = { version = "=57.1.0", default-features = false, features = ["snap", "flate2-zlib-rs", "zstd", "lz4", "brotli"] }
+chrono = { version = "=0.4.42", default-features = false, features = ["std"] }
+
+[build-dependencies]
+cxx-build = "1"

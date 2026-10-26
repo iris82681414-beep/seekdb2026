@@ -17,6 +17,9 @@
 #define USING_LOG_PREFIX SQL_RESV
 #include "sql/resolver/ddl/ob_explain_resolver.h"
 #include "sql/resolver/ob_resolver.h"
+#include "sql/resolver/dml/ob_select_resolver.h"
+#include "sql/parser/ob_parser.h"
+#include "lib/string/ob_sql_string.h"
 
 using namespace oceanbase;
 using namespace sql;
@@ -62,6 +65,11 @@ int ObExplainResolver::resolve(const ParseNode &parse_tree)
       } else if (OB_ISNULL(child_stmt)) {
         ret = OB_ERR_UNEXPECTED;
         LOG_WARN("failed to generate stmt for child stmt");
+      } else if (parse_tree.reserved_ != 0 && child_stmt->is_select_stmt() &&
+                 params_.query_ctx_ != nullptr && params_.query_ctx_->has_file_sql_) {
+        // Resolve the original SELECT to derive its real output schema, then use
+        // normal constant SELECT operators to return that metadata without scanning rows.
+        return resolve_file_sql_description(*static_cast<ObSelectStmt *>(child_stmt));
       } else {
         explain_stmt->set_explain_query_stmt(static_cast<ObDMLStmt *>(child_stmt));
         ParseNode *format = parse_tree.children_[EXPLAIN_FORMAT];
@@ -143,5 +151,56 @@ int ObExplainResolver::resolve(const ParseNode &parse_tree)
     }
   }
 
+  return ret;
+}
+
+int ObExplainResolver::resolve_file_sql_description(const ObSelectStmt &query)
+{
+  int ret = OB_SUCCESS;
+  ObSqlString sql;
+  // Hex literals preserve arbitrary UTF-8 names without SQL-mode-dependent escaping.
+  auto append_text = [&](const ObString &text) -> int {
+    int ret = sql.append("CONVERT(X'");
+    static const char digits[] = "0123456789abcdef";
+    for (int32_t j = 0; OB_SUCC(ret) && j < text.length(); ++j) {
+      const unsigned char byte = static_cast<unsigned char>(text.ptr()[j]);
+      const char hex[] = {digits[byte >> 4], digits[byte & 15]};
+      ret = sql.append(hex, 2);
+    }
+    if (OB_SUCC(ret)) { ret = sql.append("' USING utf8mb4)"); }
+    return ret;
+  };
+  for (int64_t i = 0; OB_SUCC(ret) && i < query.get_select_item_size(); ++i) {
+    const SelectItem &item = query.get_select_item(i);
+    if (item.expr_ == nullptr) { ret = OB_ERR_UNEXPECTED; break; }
+    const ObObjType type = item.expr_->get_result_type().get_type();
+    const char *name = type == ObNullType ? "NULL" : type == ObTinyIntType ? "BOOLEAN" :
+        type == ObIntType ? "BIGINT" : type == ObDoubleType ? "DOUBLE" :
+        type == ObVarcharType ? "VARCHAR" : type == ObDateType ? "DATE" :
+        type == ObDateTimeType ? "DATETIME" : ob_sql_type_str(type);
+    const bool nullable = !item.expr_->is_not_null_for_read();
+    if (OB_FAIL(sql.append(i == 0 ? "SELECT " : " UNION ALL SELECT "))) {
+    } else if (OB_FAIL(append_text(item.alias_name_.empty() ? item.expr_name_ : item.alias_name_))) {
+    } else if (OB_FAIL(sql.append(" AS column_name, "))) {
+    } else if (OB_FAIL(append_text(ObString(name)))) {
+    } else if (OB_FAIL(sql.append_fmt(" AS column_type, '%s' AS `null`, NULL AS `key`, "
+                                    "NULL AS `default`, NULL AS extra", nullable ? "YES" : "NO"))) {
+    }
+  }
+  ParseResult result;
+  ObParser parser(*allocator_, session_info_->get_sql_mode(), session_info_->get_charsets4parser());
+  if (OB_FAIL(ret)) {
+  } else if (sql.empty()) { ret = OB_ERR_UNEXPECTED; }
+  else if (OB_FAIL(parser.parse(sql.string(), result))) {
+  } else if (result.result_tree_ == nullptr || result.result_tree_->type_ != T_STMT_LIST ||
+             result.result_tree_->num_child_ != 1 || result.result_tree_->children_[0] == nullptr) {
+    ret = OB_ERR_UNEXPECTED;
+  } else {
+    ObSelectResolver resolver(params_);
+    resolver.set_calc_found_rows(true);
+    resolver.set_has_top_limit(true);
+    if (OB_FAIL(resolver.resolve(*result.result_tree_->children_[0]))) {
+    } else { set_basic_stmt(resolver.get_basic_stmt()); }
+  }
   return ret;
 }

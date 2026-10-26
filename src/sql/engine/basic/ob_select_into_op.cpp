@@ -27,6 +27,7 @@
 #include "common/udt/ob_collection_type.h"
 #include "share/config/ob_server_config.h"
 #include "share/ob_lob_access_utils.h"
+#include "sql/engine/expr/ob_expr_lob_utils.h"
 
 namespace oceanbase
 {
@@ -52,6 +53,10 @@ int ObSelectIntoOp::inner_open()
     opened_ = true;
     if (OB_FAIL(session->get_sql_select_limit(top_limit_cnt_))) {
     }
+  }
+  if (OB_SUCC(ret) && MY_SPEC.into_type_ == T_INTO_FILE_SQL_COPY) {
+    file_copy_done_ = false;
+    return file_copy_.open(*session, MY_SPEC.outfile_name_.get_string(), MY_SPEC.external_properties_.str_);
   }
   if (OB_SUCC(ret) && !MY_SPEC.external_properties_.str_.empty()) {
     if (OB_FAIL(external_properties_.load_from_string(MY_SPEC.external_properties_.str_,
@@ -188,6 +193,10 @@ int ObSelectIntoOp::calc_outfile_path()
 }
 int ObSelectIntoOp::inner_get_next_row()
 {
+  if (MY_SPEC.into_type_ == T_INTO_FILE_SQL_COPY) {
+    const int ret = run_file_sql_copy(false);
+    return ret == OB_SUCCESS ? OB_ITER_END : ret;
+  }
   int ret = 0 == top_limit_cnt_ ? OB_ITER_END : OB_SUCCESS;
   int64_t row_count = 0;
   const ObItemType into_type = MY_SPEC.into_type_;
@@ -236,6 +245,12 @@ int ObSelectIntoOp::inner_get_next_row()
 
 int ObSelectIntoOp::inner_get_next_batch(const int64_t max_row_cnt)
 {
+  if (MY_SPEC.into_type_ == T_INTO_FILE_SQL_COPY) {
+    const int ret = run_file_sql_copy(true);
+    brs_.size_ = 0;
+    brs_.end_ = true;
+    return ret;
+  }
   int ret = OB_SUCCESS;
   const ObBatchRows *child_brs = NULL;
   int64_t batch_size = min(max_row_cnt, MY_SPEC.max_batch_size_);
@@ -324,6 +339,7 @@ int ObSelectIntoOp::inner_rescan()
 
 int ObSelectIntoOp::inner_close()
 {
+  file_copy_.close();
   int ret = OB_SUCCESS;
   if (OB_NOT_NULL(data_writer_) && OB_FAIL(data_writer_->close_data_writer())) {
   }
@@ -1215,7 +1231,7 @@ int ObSelectIntoOp::check_secure_file_path(ObString file_name)
 #endif
     ret = OB_FILE_NOT_EXIST;
   } else if (OB_FAIL(ObSchemaUtils::get_runtime_varchar_variable(*GCTX.schema_service_,
-                                                                SYS_VAR_SECURE_FILE_PRIV,
+                                                                share::SYS_VAR_SECURE_FILE_PRIV,
                                                                 ctx_.get_allocator(),
                                                                 secure_file_priv))) {
   } else if (OB_FAIL(ObResolverUtils::check_secure_path(secure_file_priv, actual_path))) {
@@ -1275,6 +1291,7 @@ int ObSelectIntoOp::new_data_writer(ObExternalFileWriter *&data_writer)
 
 void ObSelectIntoOp::destroy()
 {
+  file_copy_.close();
   if (OB_NOT_NULL(data_writer_)) {
     data_writer_->~ObExternalFileWriter();
   }
@@ -1282,5 +1299,87 @@ void ObSelectIntoOp::destroy()
   ObOperator::destroy();
 }
 
+}
+}
+
+namespace oceanbase
+{
+namespace sql
+{
+int ObSelectIntoOp::write_file_sql_row()
+{
+  int ret = OB_SUCCESS;
+  ObEvalCtx::TempAllocGuard guard(eval_ctx_);
+  MultimodeAlloctor allocator(guard.get_allocator());
+  for (int64_t i = 0; OB_SUCC(ret) && i < MY_SPEC.select_exprs_.count(); ++i) {
+    const ObExpr *expr = MY_SPEC.select_exprs_.at(i);
+    ObDatum *datum = nullptr;
+    ObString text;
+    char scalar[4096];
+    int64_t length = 0;
+    if (expr == nullptr) { ret = OB_ERR_UNEXPECTED; }
+    else if (OB_FAIL(expr->eval(eval_ctx_, datum))) {
+    } else if (datum == nullptr) { ret = OB_ERR_UNEXPECTED; }
+    else if (datum->is_null()) { ret = file_copy_.field(text, true); }
+    else {
+      if (ob_is_string_type(expr->datum_meta_.type_)) {
+        ret = ObTextStringHelper::read_real_string_data(ctx_, allocator, *datum,
+            expr->datum_meta_, expr->obj_meta_.has_lob_header(), text);
+      } else if (ob_is_numeric_type(expr->datum_meta_.type_) || ob_is_temporal_type(expr->datum_meta_.type_)) {
+        ObObj value;
+        ObObjPrintParams params;
+        params.tz_info_ = ctx_.get_my_session()->get_timezone_info();
+        if (OB_FAIL(datum->to_obj(value, expr->obj_meta_))) {
+        } else if (OB_FAIL(value.print_plain_str_literal(scalar, sizeof(scalar), length, params))) {
+        } else { text.assign_ptr(scalar, static_cast<int32_t>(length)); }
+      } else { ret = OB_NOT_SUPPORTED; LOG_USER_ERROR(OB_NOT_SUPPORTED, "COPY CSV field type"); }
+      if (OB_SUCC(ret)) { ret = file_copy_.field(text, false); }
+    }
+  }
+  if (OB_SUCC(ret)) { ret = file_copy_.end_row(); }
+  return ret;
+}
+
+int ObSelectIntoOp::run_file_sql_copy(bool batch)
+{
+  int ret = OB_SUCCESS;
+  int64_t rows = 0;
+  if (file_copy_done_) { return OB_SUCCESS; }
+  if (child_ == nullptr || ctx_.get_physical_plan_ctx() == nullptr) { return OB_ERR_UNEXPECTED; }
+  bool ended = false;
+  while (OB_SUCC(ret) && !ended && rows < top_limit_cnt_) {
+    clear_evaluated_flag();
+    if (OB_FAIL(ctx_.check_status())) {
+    } else if (batch) {
+      const ObBatchRows *input = nullptr;
+      const int64_t limit = min(static_cast<int64_t>(MY_SPEC.max_batch_size_), top_limit_cnt_ - rows);
+      if (OB_FAIL(child_->get_next_batch(limit, input))) {
+      } else if (input == nullptr) { ret = OB_ERR_UNEXPECTED; }
+      else {
+        ObEvalCtx::BatchInfoScopeGuard guard(eval_ctx_);
+        guard.set_batch_size(input->size_);
+        for (int64_t i = 0; OB_SUCC(ret) && i < input->size_; ++i) {
+          if (!input->skip_->contain(i)) {
+            guard.set_batch_idx(i);
+            if (OB_FAIL(write_file_sql_row())) {
+            } else { ++rows; }
+          }
+        }
+        ended = input->end_;
+      }
+    } else if (OB_FAIL(child_->get_next_row())) {
+      if (ret == OB_ITER_END) { ret = OB_SUCCESS; ended = true; }
+    } else if (OB_FAIL(write_file_sql_row())) {
+    } else { ++rows; }
+  }
+  if (OB_SUCC(ret) && OB_FAIL(ctx_.check_status())) {
+  } else if (OB_SUCC(ret) && OB_FAIL(file_copy_.finish())) {
+  }
+  if (OB_SUCC(ret)) {
+    file_copy_done_ = true;
+    ctx_.get_physical_plan_ctx()->set_affected_rows(rows);
+  } else { file_copy_.close(); }
+  return ret;
+}
 }
 }

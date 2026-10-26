@@ -1052,6 +1052,10 @@ int ObSelectResolver::resolve(const ParseNode &parse_tree)
     }
   }
 
+  if (OB_SUCC(ret) && select_stmt->has_select_into() &&
+      select_stmt->get_select_into()->into_type_ == T_INTO_FILE_SQL_COPY) {
+    ret = finalize_file_sql_copy(*select_stmt->get_select_into());
+  }
   return ret;
 }
 
@@ -3104,7 +3108,9 @@ int ObSelectResolver::resolve_into_clause(const ParseNode *node)
     } else {
       new(into_item) ObSelectIntoItem();
       into_item->into_type_ = node->type_;
-      if (T_INTO_OUTFILE == node->type_) { // into outfile
+      if (T_INTO_FILE_SQL_COPY == node->type_) {
+        ret = resolve_file_sql_copy(*node, *into_item);
+      } else if (T_INTO_OUTFILE == node->type_) { // into outfile
         if (is_in_set_query()) {
           ret = OB_INAPPROPRIATE_INTO;
         } else if (node->num_child_ == 3 && NULL != node->children_[1]
