@@ -1,0 +1,21 @@
+select ai_complete('prompt_structured',
+ai_prompt('{0}/{0}/{1}', json_array(1,true), json_object('k',2))) =
+'mock:[1, true]/[1, true]/{"k": 2}' as structured_repetition;
+structured_repetition
+1
+select length(ai_complete('prompt_structured',
+ai_prompt('{0}{0}{0}', repeat('x',2000)))) = 6005 as repeated_long_string;
+repeated_long_string
+1
+select ai_complete('prompt_structured', ai_prompt('value={0}', cast('null' as json))) =
+'mock:value=null' as json_null_value;
+json_null_value
+1
+select ai_complete('prompt_structured', ai_prompt('{abc}')) =
+'mock:{abc}' as literal_braces;
+literal_braces
+1
+select ai_complete('prompt_structured', ai_prompt('{999999999999999999999999}', 'x'));
+ERROR HY000: Incorrect arguments to ai_prompt: invalid placeholder index
+call DBMS_AI_SERVICE.DROP_AI_MODEL_ENDPOINT('prompt_structured_ep');
+call DBMS_AI_SERVICE.DROP_AI_MODEL('prompt_structured');

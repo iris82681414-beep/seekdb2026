@@ -1,0 +1,29 @@
+# Structured prompt arguments and repeated placeholders reach the native client.
+connection default;
+--exec python3 mysql_test/test_suite/ai_column/include/ai_column_mock.py start 19126
+--disable_query_log
+--disable_result_log
+--error 0,11112
+call DBMS_AI_SERVICE.DROP_AI_MODEL_ENDPOINT('prompt_structured_ep');
+--error 0,11118
+call DBMS_AI_SERVICE.DROP_AI_MODEL('prompt_structured');
+call DBMS_AI_SERVICE.CREATE_AI_MODEL('prompt_structured',
+  '{"type":"completion","model_name":"mock-complete"}');
+call DBMS_AI_SERVICE.CREATE_AI_MODEL_ENDPOINT('prompt_structured_ep',
+  '{"ai_model_name":"prompt_structured","url":"http://127.0.0.1:19126/v1/chat/completions","access_key":"mock-key","provider":"openai"}');
+--enable_result_log
+--enable_query_log
+select ai_complete('prompt_structured',
+  ai_prompt('{0}/{0}/{1}', json_array(1,true), json_object('k',2))) =
+  'mock:[1, true]/[1, true]/{"k": 2}' as structured_repetition;
+select length(ai_complete('prompt_structured',
+  ai_prompt('{0}{0}{0}', repeat('x',2000)))) = 6005 as repeated_long_string;
+select ai_complete('prompt_structured', ai_prompt('value={0}', cast('null' as json))) =
+  'mock:value=null' as json_null_value;
+select ai_complete('prompt_structured', ai_prompt('{abc}')) =
+  'mock:{abc}' as literal_braces;
+--error 1210
+select ai_complete('prompt_structured', ai_prompt('{999999999999999999999999}', 'x'));
+call DBMS_AI_SERVICE.DROP_AI_MODEL_ENDPOINT('prompt_structured_ep');
+call DBMS_AI_SERVICE.DROP_AI_MODEL('prompt_structured');
+--exec python3 mysql_test/test_suite/ai_column/include/ai_column_mock.py stop 19126
