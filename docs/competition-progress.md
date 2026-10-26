@@ -5,7 +5,7 @@
 ## 环境与提交
 
 - seekdb 保留官方 `2026-competition` 历史，基线为 `5bce9e06d1281347ad61344e4b01fab9158c58a2`。用户私有仓库已建立 `main` 和 `2026-competition` 分支。
-- seekdb 最新内核实现提交为 `d38f79a7c793f4dfb60cfffce501bcda7a256042`，包含 FTS 锁优化和大赛指定 Bug #1477 修复。独立 Bug 分支提交为 `34b696a50198bdb8d5280f3f881ede6405d96625`，基于官方 master，保存在用户私有仓库。
+- seekdb 最新内核实现提交为 `148d0c737ceffb5c3d3c4ced21800ee0ce7199f9`，包含 FTS 锁优化、大赛指定 Bug #1477 及 TOKENIZE 大字段参数修复。独立 Bug 分支提交为 `34b696a50198bdb8d5280f3f881ede6405d96625`，基于官方 master，保存在用户私有仓库。
 - PowerContext 位于本地 `.competition/powercontext`，保留比赛分支及冻结产品提交 `9db1753434162c0aa7c9f1189a1722e617880a52`。
 - PowerContext 最新实现已推送至私有仓库 `powercontext-2026-competition`，完整提交为 `5c7e7450d11377db2ea94f7b63312af777b97a0d`。
 - GitHub 仓库当前默认分支仍是 PowerContext 答题分支；正式提测须明确选取产品对应的分支和 commit。
@@ -23,7 +23,7 @@
 | AI_RERANK、跨行批量 AI_EMBED | 20 | 原生 SQL 实现及回归已通过；重排跨三批完整排序、14 类异常响应；向量按模型/维度分组、NULL/LOB、乱序响应和实际合并请求已验证 |
 | 文件即数据库 | 50 | 原生三格式读取、批量/重扫、DESCRIBE、glob、CSV COPY 已实现；原版及新增 2 项 mysqltest、8 项 Rust 测试、30 项独立 SQL 专项通过，隐藏边界继续核验 |
 | AI 列 | 50 | 五组功能均已实现，10 项原版及新增 AI COLUMN 回归通过；另有重试权限、事务、组合主键和向量索引等 17 项独立检查通过；平台隐藏测试及统一性能计分尚未验证 |
-| 全文索引性能 | 50 | 文档独占词频表锁优化已完成原生同版本 A/B/A 对照：中文分词耗时下降 8.01%，五项原版用例双路径通过，384 次并发结果一致；固定 CI 内部报告三轮均为 100/100，不作为正式成绩 |
+| 全文索引性能 | 50 | 文档独占词频表锁优化已完成原生同版本 A/B/A 对照：中文分词耗时下降 8.01%，五项原版用例双路径通过，384 次并发结果一致；另补齐 TEXT/LOB 分词读取，896 组边界对照及 128 次并发通过；固定 CI 内部报告三轮均为 100/100，不作为正式成绩 |
 | PowerContext 仓库准备 | 10 | 冻结历史和私有分支已准备，待平台读取配置及核验 |
 | CSV 行级采集 | 20 | Linux 公开验收 17 项通过 |
 | Pi 会话采集 | 20 | Linux 公开验收 15 项通过 |
@@ -100,6 +100,18 @@ Strict Read 已增加 `ai_column_strict_read` 开关，默认关闭。开启后�
 手动 `ALTER TABLE … RETRY AI COLUMN … [WHERE …]` 已补齐，只重试指定列和命中行，支持 READY、FAILED、PENDING 状态及普通业务条件。未加引号的 `status` 是计算状态，反引号或表名限定的同名字段仍表示业务字段。操作通过当前用户身份执行原生 UPDATE，结果失效和任务登记同事务提交；运行时授权检查防止内部缓存计划被普通写入复用。原版重试与严格读取用例、新增组合主键和事务边界用例均通过，全部 10 项 AI COLUMN 回归记录为 `.competition/results/seekdb-ai-column-retry.json`。
 
 17 项独立检查进一步验证二进制组合主键、隐藏主键重复行、条件错误时回滚、关闭自动提交时的 DDL 提交边界、普通账号重试及拒绝越权子查询，以及 VSAG 索引失效与重新发布。另复现并修复修改定义后的旧结果窗口：同一组 256 行数据，修复前操作返回后有 4 行仍返回旧结果，修复后为 0；修改操作会同步失效尚未登记新版本的行，后台继续计算。记录为 `.competition/results/seekdb-ai-column-retry-independent.json`、`seekdb-ai-column-ddl-visibility-before.json` 和 `seekdb-ai-column-ddl-visibility-after.json`。这组行为验证使用副本 `seekdb-ai-column-retry-behavior-validated`，SHA-256 为 `178694a048bec4058f8413cb65471acbfdac5fae09490b4101a6df8930808c5a`；随后只修正两处非法重试语句的错误文字。最终回归副本为 `/root/oceanbase2026/seekdb-ai-column-retry-final`，SHA-256 为 `dea2203fd8b9b1582b62298c056b3713765bf6bfec45c55a306479d65c9356d6`，现运行于上述 strict 测试目录，管理路径保持不变。尚不据此宣称平台 50 分。 最终副本的同轮 12 项 AI 函数与 2 项 File SQL 回归亦全部通过，记录为 `.competition/results/seekdb-ai-after-ai-column-retry.json` 和 `seekdb-file-after-ai-column-retry.json`。
+
+## TOKENIZE 大字段边界修复
+
+提交 `de8d77e43866534a6f7fb3b060997ab81081b35d` 修复 TEXT 内容直接分词时报错或丢词，以及以 TEXT 传入分词器名称时读取内部定位信息的问题。TEXT 内容和分词器名称通过现有 LOB 读取接口取得实际文本；后续提交 `148d0c737ceffb5c3d3c4ced21800ee0ce7199f9` 为普通字符串保留直接读取路径；需要物化的文本使用贯穿本次表达式求值的参数分配器，保留原有空值及名称去空格行为。词频表按输入缓冲区长度与实际内容长度的较大者估算容量，使行内文本保持已有输出顺序，行外长文本获得与实际内容相应的容量。
+
+原生对照覆盖 TINYTEXT、TEXT、MEDIUMTEXT、LONGTEXT，行内阈值 4096 与强制行外阈值 0，四种分词器、两种输出格式、普通与大字段分词器参数，以及空串、NULL、中文、emoji 和 13,200 字节长文本。896 组中，修改前 520 组报错、156 组词项内容不符、220 组符合参考；最终版本 896 组全部匹配，四项独立词数/词频断言全部通过。另用 8 个客户端完成 128 次并发核对。长文本明确返回 alpha、beta 各 1,200 次，总词数 2,400。
+
+原版 basic_dml、cn_word、parser_properties、simple_query、tokenize_function 五项用例在对照与最终版本上均通过；新增 tokenize_lob 回归在对照版本失败、最终版本通过，原版测试和期望文件保持原样。最终 Linux RelWithDebInfo 构建耗时 13.87 秒，二进制 `/root/oceanbase2026/seekdb-tokenize-lob-fast` 的 SHA-256 为 `99c2b91055fa6059efecda0f0ce0fdad36d969c861eeee08cf53784754dc1cc0`。105 个已变更构建输入与服务器逐文件一致，清单 SHA-256 为 `5ec1238cc739f59d37c1839b1c9cf4fd3f1da20fa9a81452892bb4ac482ed818`。本项记作内核正确性修复，基础实践的指定 Bug 材料仍为 #1477。
+
+初版直接解码后曾有一项原版用例仅词项排列不同，最终容量估算已保留既有顺序；独立对照中无类型 NULL 的参考字符集差异也已修正并重新核对。对照旧版产生的非法 UTF-8 错误输出以原始字节捕获，未修改原生用例来绕过错误。早期失败、最终成功和构建产物记录命名修正均保存在本地 `.competition/tokenize-lob/`，最终功能记录为 `results/tokenize-lob-fast-validation.json`。
+
+修复的首轮同机性能对照曾观测普通字符串分词耗时上升 6.76% 和 9.38%，因此增加 VARCHAR 直接读取路径，并对最终版本重新进行完整 A/B/A 对照。原版默认负载、20,000 行、3,000 次分词、每项查询 200 轮、3 组样本和 30 轮预热均保持原样，使用 CPUQuota 400%、MemoryMax 5G 的同一隔离实例；未与编译或其他质量测量重叠。中文分词对照均值和最终版本均为 0.0751 ms；英文从 0.03535 ms 到 0.0348 ms（观测下降 1.56%）。四类查询命中仍为 8,001、11,000、7,332、20。查询计时变化作为原始测量保留，本项交付以修复大字段读取并维持常规分词性能为依据。记录为 `results/tokenize-lob-fast-performance.json`，完整保留首轮负向结果及两轮对照日志。
 
 ## 基础实践指定 Bug 修复
 
