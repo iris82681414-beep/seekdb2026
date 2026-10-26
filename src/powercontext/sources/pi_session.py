@@ -19,7 +19,7 @@ from __future__ import annotations
 import hashlib
 import json
 from pathlib import Path
-from typing import Any
+from typing import Any, NoReturn
 from urllib.parse import quote
 
 from pydantic import BaseModel, JsonValue
@@ -62,9 +62,17 @@ def _identity(session_id: str, event_id: str) -> str:
     return f"pi:{quote(session_id, safe='')}:{quote(event_id, safe='')}"
 
 
+def _reject_json_constant(_value: str) -> NoReturn:
+    raise ValueError("Pi records must use standard JSON values")  # noqa: TRY003
+
+
 def _archive(value: PiSessionInput) -> tuple[str, dict[str, _Record]]:
     try:
-        records = [json.loads(line) for line in value.content.decode("utf-8-sig").splitlines() if line.strip()]
+        records = [
+            json.loads(line, parse_constant=_reject_json_constant)
+            for line in value.content.decode("utf-8-sig").splitlines()
+            if line.strip()
+        ]
     except (UnicodeError, ValueError) as error:
         raise ValueError("invalid Pi JSONL archive") from error  # noqa: TRY003
     if not records or not isinstance(records[0], dict):
