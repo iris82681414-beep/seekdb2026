@@ -370,6 +370,8 @@ int ObExprTokenize::parse_parser_properties(const ObExpr &expr,
   } else {
     bool is_null = false;
     if (OB_FAIL(ObJsonExprHelper::get_json_doc(expr, ctx, mm_alloc, 2, base, is_null))) {
+    } else if (is_null) {
+      // Optional SQL NULL properties use the same defaults as an omitted argument.
     } else {
       if (ObJsonNodeType::J_ARRAY != base->json_type()) {
         ret = OB_INVALID_ARGUMENT;

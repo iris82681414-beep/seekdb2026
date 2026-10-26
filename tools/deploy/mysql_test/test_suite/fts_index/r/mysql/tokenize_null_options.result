@@ -1,0 +1,60 @@
+SELECT TOKENIZE('alpha beta','space',NULL)=TOKENIZE('alpha beta','space') AS null_defaults;
+null_defaults
+1
+SELECT TOKENIZE('alpha beta',NULL,NULL)=TOKENIZE('alpha beta') AS both_defaults;
+both_defaults
+1
+SELECT JSON_LENGTH(TOKENIZE(NULL,NULL,NULL)) AS empty_input;
+empty_input
+0
+SELECT TOKENIZE('alpha beta','space',NULLIF('same','same'))=TOKENIZE('alpha beta','space') AS expression_defaults;
+expression_defaults
+1
+SET @tokenize_options=NULL;
+SELECT TOKENIZE('alpha beta','space',@tokenize_options)=TOKENIZE('alpha beta','space') AS variable_defaults;
+variable_defaults
+1
+PREPARE tokenize_optional FROM 'SELECT JSON_TYPE(TOKENIZE(''alpha beta alpha'',''space'',?)) AS output_type';
+EXECUTE tokenize_optional USING @tokenize_options;
+output_type
+ARRAY
+SET @tokenize_options='[{"output":"all"}]';
+EXECUTE tokenize_optional USING @tokenize_options;
+output_type
+OBJECT
+SET @tokenize_options=NULL;
+EXECUTE tokenize_optional USING @tokenize_options;
+output_type
+ARRAY
+DEALLOCATE PREPARE tokenize_optional;
+DROP TABLE IF EXISTS tokenize_optional_values;
+CREATE TABLE tokenize_optional_values (id INT PRIMARY KEY, body TEXT, parser_name TEXT, text_options TEXT, json_options JSON) LOB_INROW_THRESHOLD=0;
+INSERT INTO tokenize_optional_values VALUES (1,'alpha beta alpha','space',NULL,NULL),(2,'alpha beta alpha','space','[]',JSON_ARRAY()),(3,NULL,NULL,NULL,NULL),(4,'',NULL,NULL,NULL);
+SELECT id,TOKENIZE(body,parser_name,text_options)=TOKENIZE(body,parser_name) AS text_defaults,TOKENIZE(body,parser_name,json_options)=TOKENIZE(body,parser_name) AS json_defaults FROM tokenize_optional_values ORDER BY id;
+id	text_defaults	json_defaults
+1	1	1
+2	1	1
+3	1	1
+4	1	1
+SELECT id FROM tokenize_optional_values WHERE JSON_LENGTH(TOKENIZE(body,'space',json_options))>0 ORDER BY id;
+id
+1
+2
+SELECT id,TOKENIZE(body,'space',IF(id=1,NULL,'[]'))=TOKENIZE(body,'space') AS conditional_defaults FROM tokenize_optional_values ORDER BY id;
+id	conditional_defaults
+1	1
+2	1
+3	1
+4	1
+DROP TABLE tokenize_optional_values;
+SELECT TOKENIZE('alpha beta','space','null');
+ERROR HY000: Incorrect arguments to parser args should be in an array.
+SELECT TOKENIZE('alpha beta','space',CAST('null' AS JSON));
+ERROR HY000: Incorrect arguments to parser args should be in an array.
+SELECT TOKENIZE('alpha beta','space','{}');
+ERROR HY000: Incorrect arguments to parser args should be in an array.
+SELECT TOKENIZE('alpha beta','space','[null]');
+ERROR HY000: Invalid argument
+SELECT JSON_LENGTH(TOKENIZE('alpha beta','space',NULL)) AS still_responsive;
+still_responsive
+2

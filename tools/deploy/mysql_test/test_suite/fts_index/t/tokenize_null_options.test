@@ -1,0 +1,34 @@
+# SQL NULL is an omitted optional configuration; JSON null is not an array.
+SELECT TOKENIZE('alpha beta','space',NULL)=TOKENIZE('alpha beta','space') AS null_defaults;
+SELECT TOKENIZE('alpha beta',NULL,NULL)=TOKENIZE('alpha beta') AS both_defaults;
+SELECT JSON_LENGTH(TOKENIZE(NULL,NULL,NULL)) AS empty_input;
+SELECT TOKENIZE('alpha beta','space',NULLIF('same','same'))=TOKENIZE('alpha beta','space') AS expression_defaults;
+SET @tokenize_options=NULL;
+SELECT TOKENIZE('alpha beta','space',@tokenize_options)=TOKENIZE('alpha beta','space') AS variable_defaults;
+PREPARE tokenize_optional FROM 'SELECT JSON_TYPE(TOKENIZE(''alpha beta alpha'',''space'',?)) AS output_type';
+EXECUTE tokenize_optional USING @tokenize_options;
+SET @tokenize_options='[{"output":"all"}]';
+EXECUTE tokenize_optional USING @tokenize_options;
+SET @tokenize_options=NULL;
+EXECUTE tokenize_optional USING @tokenize_options;
+DEALLOCATE PREPARE tokenize_optional;
+
+--disable_warnings
+DROP TABLE IF EXISTS tokenize_optional_values;
+--enable_warnings
+CREATE TABLE tokenize_optional_values (id INT PRIMARY KEY, body TEXT, parser_name TEXT, text_options TEXT, json_options JSON) LOB_INROW_THRESHOLD=0;
+INSERT INTO tokenize_optional_values VALUES (1,'alpha beta alpha','space',NULL,NULL),(2,'alpha beta alpha','space','[]',JSON_ARRAY()),(3,NULL,NULL,NULL,NULL),(4,'',NULL,NULL,NULL);
+SELECT id,TOKENIZE(body,parser_name,text_options)=TOKENIZE(body,parser_name) AS text_defaults,TOKENIZE(body,parser_name,json_options)=TOKENIZE(body,parser_name) AS json_defaults FROM tokenize_optional_values ORDER BY id;
+SELECT id FROM tokenize_optional_values WHERE JSON_LENGTH(TOKENIZE(body,'space',json_options))>0 ORDER BY id;
+SELECT id,TOKENIZE(body,'space',IF(id=1,NULL,'[]'))=TOKENIZE(body,'space') AS conditional_defaults FROM tokenize_optional_values ORDER BY id;
+DROP TABLE tokenize_optional_values;
+
+--error 1210
+SELECT TOKENIZE('alpha beta','space','null');
+--error 1210
+SELECT TOKENIZE('alpha beta','space',CAST('null' AS JSON));
+--error 1210
+SELECT TOKENIZE('alpha beta','space','{}');
+--error 1210
+SELECT TOKENIZE('alpha beta','space','[null]');
+SELECT JSON_LENGTH(TOKENIZE('alpha beta','space',NULL)) AS still_responsive;
