@@ -299,6 +299,7 @@ if TYPE_CHECKING:
 
     from powercontext.builtin.handoff_report.application import HandoffReportApplication
     from powercontext.builtin.runtime.artifact_processing import ArtifactProcessingSupervisors
+    from powercontext.builtin.runtime.context_pack import ContextPack, ContextPackDelta
 
 
 class TopicMemorySearch(Protocol):
@@ -827,6 +828,20 @@ class ScopedContextApplication:
     def __init__(self, runtime: BuiltinRuntime, scope_id: str) -> None:
         self._runtime = runtime
         self.scope_id = validate_scope_id(scope_id)
+
+    async def prepare_incremental(
+        self,
+        request: PrepareContextRequest,
+        base_pack: ContextPack | None = None,
+        *,
+        authorize_scopes: Callable[[tuple[str, ...]], Awaitable[None]] | None = None,
+    ) -> ContextPack | ContextPackDelta:
+        """Encode the ordinary prepared content with optional validated prefix reuse."""
+        from powercontext.builtin.runtime.context_pack import ContextPack, ContextPackDelta
+
+        prepared = await self.prepare(request, authorize_scopes=authorize_scopes)
+        target = ContextPack.from_content(prepared.content)
+        return target if base_pack is None else ContextPackDelta.between(base_pack, target)
 
     async def prepare(
         self,
