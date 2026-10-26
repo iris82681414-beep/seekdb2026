@@ -32,6 +32,19 @@ call DBMS_AI_SERVICE.ALTER_AI_MODEL_ENDPOINT('native_complete_ep',
 select ai_complete('native_complete', 'authenticated') = 'native:authenticated' as optional_authentication;
 --disable_query_log
 --disable_result_log
+call DBMS_AI_SERVICE.ALTER_AI_MODEL_ENDPOINT('native_complete_ep', '{"provider":"ollama","url":"http://127.0.0.1:19129/api/generate/empty"}');
+--error 4070
+select ai_complete('native_complete', 'hello');
+call DBMS_AI_SERVICE.ALTER_AI_MODEL_ENDPOINT('native_complete_ep', '{"provider":"openai","url":"http://127.0.0.1:19129/openai/empty"}');
+--error 4070
+select ai_complete('native_complete', 'hello');
+call DBMS_AI_SERVICE.ALTER_AI_MODEL_ENDPOINT('native_complete_ep', '{"provider":"aliyun-dashscope","url":"http://127.0.0.1:19129/dashscope/empty"}');
+--error 4070
+select ai_complete('native_complete', 'hello');
+call DBMS_AI_SERVICE.ALTER_AI_MODEL_ENDPOINT('native_complete_ep', '{"provider":"aliyun-dashscope","url":"http://127.0.0.1:19129/dashscope/badshape"}');
+--error 4070
+select ai_complete('native_complete', 'hello');
+call DBMS_AI_SERVICE.ALTER_AI_MODEL_ENDPOINT('native_complete_ep', '{"provider":"ollama","url":"http://127.0.0.1:19129/api/generate"}');
 --error 1210
 select ai_complete('native_complete', 'hello', '{"stream":true}');
 call DBMS_AI_SERVICE.DROP_AI_MODEL_ENDPOINT('native_complete_ep');

@@ -22,6 +22,20 @@ insert into embed_batch_rows values(1,'batch_embed_a',null,3),(2,'batch_embed_a'
 select count(*) = 46 and sum(v is null) = 3 and sum(if(content is not null, cast(json_extract(v,'$[0]') as signed) = id + if(model='batch_embed_b',10000,0),0)) = 43 and sum(if(content is not null,json_length(v) = dim,0)) = 43 as mixed_groups_and_nulls from (select id,model,content,dim,ai_embed(model,content,dim) as v from embed_batch_rows) x;
 select ai_embed('batch_embed_a', null) is null as scalar_null;
 select count(*) = 43 and sum(cast(json_extract(v,'$[0]') as signed) = id) = 43 as constant_model_order from (select id,ai_embed('batch_embed_a',content) as v from embed_batch_rows where content is not null) x;
+select count(*) = 3 and sum(id) = 54 and sum(cast(json_extract(v,'$[0]') as signed)) = 54 as filter_sort_limit from (select id,ai_embed('batch_embed_a',content) as v from embed_batch_rows where id between 10 and 20 and mod(id,2)=0 order by id desc limit 3) x;
+--disable_query_log
+--disable_result_log
+drop table if exists embed_batch_many;
+create table embed_batch_many(id int primary key,content text);
+insert into embed_batch_many select (a.id-1)*46+b.id,if(mod((a.id-1)*46+b.id,31)=0,null,concat((a.id-1)*46+b.id,':many')) from embed_batch_rows a cross join embed_batch_rows b where (a.id-1)*46+b.id <= 1100;
+--enable_result_log
+--enable_query_log
+select count(*) = 1100 and sum(v is null) = 35 and sum(if(content is not null,cast(json_extract(v,'$[0]') as signed) = id,0)) = 1065 as engine_batches_preserve_rows from (select id,content,ai_embed('batch_embed_a',content) as v from embed_batch_many) x;
+--disable_query_log
+--disable_result_log
+drop table embed_batch_many;
+--enable_result_log
+--enable_query_log
 --exec python3 mysql_test/test_suite/ai_function/include/ai_embed_batch_mock.py assert-batched 19131
 --disable_query_log
 --disable_result_log

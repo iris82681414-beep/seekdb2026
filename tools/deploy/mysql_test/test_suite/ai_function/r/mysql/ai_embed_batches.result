@@ -7,3 +7,9 @@ scalar_null
 select count(*) = 43 and sum(cast(json_extract(v,'$[0]') as signed) = id) = 43 as constant_model_order from (select id,ai_embed('batch_embed_a',content) as v from embed_batch_rows where content is not null) x;
 constant_model_order
 1
+select count(*) = 3 and sum(id) = 54 and sum(cast(json_extract(v,'$[0]') as signed)) = 54 as filter_sort_limit from (select id,ai_embed('batch_embed_a',content) as v from embed_batch_rows where id between 10 and 20 and mod(id,2)=0 order by id desc limit 3) x;
+filter_sort_limit
+1
+select count(*) = 1100 and sum(v is null) = 35 and sum(if(content is not null,cast(json_extract(v,'$[0]') as signed) = id,0)) = 1065 as engine_batches_preserve_rows from (select id,content,ai_embed('batch_embed_a',content) as v from embed_batch_many) x;
+engine_batches_preserve_rows
+1

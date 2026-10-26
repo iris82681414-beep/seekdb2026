@@ -70,7 +70,13 @@ def serve():
             body = json.loads(data)
             if not self.headers.get('Content-Type', '').startswith('application/json'):
                 self.reply(400, {'error': 'missing content type'})
-            elif self.path in {'/api/generate', '/api/generate/auth'}:
+            elif self.path == '/openai/empty':
+                self.reply(200, {'choices': [{'message': {'content': ''}}]})
+            elif self.path == '/dashscope/empty':
+                self.reply(200, {'output': {'choices': [{'message': {'content': ''}}]}})
+            elif self.path == '/dashscope/badshape':
+                self.reply(200, {'output': []})
+            elif self.path in {'/api/generate', '/api/generate/auth', '/api/generate/empty'}:
                 if self.path.endswith('/auth') and self.headers.get('Authorization') != 'Bearer fixture-token':
                     self.reply(401, {'error': 'authentication required'})
                 elif not isinstance(body.get('prompt'), str) or body.get('stream') is not False:
@@ -78,7 +84,7 @@ def serve():
                 elif not isinstance(body.get('options', {}), dict) or 'max_tokens' in body.get('options', {}):
                     self.reply(400, {'error': 'native runtime options required'})
                 else:
-                    self.reply(200, {'response': 'native:' + body['prompt'], 'done': True})
+                    self.reply(200, {'response': '' if self.path.endswith('/empty') else 'native:' + body['prompt'], 'done': True})
             elif self.path == '/api/embed':
                 inputs = body.get('input')
                 dimension = body.get('dimensions', 4)
