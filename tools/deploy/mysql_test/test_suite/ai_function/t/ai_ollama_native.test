@@ -1,0 +1,41 @@
+connection default;
+--exec python3 mysql_test/test_suite/ai_function/include/ai_ollama_mock.py start 19129
+--disable_query_log
+--disable_result_log
+--error 0,11112
+call DBMS_AI_SERVICE.DROP_AI_MODEL_ENDPOINT('native_complete_ep');
+--error 0,11112
+call DBMS_AI_SERVICE.DROP_AI_MODEL_ENDPOINT('native_embed_ep');
+--error 0,11118
+call DBMS_AI_SERVICE.DROP_AI_MODEL('native_complete');
+--error 0,11118
+call DBMS_AI_SERVICE.DROP_AI_MODEL('native_embed');
+call DBMS_AI_SERVICE.CREATE_AI_MODEL('native_complete', '{"type":"completion","model_name":"fixture"}');
+call DBMS_AI_SERVICE.CREATE_AI_MODEL('native_embed', '{"type":"dense_embedding","model_name":"fixture"}');
+call DBMS_AI_SERVICE.CREATE_AI_MODEL_ENDPOINT('native_complete_ep',
+  '{"ai_model_name":"native_complete","url":"http://127.0.0.1:19129/api/generate","access_key":"","provider":"ollama"}');
+call DBMS_AI_SERVICE.CREATE_AI_MODEL_ENDPOINT('native_embed_ep',
+  '{"ai_model_name":"native_embed","url":"http://127.0.0.1:19129/api/embed","provider":"Ollama"}');
+--enable_result_log
+--enable_query_log
+select ai_complete('native_complete', 'hello') = 'native:hello' as native_generation;
+select ai_complete('native_complete', ai_prompt('{0}/{0}', json_array(1,true)),
+  '{"temperature":0.2,"max_tokens":8}') = 'native:[1, true]/[1, true]' as native_options;
+select json_length(ai_embed('native_embed', 'hello')) = 4 as native_embedding;
+select json_length(ai_embed('native_embed', 'hello', 3)) = 3 as requested_dimension;
+--disable_query_log
+--disable_result_log
+call DBMS_AI_SERVICE.ALTER_AI_MODEL_ENDPOINT('native_complete_ep',
+  '{"provider":"OLLAMA","access_key":"fixture-token","url":"http://127.0.0.1:19129/api/generate/auth"}');
+--enable_result_log
+--enable_query_log
+select ai_complete('native_complete', 'authenticated') = 'native:authenticated' as optional_authentication;
+--disable_query_log
+--disable_result_log
+--error 1210
+select ai_complete('native_complete', 'hello', '{"stream":true}');
+call DBMS_AI_SERVICE.DROP_AI_MODEL_ENDPOINT('native_complete_ep');
+call DBMS_AI_SERVICE.DROP_AI_MODEL_ENDPOINT('native_embed_ep');
+call DBMS_AI_SERVICE.DROP_AI_MODEL('native_complete');
+call DBMS_AI_SERVICE.DROP_AI_MODEL('native_embed');
+--exec python3 mysql_test/test_suite/ai_function/include/ai_ollama_mock.py stop 19129

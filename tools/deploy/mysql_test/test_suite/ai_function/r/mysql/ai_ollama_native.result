@@ -1,0 +1,16 @@
+select ai_complete('native_complete', 'hello') = 'native:hello' as native_generation;
+native_generation
+1
+select ai_complete('native_complete', ai_prompt('{0}/{0}', json_array(1,true)),
+'{"temperature":0.2,"max_tokens":8}') = 'native:[1, true]/[1, true]' as native_options;
+native_options
+1
+select json_length(ai_embed('native_embed', 'hello')) = 4 as native_embedding;
+native_embedding
+1
+select json_length(ai_embed('native_embed', 'hello', 3)) = 3 as requested_dimension;
+requested_dimension
+1
+select ai_complete('native_complete', 'authenticated') = 'native:authenticated' as optional_authentication;
+optional_authentication
+1
