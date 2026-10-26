@@ -17,6 +17,7 @@
 #define USING_LOG_PREFIX SQL_ENG
 #include "config_bridge.h"
 #include "sql/engine/dml/ob_dml_service.h"
+#include "sql/engine/dml/ob_ai_column_dml.h"
 #include "sql/engine/expr/ob_datum_cast.h"
 #include "share/rc/ob_server_runtime.h"
 #include "sql/das/ob_das_insert_op.h"
@@ -601,6 +602,9 @@ int ObDMLService::process_insert_row(const ObInsCtDef &ins_ctdef,
                                      bool &is_skipped)
 {
   int ret = OB_SUCCESS;
+  if (ins_ctdef.writes_ai_column_ && !dml_op.get_exec_ctx().get_my_session()->is_ai_column_internal_write()) {
+    return OB_NOT_SUPPORTED;
+  }
   if (ins_ctdef.is_primary_index_) {
     bool is_filtered = false;
     is_skipped = false;
@@ -743,6 +747,9 @@ int ObDMLService::process_update_row(const ObUpdCtDef &upd_ctdef,
                                      ObTableModifyOp &dml_op)
 {
   int ret = OB_SUCCESS;
+  if (upd_ctdef.writes_ai_column_ && !dml_op.get_exec_ctx().get_my_session()->is_ai_column_internal_write()) {
+    return OB_NOT_SUPPORTED;
+  }
   is_skipped = false;
   if (upd_ctdef.is_primary_index_) {
     uint64_t ref_table_id = upd_ctdef.das_base_ctdef_.index_tid_;
@@ -2165,6 +2172,7 @@ int ObDMLService::handle_after_processing_multi_row(ObDMLModifyRowsList *dml_mod
             }
           }
         }
+        if (OB_SUCC(ret)) { ret = AiColumnDml::after_row(modify_row); }
         // process after row trigger
         if (OB_SUCC(ret) && dml_ctdef.trig_ctdef_.all_tm_points_.has_after_row()) {
           ObEvalCtx &eval_ctx = op.get_eval_ctx();
@@ -2217,6 +2225,7 @@ int ObDMLService::handle_after_processing_single_row(ObDMLModifyRowNode &modify_
       } else if (OB_FAIL(ForeignKeyHandle::do_handle(op, dml_ctdef, dml_rtdef))) {
       }
     }
+    if (OB_SUCC(ret)) { ret = AiColumnDml::after_row(modify_row); }
     if (OB_SUCC(ret) && OB_FAIL(TriggerHandle::do_handle_after_row(op, dml_ctdef.trig_ctdef_, dml_rtdef.trig_rtdef_, dml_event))) {
     }
   }

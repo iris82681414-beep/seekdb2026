@@ -2170,7 +2170,11 @@ int ObDelUpdResolver::resolve_insert_columns(const ParseNode *node,
       } else if (!session_info_->get_ddl_info().is_ddl() && OB_HIDDEN_SESS_CREATE_TIME_COLUMN_ID == column_expr->get_column_id()) {
         ret = OB_NOT_SUPPORTED;
         LOG_USER_ERROR(OB_NOT_SUPPORTED, "specify __sess_create_time value");
-      } else if (OB_FAIL(mock_values_column_ref(column_expr))) {
+      } else {
+        bool is_ai = false;
+        OZ(check_ai_column_target(column_expr, del_upd_stmt, is_ai));
+        if (OB_SUCC(ret) && is_ai && !session_info_->is_ai_column_internal_write()) { ret = OB_NOT_SUPPORTED; }
+        OZ(mock_values_column_ref(column_expr));
       }
     }//end for
   } else {
@@ -2194,7 +2198,11 @@ int ObDelUpdResolver::resolve_insert_columns(const ParseNode *node,
       for (int64_t i = 0; OB_SUCC(ret) && i < N; i++) {
         uint64_t column_id = column_items.at(i).column_id_;
         bool is_duplicate = false;
-        if (OB_FAIL(check_insert_column_duplicate(column_id, is_duplicate))) {
+        bool is_ai = false;
+        OZ(check_ai_column_target(column_items.at(i).expr_, del_upd_stmt, is_ai));
+        if (OB_SUCC(ret) && is_ai && !session_info_->is_ai_column_internal_write()) { continue; }
+        if (OB_FAIL(ret)) {
+        } else if (OB_FAIL(check_insert_column_duplicate(column_id, is_duplicate))) {
         } else if (is_duplicate) {
           ret = OB_ERR_FIELD_SPECIFIED_TWICE;
           ObCStringHelper helper;

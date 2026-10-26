@@ -1,0 +1,124 @@
+# Task mutations must share the user's transaction and statement savepoints.
+# No endpoint is needed: all source mutations below are rolled back.
+connection default;
+--disable_query_log
+--disable_result_log
+--disable_warnings
+drop database if exists ai_column_transactions;
+--enable_warnings
+--error 0,11118
+call DBMS_AI_SERVICE.DROP_AI_MODEL('ai_transactions_model');
+call DBMS_AI_SERVICE.CREATE_AI_MODEL('ai_transactions_model',
+  '{"type":"completion","model_name":"unused-model"}');
+create database ai_column_transactions;
+create table ai_column_transactions.docs(
+  id bigint primary key, body varchar(100), other varchar(100),
+  a varchar(100) AI COLUMN(AI_COMPLETE('ai_transactions_model',body)),
+  b varchar(100) AI COLUMN(AI_COMPLETE('ai_transactions_model',other))
+);
+set @ai_table_id=(select t.table_id from oceanbase.__all_table t
+  join oceanbase.__all_database d on d.database_id=t.database_id
+  where d.database_name='ai_column_transactions' and t.table_name='docs');
+--enable_result_log
+start transaction;
+insert into ai_column_transactions.docs(id,body,other) values(1,'one','x'),(2,'two','y');
+select count(*)=2 and min(a is null and b is null) as pending_rows
+  from ai_column_transactions.docs;
+select count(*)=4 and count(distinct request_id)=2 and min(eligible_ts<=now(6)) as transaction_tasks
+  from oceanbase.__all_ai_column_task where table_id=@ai_table_id;
+savepoint before_dependency;
+update ai_column_transactions.docs set body='changed' where id=1;
+select count(*)=4 and count(distinct request_id)=3 as only_dependency_task_replaced
+  from oceanbase.__all_ai_column_task where table_id=@ai_table_id;
+rollback to savepoint before_dependency;
+select count(*)=4 and count(distinct request_id)=2 as savepoint_restores_tasks
+  from oceanbase.__all_ai_column_task where table_id=@ai_table_id;
+update ai_column_transactions.docs set id=3 where id=1;
+select count(*)=2 and count(distinct request_id)=1 as primary_key_tasks
+  from oceanbase.__all_ai_column_task where table_id=@ai_table_id and rowkey_predicate='`id` = 3';
+delete from ai_column_transactions.docs where id=2;
+select count(*)=2 as deleted_row_tasks_removed
+  from oceanbase.__all_ai_column_task where table_id=@ai_table_id;
+rollback;
+select count(*)=0 as rollback_restores_rows from ai_column_transactions.docs;
+select count(*)=0 as rollback_removes_tasks from oceanbase.__all_ai_column_task where table_id=@ai_table_id;
+start transaction;
+insert into ai_column_transactions.docs values(4,'implicit','list');
+select count(*)=1 and min(a is null and b is null) as implicit_list_skips_ai_columns
+  from ai_column_transactions.docs;
+--disable_result_log
+--error 1235
+insert into ai_column_transactions.docs(id,body,a) values(5,'bad',null);
+--error 1235
+update ai_column_transactions.docs set a='bad' where id=4;
+--enable_result_log
+select count(*)=1 as rejected_assignments_preserve_row from ai_column_transactions.docs;
+rollback;
+--disable_result_log
+--error 1062
+insert into ai_column_transactions.docs(id,body,other) values(7,'first','x'),(7,'duplicate','y');
+--enable_result_log
+select count(*)=0 as failed_statement_removes_tasks from oceanbase.__all_ai_column_task where table_id=@ai_table_id;
+start transaction;
+insert into ai_column_transactions.docs(id,body,other) values(8,'old','old');
+insert into ai_column_transactions.docs(id,body,other) values(8,'new','new')
+  on duplicate key update body=values(body);
+select count(*)=2 and count(distinct request_id)=2 as duplicate_update_is_selective
+  from oceanbase.__all_ai_column_task where table_id=@ai_table_id;
+replace into ai_column_transactions.docs(id,body,other) values(8,'replacement','replacement');
+select count(*)=2 and count(distinct request_id)=1 as replace_keeps_new_tasks
+  from oceanbase.__all_ai_column_task where table_id=@ai_table_id;
+insert into ai_column_transactions.docs(id,body,other)
+  select id+1,body,other from ai_column_transactions.docs where id=8;
+select count(*)=4 and count(distinct request_id)=2 as insert_select_creates_tasks
+  from oceanbase.__all_ai_column_task where table_id=@ai_table_id;
+update ai_column_transactions.docs d join (select 9 as id) x on d.id=x.id set d.body='joined';
+select count(*)=4 and count(distinct request_id)=3 as joined_update_is_selective
+  from oceanbase.__all_ai_column_task where table_id=@ai_table_id;
+rollback;
+create table ai_column_transactions.string_keys(
+  id varbinary(64) primary key, body varchar(100),
+  a varchar(100) AI COLUMN(AI_COMPLETE('ai_transactions_model',body))
+);
+set @ai_key_table=(select t.table_id from oceanbase.__all_table t
+  join oceanbase.__all_database d on d.database_id=t.database_id
+  where d.database_name='ai_column_transactions' and t.table_name='string_keys');
+set @ai_saved_mode=@@sql_mode;
+start transaction;
+set session sql_mode='NO_BACKSLASH_ESCAPES';
+insert into ai_column_transactions.string_keys(id,body)
+  values(X'61275c62e9','original');
+set session sql_mode='';
+update ai_column_transactions.string_keys set body='changed';
+select count(*)=1 as string_identity_survives_sql_mode
+  from oceanbase.__all_ai_column_task where table_id=@ai_key_table;
+delete from ai_column_transactions.string_keys;
+select count(*)=0 as string_key_delete_cleans_task
+  from oceanbase.__all_ai_column_task where table_id=@ai_key_table;
+rollback;
+set session sql_mode=@ai_saved_mode;
+create table ai_column_transactions.time_keys(
+  id timestamp(6) primary key, body varchar(100),
+  a varchar(100) AI COLUMN(AI_COMPLETE('ai_transactions_model',body))
+);
+set @ai_time_table=(select t.table_id from oceanbase.__all_table t
+  join oceanbase.__all_database d on d.database_id=t.database_id
+  where d.database_name='ai_column_transactions' and t.table_name='time_keys');
+set @ai_saved_zone=@@time_zone;
+start transaction;
+set session time_zone='+08:00';
+insert into ai_column_transactions.time_keys(id,body) values('2026-10-26 12:00:00.123456','original');
+set session time_zone='+00:00';
+update ai_column_transactions.time_keys set body='changed';
+select count(*)=1 as timestamp_identity_survives_timezone
+  from oceanbase.__all_ai_column_task where table_id=@ai_time_table;
+select count(*)=1 and min(a is null) as fractional_timestamp_matches_row
+  from ai_column_transactions.time_keys;
+delete from ai_column_transactions.time_keys;
+select count(*)=0 as timestamp_delete_cleans_task
+  from oceanbase.__all_ai_column_task where table_id=@ai_time_table;
+rollback;
+set session time_zone=@ai_saved_zone;
+drop database ai_column_transactions;
+call DBMS_AI_SERVICE.DROP_AI_MODEL('ai_transactions_model');
+--enable_query_log

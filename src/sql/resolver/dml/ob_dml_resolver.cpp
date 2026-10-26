@@ -1859,6 +1859,7 @@ int ObDMLResolver::resolve_basic_column_item(const TableItem &table_item,
   } else {
     bool is_uni = false;
     bool is_mul = false;
+    include_hidden |= session_info_->is_ai_column_internal_write();
     //not resolve, so add column item to dml stmt
     const ObColumnSchemaV2 *col_schema = NULL;
     const ObTableSchema *table_schema = NULL;
@@ -5672,6 +5673,24 @@ int ObDMLResolver::resolve_partitions(const ParseNode *part_node,
   return ret;
 }
 
+int ObDMLResolver::check_ai_column_target(const ObColumnRefRawExpr *column, ObDMLStmt *stmt, bool &is_ai)
+{
+  int ret = OB_SUCCESS;
+  is_ai = false;
+  const ColumnItem *item = column == nullptr || stmt == nullptr ? nullptr :
+      stmt->get_column_item_by_id(column->get_table_id(), column->get_column_id());
+  const TableItem *table = column == nullptr || stmt == nullptr ? nullptr :
+      stmt->get_table_item_by_id(column->get_table_id());
+  if (item == nullptr || table == nullptr || schema_checker_ == nullptr) { return OB_ERR_UNEXPECTED; }
+  if (!table->get_base_table_item().is_basic_table()) { return ret; }
+  const uint64_t table_id = item->base_tid_ == OB_INVALID_ID ? table->get_base_table_item().ref_id_ : item->base_tid_;
+  const uint64_t column_id = item->base_cid_ == OB_INVALID_ID ? item->column_id_ : item->base_cid_;
+  const ObColumnSchemaV2 *schema = nullptr;
+  OZ(schema_checker_->get_column_schema(table_id, column_id, schema, true));
+  if (OB_SUCC(ret)) { is_ai = schema != nullptr && schema->is_ai_column(); }
+  return ret;
+}
+
 int ObDMLResolver::check_basic_column_generated(const ObColumnRefRawExpr *col_expr,
                                                 ObDMLStmt *dml_stmt,
                                                 bool &is_generated)
@@ -5680,7 +5699,11 @@ int ObDMLResolver::check_basic_column_generated(const ObColumnRefRawExpr *col_ex
   is_generated = false;
   const TableItem *table_item = NULL;
   const ColumnItem *view_column_item = NULL;
-  if (OB_ISNULL(col_expr) || OB_ISNULL(dml_stmt)) {
+  bool is_ai = false;
+  if (OB_FAIL(check_ai_column_target(col_expr, dml_stmt, is_ai))) {
+  } else if (is_ai && !session_info_->is_ai_column_internal_write()) {
+    ret = OB_NOT_SUPPORTED;
+  } else if (OB_ISNULL(col_expr) || OB_ISNULL(dml_stmt)) {
     ret = OB_ERR_UNEXPECTED;
   } else if (col_expr->is_generated_column()) {
     is_generated = true;

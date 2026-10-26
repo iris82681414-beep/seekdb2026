@@ -2095,8 +2095,34 @@ int ObDmlCgService::generate_dml_base_ctdef(ObLogicalOperator &op,
   int ret = OB_SUCCESS;
   dml_base_ctdef.is_primary_index_ = index_dml_info.is_primary_index_;
   dml_base_ctdef.is_vec_hnsw_index_vid_opt_ = index_dml_info.is_vec_hnsw_index_vid_opt_;
+  if (index_dml_info.is_primary_index_) {
+    const ObTableSchema *table = nullptr;
+    OZ(cg_.opt_ctx_->get_schema_guard()->get_table_schema(index_dml_info.ref_table_id_, table));
+    if (OB_SUCC(ret) && table == nullptr) { ret = OB_TABLE_NOT_EXIST; }
+    for (int64_t i = 0; OB_SUCC(ret) && i < table->get_column_count(); ++i) {
+      const ObColumnSchemaV2 *column = table->get_column_schema_by_idx(i);
+      if (column != nullptr && column->is_ai_column()) { dml_base_ctdef.has_ai_columns_ = true; }
+    }
+    for (int64_t i = 0; OB_SUCC(ret) && i < index_dml_info.assignments_.count(); ++i) {
+      const ObColumnRefRawExpr *assigned = index_dml_info.assignments_.at(i).column_expr_;
+      const ObColumnSchemaV2 *column = assigned == nullptr ? nullptr : table->get_column_schema(assigned->get_column_id());
+      if (column != nullptr && column->is_ai_column()) { dml_base_ctdef.writes_ai_column_ = true; }
+    }
+    if (OB_SUCC(ret) && dml_base_ctdef.dml_type_ == DAS_OP_TABLE_INSERT && op.get_stmt()->is_insert_stmt()) {
+      const ObInsertStmt &insert = *static_cast<const ObInsertStmt *>(op.get_stmt());
+      for (int64_t i = 0; i < insert.get_values_desc().count(); ++i) {
+        const ObColumnSchemaV2 *column = table->get_column_schema(insert.get_values_desc().at(i)->get_column_id());
+        if (column != nullptr && column->is_ai_column()) { dml_base_ctdef.writes_ai_column_ = true; }
+      }
+    }
+    if (dml_base_ctdef.has_ai_columns_) {
+      cg_.phy_plan_->set_has_nested_sql(true);
+      cg_.phy_plan_->set_need_serial_exec(true);
+    }
+  }
   dml_base_ctdef.column_ids_.set_capacity(index_dml_info.column_exprs_.count());
-  if (OB_FAIL(generate_dml_column_ids(op, index_dml_info.column_exprs_, dml_base_ctdef.column_ids_))) {
+  if (OB_FAIL(ret)) {
+  } else if (OB_FAIL(generate_dml_column_ids(op, index_dml_info.column_exprs_, dml_base_ctdef.column_ids_))) {
   } else if (OB_FAIL(cg_.generate_rt_exprs(old_row, dml_base_ctdef.old_row_))) {
   } else if (OB_FAIL(cg_.generate_rt_exprs(new_row, dml_base_ctdef.new_row_))) {
   } else if (index_dml_info.is_primary_index_) {
