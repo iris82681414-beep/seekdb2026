@@ -6,7 +6,7 @@
 
 - seekdb 保留官方 `2026-competition` 历史，基线为 `5bce9e06d1281347ad61344e4b01fab9158c58a2`。用户私有仓库已建立 `main` 和 `2026-competition` 分支。
 - PowerContext 位于本地 `.competition/powercontext`，保留比赛分支及冻结产品提交 `9db1753434162c0aa7c9f1189a1722e617880a52`。
-- PowerContext 最新实现已推送至私有仓库 `powercontext-2026-competition`，完整提交为 `94474fecb3bc772713e0fb6ca3c28d92ebef22ea`。
+- PowerContext 最新实现已推送至私有仓库 `powercontext-2026-competition`，完整提交为 `4898d93e7b3f6b34255f9f35953e0daf2e771525`。
 - GitHub 仓库当前默认分支仍是 PowerContext 答题分支；正式提测须明确选取产品对应的分支和 commit。
 - 华为云现有实例为 Ubuntu 24.04 x86_64、4 核、约 15 GB 内存。专用目录 `/root/oceanbase2026`，日志位于 `logs`，测试产物位于 `results`。
 - 连接信息保存在仓库外 `/Users/liwangsheng/.config/oceanbase2026/server.env`，文件权限 600、目录权限 700。额外源码、下载数据和操作脚本均由本地排除规则排除，未提交到 Git。
@@ -32,12 +32,12 @@
 | 数量触发记忆处理 | 20 | Linux 公开验收 17 项通过，覆盖单窗、数量/时间 OR、重复身份、lineage、重启及故障恢复 |
 | Embedding 合并和缓存 | 20 | Linux 公开验收 8 项通过，包含六个 scope 的四次请求预算 |
 | 来源撤回与恢复 | 20 | Linux 公开验收 4 项通过；另有原生存储失败后跨重启恢复及 scope 隔离回归通过 |
-| 预算内证据选择 | 20 | Linux 公开验收 3 项通过；48 次请求的完整质量门槛待验证 |
+| 预算内证据选择 | 20 | Linux 公开验收及新增回归通过；未参与调整的 48 次独立请求召回 68.08%、完整覆盖 64.58%，达到独立样本门槛；正式质量序列仍待验证 |
 | seekdb 单 SQL 混合检索 | 20 | 原生 seekdb Linux 验收通过，含两类索引 EXPLAIN、过滤、版本和停用恢复；完整质量与延迟门槛待验证 |
 | 高德地图 Skill | 20 | 已有单文件与格式校验记录；按用户要求暂缓，不再推进 |
 | 其余六道生态题 | 120 | 按用户要求暂缓 |
 
-PowerContext 的十道代码题在官方固定依赖、CPUQuota 100% 和 MemoryMax 2G 限制下，共 95 项原版 Linux 公开测试全部通过，覆盖题面分值合计 230 分。原版测试、依赖锁文件、工作负载和评分文件保持原样。日志为本地 `.competition/results/powercontext-complete.log` 与远端 `logs/powercontext-complete.log`，退出码 0。
+PowerContext 的十道代码题此前在完整提交 `94474fecb3bc772713e0fb6ca3c28d92ebef22ea`、官方固定依赖、CPUQuota 100% 和 MemoryMax 2G 限制下，共 95 项原版 Linux 公开测试全部通过，覆盖题面分值合计 230 分。原版测试、依赖锁文件、工作负载和评分文件保持原样。日志为本地 `.competition/results/powercontext-complete.log` 与远端 `logs/powercontext-complete.log`，退出码 0。最新证据权重修改针对受影响的证据选择与增量上下文路径完成下述验证，不将此前 95 项记录标成新提交的完整重跑结果。
 
 独立增量测量使用固定 QMSum commit 的 ES2004a 原文，SHA-256 为 `911e56db0d8482f1e730bae0a8fcf0ab0095c94abb000ba0516e975fa6e48b31`。初始 8 个真实 turn，40 轮中追加 3 个 turn 并切换查询，形成 8 种不同 Context；每轮均经序列化独立重建并逐字核对。原始完整正文累计 150,035 bytes，增量协议累计 47,768 bytes，净节省 68.16%；完整 v1 pack 累计 208,255 bytes，逐轮 gzip 累计 67,115 bytes。该独立序列不是平台正式成本序列，结果保存于 `.competition/results/context-pack-measurement.json`。
 
@@ -51,7 +51,9 @@ AI 函数增强的六项实现已覆盖。Linux 原生实例使用未修改的 `
 
 新增边界验证还覆盖 OpenAI、Ollama、Dashscope 的空 Completion，以及 Dashscope 错误 JSON 结构，均按错误返回。跨行向量回归包含过滤、倒序和 LIMIT，以及 1,100 行跨执行批次、35 个 NULL 的原始行映射；同轮 12 项用例通过，另有 17 组异常响应被拒绝且实例保持可用。该二进制运行于新建测试实例 `/root/oceanbase2026/instances/core-endpoints`，原始实例及冻结二进制继续保留。
 
-预算证据题已增加独立真实 SciFact 质量测量。固定下载包 SHA-256 为 `11c621288d41ac144d29b13b0f8503b3820b7d6e8b1f6ff24dff335c196d76be`；从 dev claim 池按固定种子选取 24 条、每条三个摘要，两档预算共 48 次请求，并检查标注片段连同实际引用及 envelope 均能装入预算。所有候选通过本机 SQLite Runtime 真实入库、选择和引用回查；标注仅用于独立计分，不传入产品。平均证据词项召回为 62.27%，完整覆盖为 41.67%。这不是正式序列，且独立样本的召回仍低于题面阈值，因此该题尚不能判定质量达标。结果位于 `.competition/results/evidence-selection-feasible-48.json`；未保留缺少稳定收益的排序调整，PowerContext 产品提交仍为上列已验证版本。
+预算证据选择已调整候选文档频率权重，降低所有摘要共同出现的词对排序的影响，保留查询特有证据。SciFact 固定下载包 SHA-256 为 `11c621288d41ac144d29b13b0f8503b3820b7d6e8b1f6ff24dff335c196d76be`。原开发样本 48 次请求的平均证据词项召回从 62.27% 升到 65.80%，完整覆盖从 41.67% 升到 45.83%。另以种子 20261028 排除此前使用过的 75 条 claim，建立未参与调整的样本；从 40 条 claim 的 80 次测量中按证据预算可行性选取 24 条、两档预算共 48 次计分请求，每次仍包含三篇原始摘要。基线和修改版输入逐项相同；召回从 63.65% 升到 68.08%，完整覆盖从 56.25% 升到 64.58%，超过题面 65% 和 40% 的门槛。全部候选经真实 SQLite Runtime 入库、选择和引用回查；标注仅用于外部计分，不传入产品。该序列仍不替代平台正式质量验收。
+
+同一新样本在 Linux 官方固定依赖、单核 CPU 配额和 2 GiB 内存限制下复现相同质量值，80 次测量池耗时 6.26 秒、内存峰值 217,664 KiB。Linux 的 3 项原版证据用例、14 项增量上下文用例及 3 项自有证据回归通过；本地相关测试共 74 项通过。新增回归证明重复通用词不能挤掉文档尾部的区分性证据，旧实现失败、修改版通过。修改文件的格式、lint 和类型检查通过；全仓类型检查仍有与未修改基线输出完全相同的 190 条诊断，未宣称全仓类型检查通过。记录为 `.competition/results/powercontext-evidence-idf-validation.json`、`evidence-selection-idf-linux.json`、`evidence-selection-idf-linux-baseline.json` 和 `powercontext-evidence-idf-acceptance.log`。
 
 
 File SQL 已实现 CSV、JSONL、Parquet 的原生读取，SQL 命名选项、别名和动态类型，包含 DESCRIBE、文件发现、批量取数、重扫、聚合及 JOIN。COPY 支持表或查询输出、表头与 CSV 选项，目标已存在时拒绝覆盖；空查询也会发布表头，查询失败会清理临时文件。Linux 原版 `file_sql_basic` 和新增 `file_sql_queries` 两项 mysqltest 均通过；原版用例及原始数据保持原样。结果保存于 `.competition/results/seekdb-file-sql-final.json`。
