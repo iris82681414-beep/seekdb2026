@@ -32,3 +32,15 @@ failed_targets
 0
 temporary_files
 0
+# bounded glob preserves wildcard, literal, and hidden-file semantics
+file
+basic.csv
+quoted.csv
+literal_match
+1
+literal_missing
+0
+visible_files
+7
+hidden_files
+1

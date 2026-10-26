@@ -45,6 +45,14 @@ eval copy (select id, case when id < 3 then name else cast(json_extract(concat('
 eval select count(*) AS failed_targets from glob('$FILE_SQL_DATA_DIR/failed.csv');
 eval select count(*) AS temporary_files from glob('$FILE_SQL_DATA_DIR/.seekdb-copy-*');
 
+--echo # bounded glob preserves wildcard, literal, and hidden-file semantics
+eval select substring_index(file,'/',-1) AS file from glob('$FILE_SQL_DATA_DIR/[bq]*.csv') order by file;
+eval select count(*) AS literal_match from glob('$FILE_SQL_DATA_DIR/weights.csv');
+eval select count(*) AS literal_missing from glob('$FILE_SQL_DATA_DIR/missing.csv');
+eval copy (select 1 AS id) to '$FILE_SQL_DATA_DIR/.hidden.csv' (header);
+eval select count(*) AS visible_files from glob('$FILE_SQL_DATA_DIR/*');
+eval select count(*) AS hidden_files from glob('$FILE_SQL_DATA_DIR/.*.csv');
+
 --disable_result_log
 --error 1054
 eval select nonexistent from read_csv('$FILE_SQL_DATA_DIR/basic.csv');

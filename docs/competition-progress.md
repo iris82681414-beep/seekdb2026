@@ -20,7 +20,7 @@
 | AI_EMBED 单行、AI_COMPLETE | 20 | 请求/响应核心实现通过长文本、空配置、JSON 配置、维度及 17 组异常响应的原生回归，待正式完整验收 |
 | Ollama Provider | 10 | 原生免 Key、可选认证、生成、参数和向量路径回归通过；同轮 12 项 mysqltest 全通过 |
 | AI_RERANK、跨行批量 AI_EMBED | 20 | 原生 SQL 实现及回归已通过；重排跨三批完整排序、14 类异常响应；向量按模型/维度分组、NULL/LOB、乱序响应和实际合并请求已验证 |
-| 文件即数据库 | 50 | 原生三格式读取、批量/重扫、DESCRIBE、glob、CSV COPY 已实现；原版及新增 2 项 mysqltest、8 项 Rust 测试、21 项独立 SQL 专项通过，隐藏边界继续核验 |
+| 文件即数据库 | 50 | 原生三格式读取、批量/重扫、DESCRIBE、glob、CSV COPY 已实现；原版及新增 2 项 mysqltest、8 项 Rust 测试、30 项独立 SQL 专项通过，隐藏边界继续核验 |
 | AI 列 | 50 | 原版用例在 AI COLUMN 语法处失败，待实现 |
 | 全文索引性能 | 50 | 冻结原版二进制已完成原版默认规模测量、命中一致；本机按固定 CI 基线计算已为 100/100，不作为本实现的优化收益或正式成绩 |
 | PowerContext 仓库准备 | 10 | 冻结历史和私有分支已准备，待平台读取配置及核验 |
@@ -59,6 +59,8 @@ File SQL 已实现 CSV、JSONL、Parquet 的原生读取，SQL 命名选项、�
 格式与编码层的 8 项 Rust 测试、格式检查和 Clippy 全目标检查通过，日志位于 `.competition/results/file-scan-quality.log`。原生 SQL 另外通过 10 项权限专项和 11 项大文件及失败路径专项：覆盖旧连接实时遵守全局目录规则、NULL/空规则、目录前缀与符号链接、FILE 权限及启用角色、跨 2,005 行批次、分组、跨格式 JOIN、LEFT JOIN 补 NULL、全 NULL 列，以及 300 行合计 19,800,000 bytes 的字段处理。中途修改输入文件会中止 COPY；并发抢先创建的目标保留原内容，临时文件清理验证通过。两份记录为 `.competition/results/seekdb-file-sql-policy.json`、`.competition/results/seekdb-file-sql-streaming.json`。这些是自建数据的独立测试，不替代隐藏测试或平台成绩。
 
 当前测试实例为 `/root/oceanbase2026/instances/core-files`，验证二进制另存为 `/root/oceanbase2026/seekdb-file-sql-empty`。整合 File SQL 后，既有 12 项 AI mysqltest 再次全部通过，记录为 `.competition/results/seekdb-ai-after-file-sql.json`，模型响应仍来自本地确定性 HTTP fixture。新增系统变量的生成器已验证重复生成一致，原有 719 个变量的赋值保持一致；增量构建会跟踪语法源文件并重新生成解析器。文件发现和类型边界仍继续做专项复核。
+
+文件发现进一步改为逐目录扫描，限制保留 10,000 个路径、检查 100,000 个目录项及路径，并周期性检查查询取消状态，避免系统 glob 在检查上限前先分配所有匹配项。新增 9 项独立检查全部通过，包括目录通配、合法目录链接、隐藏文件、无匹配、10,001 个匹配文件及 100,001 个不匹配文件的超限路径。连续 30 次超限后，实例文件句柄数保持 25；同轮两项 File SQL 综合用例和 10 项权限专项再次通过。记录为 `.competition/results/seekdb-file-sql-glob.json`、`.competition/results/seekdb-file-sql-bounded.json` 和上述权限记录。当前实例使用 `/root/oceanbase2026/seekdb-file-sql-bounded` 的副本，其 SHA-256 为 `7b2a339bcab4a88b7bfae6fea6943af6eb9bfad55d1b414b8c6791310bf4e45c`。
 
 ## 后续工作
 

@@ -13,13 +13,16 @@
 #include <cerrno>
 #include <climits>
 #include <cstring>
+#include <functional>
+#include <memory>
 #include <new>
 #include <optional>
 #include <string>
 #include <vector>
 #ifndef _WIN32
 #include <fcntl.h>
-#include <glob.h>
+#include <dirent.h>
+#include <fnmatch.h>
 #include <sys/stat.h>
 #include <unistd.h>
 #endif
@@ -199,22 +202,70 @@ int discover_files(ObSQLSessionInfo &session, const ObString &pattern, std::vect
   FileDescriptor checked;
   std::string canonical;
   if (OB_FAIL(checked_open(session, view(directory), true, checked, canonical))) { return ret; }
-  glob_t paths = {};
-  const int status = ::glob(text.c_str(), GLOB_NOSORT, nullptr, &paths);
-  if (status != 0 && status != GLOB_NOMATCH) { ret = OB_IO_ERROR; }
-  else if (paths.gl_pathc > 10000) { ret = OB_SIZE_OVERFLOW; }
-  for (size_t i = 0; OB_SUCC(ret) && i < paths.gl_pathc; ++i) {
-    struct stat st;
-    if (::stat(paths.gl_pathv[i], &st) != 0) { ret = OB_IO_ERROR; }
-    else if (S_ISDIR(st.st_mode)) { /* glob() exposes files only */ }
-    else {
-      FileDescriptor fd;
-      std::string full;
-      if (OB_FAIL(checked_open(session, ObString(paths.gl_pathv[i]), false, fd, full))) {
-      } else { files.push_back(full); }
-    }
+  std::vector<std::string> components;
+  for (size_t start = prefix_end == std::string::npos ? 0 : prefix_end + 1; start < text.size();) {
+    const size_t end = text.find('/', start);
+    const std::string part = text.substr(start, end == std::string::npos ? end : end - start);
+    if (!part.empty() && part != ".") { components.push_back(part); }
+    start = end == std::string::npos ? text.size() : end + 1;
   }
-  ::globfree(&paths);
+  if (components.size() > 64) { return OB_SIZE_OVERFLOW; }
+  uint64_t visited = 0;
+  auto budget = [&]() -> int {
+    if (++visited > 100000) { return OB_SIZE_OVERFLOW; }
+    return (visited & 255) == 0 && session.get_cur_exec_ctx() != nullptr ?
+        session.get_cur_exec_ctx()->check_status() : OB_SUCCESS;
+  };
+  // POSIX glob() allocates every match before its caller can enforce a limit.
+  // Walk one directory at a time so both discovery work and retained names are bounded.
+  std::function<int(int, const std::string &, size_t)> walk;
+  walk = [&](int directory_fd, const std::string &parent, size_t depth) -> int {
+    int ret = OB_SUCCESS;
+    if (depth >= components.size()) { return ret; }
+    const std::string &part = components[depth];
+    const bool last = depth + 1 == components.size();
+    auto visit = [&](const char *name) -> int {
+      int ret = OB_SUCCESS;
+      if (OB_FAIL(budget())) { return ret; }
+      const std::string candidate = parent + (parent == "/" ? "" : "/") + name;
+      if (candidate.size() >= PATH_MAX) { return OB_SIZE_OVERFLOW; }
+      struct stat status;
+      if (::fstatat(directory_fd, name, &status, 0) != 0) {
+        return errno == ENOENT ? OB_SUCCESS : OB_IO_ERROR;
+      }
+      if (last && S_ISDIR(status.st_mode)) { return ret; }
+      if (!last && !S_ISDIR(status.st_mode)) { return ret; }
+      FileDescriptor entry;
+      std::string full;
+      if (OB_FAIL(checked_open(session, view(candidate), !last, entry, full))) {
+      } else if (!last) { ret = walk(entry.fd_, full, depth + 1); }
+      else if (files.size() >= 10000) { ret = OB_SIZE_OVERFLOW; }
+      else { files.push_back(full); }
+      return ret;
+    };
+    if (part.find_first_of("*?[\\") == std::string::npos) { return visit(part.c_str()); }
+    FileDescriptor duplicate(::fcntl(directory_fd, F_DUPFD_CLOEXEC, 0));
+    if (duplicate.fd_ < 0) { return OB_IO_ERROR; }
+    DIR *raw = ::fdopendir(duplicate.fd_);
+    if (raw == nullptr) { return OB_IO_ERROR; }
+    duplicate.release(); // fdopendir owns the duplicate after a successful call.
+    std::unique_ptr<DIR, decltype(&::closedir)> directory(raw, ::closedir);
+    while (OB_SUCC(ret)) {
+      errno = 0;
+      const struct dirent *entry = ::readdir(directory.get());
+      if (entry == nullptr) {
+        if (errno != 0) { ret = OB_IO_ERROR; }
+        break;
+      }
+      if (OB_FAIL(budget())) {
+      } else if (std::strcmp(entry->d_name, ".") != 0 && std::strcmp(entry->d_name, "..") != 0 &&
+                 ::fnmatch(part.c_str(), entry->d_name, FNM_PERIOD) == 0) {
+        ret = visit(entry->d_name);
+      }
+    }
+    return ret;
+  };
+  ret = walk(checked.fd_, canonical, 0);
   std::sort(files.begin(), files.end());
   files.erase(std::unique(files.begin(), files.end()), files.end());
 #endif
