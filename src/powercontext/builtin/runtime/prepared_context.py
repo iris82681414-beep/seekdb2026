@@ -20,7 +20,7 @@ import json
 from collections.abc import Sequence
 from dataclasses import dataclass, replace
 from itertools import chain
-from typing import TypeVar
+from typing import TYPE_CHECKING, TypeVar
 
 from powercontext.artifacts import ArtifactAddress, ArtifactRef
 from powercontext.builtin.artifacts.experience import Experience, ExperienceSearchHit, render_experience
@@ -41,6 +41,9 @@ from powercontext.builtin.runtime.prepared_text import (
     render_context_text,
 )
 from powercontext.builtin.runtime.recall_sufficiency import RecallBudgetView
+
+if TYPE_CHECKING:
+    from powercontext.builtin.runtime.evidence_selection import MemoryEvidenceFragment
 
 _MIN_TRUNCATED_CONTENT_BYTES = 64
 _ELLIPSIS = "…"
@@ -106,6 +109,7 @@ class PreparedContextBuild:
     origins: tuple[PreparedContextOrigin, ...]
     omissions: PreparedContextOmissions = PreparedContextOmissions()
     code_origins: tuple[CodeEvidenceRef, ...] = ()
+    fragments: tuple[MemoryEvidenceFragment, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -211,6 +215,13 @@ class PreparedContextBuilder:
         profile_candidates: Sequence[PreparedProfileCandidate] = (),
         code_candidates: Sequence[PreparedCodeCandidate] = (),
     ) -> PreparedContextBuild:
+        if request.evidence_selection:
+            from powercontext.builtin.runtime.evidence_selection import build_memory_evidence
+
+            if sum(len(candidates.hits) for candidates in memory_candidates) > self.memory_candidate_limit:
+                raise PreparedContextInvariantError("memory-candidate-limit")
+            return build_memory_evidence(request, memory_candidates, current_scope_id=current_scope_id)
+
         if request.include_code:
 
             def historical(history_request: PrepareContextRequest, entries: int) -> PreparedContextBuild:
@@ -276,6 +287,20 @@ class PreparedContextBuilder:
         the same inputs as :meth:`build_scopes_result` are guaranteed to yield the same
         counters because both go through :meth:`_select_entries`.
         """
+
+        if request.evidence_selection:
+            build = self.build_scopes_result(
+                request=request,
+                current_scope_id=current_scope_id,
+                memory_candidates=memory_candidates,
+            )
+            return RecallBudgetView(
+                max_bytes=request.max_bytes,
+                delivered_items=len(build.origins),
+                truncated_items=build.omissions.truncated_items,
+                dropped_items=build.omissions.dropped_items,
+                unused_bytes=max(0, request.max_bytes - build.context.content_bytes),
+            )
 
         content, origins, omissions = self._select_entries(
             request=request,

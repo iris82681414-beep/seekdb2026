@@ -153,6 +153,14 @@ _SEARCH_TOPIC_FTS_SQL = """
                bm25(pc_topic_memory_topic_fts) AS score, ({coverage}) AS coverage
         FROM pc_topic_memory_topic_fts
         WHERE pc_topic_memory_topic_fts MATCH :query AND scope_id = :scope_id
+          AND EXISTS (
+              SELECT 1 FROM pc_artifact_heads AS lifecycle_head
+              WHERE lifecycle_head.scope_id = pc_topic_memory_topic_fts.scope_id
+                AND lifecycle_head.family = 'topic-memory'
+                AND lifecycle_head.artifact_id = pc_topic_memory_topic_fts.artifact_id
+                AND lifecycle_head.revision = pc_topic_memory_topic_fts.revision
+                AND lifecycle_head.lifecycle_state = 'active'
+          )
     )
     SELECT artifact_id, revision, title, summary
     FROM scored
@@ -164,12 +172,28 @@ _COUNT_TOPIC_FTS_SQL = """
     SELECT count(*)
     FROM pc_topic_memory_topic_fts
     WHERE pc_topic_memory_topic_fts MATCH :query AND scope_id = :scope_id
+          AND EXISTS (
+              SELECT 1 FROM pc_artifact_heads AS lifecycle_head
+              WHERE lifecycle_head.scope_id = pc_topic_memory_topic_fts.scope_id
+                AND lifecycle_head.family = 'topic-memory'
+                AND lifecycle_head.artifact_id = pc_topic_memory_topic_fts.artifact_id
+                AND lifecycle_head.revision = pc_topic_memory_topic_fts.revision
+                AND lifecycle_head.lifecycle_state = 'active'
+          )
     """
 _COUNT_TOPIC_FTS_ELIGIBLE_SQL = """
     WITH scored AS (
         SELECT ({coverage}) AS coverage
         FROM pc_topic_memory_topic_fts
         WHERE pc_topic_memory_topic_fts MATCH :query AND scope_id = :scope_id
+          AND EXISTS (
+              SELECT 1 FROM pc_artifact_heads AS lifecycle_head
+              WHERE lifecycle_head.scope_id = pc_topic_memory_topic_fts.scope_id
+                AND lifecycle_head.family = 'topic-memory'
+                AND lifecycle_head.artifact_id = pc_topic_memory_topic_fts.artifact_id
+                AND lifecycle_head.revision = pc_topic_memory_topic_fts.revision
+                AND lifecycle_head.lifecycle_state = 'active'
+          )
     )
     SELECT count(*)
     FROM scored
@@ -181,6 +205,14 @@ _SEARCH_CHUNK_FTS_SQL = """
                bm25(pc_topic_memory_chunk_fts) AS score, ({coverage}) AS coverage
         FROM pc_topic_memory_chunk_fts
         WHERE pc_topic_memory_chunk_fts MATCH :query AND scope_id = :scope_id
+          AND EXISTS (
+              SELECT 1 FROM pc_artifact_heads AS lifecycle_head
+              WHERE lifecycle_head.scope_id = pc_topic_memory_chunk_fts.scope_id
+                AND lifecycle_head.family = 'topic-memory'
+                AND lifecycle_head.artifact_id = pc_topic_memory_chunk_fts.artifact_id
+                AND lifecycle_head.revision = pc_topic_memory_chunk_fts.revision
+                AND lifecycle_head.lifecycle_state = 'active'
+          )
     ), ranked AS (
         SELECT scored.*,
                row_number() OVER (
@@ -201,6 +233,14 @@ _COUNT_CHUNK_FTS_SQL = """
                bm25(pc_topic_memory_chunk_fts) AS score, ({coverage}) AS coverage
         FROM pc_topic_memory_chunk_fts
         WHERE pc_topic_memory_chunk_fts MATCH :query AND scope_id = :scope_id
+          AND EXISTS (
+              SELECT 1 FROM pc_artifact_heads AS lifecycle_head
+              WHERE lifecycle_head.scope_id = pc_topic_memory_chunk_fts.scope_id
+                AND lifecycle_head.family = 'topic-memory'
+                AND lifecycle_head.artifact_id = pc_topic_memory_chunk_fts.artifact_id
+                AND lifecycle_head.revision = pc_topic_memory_chunk_fts.revision
+                AND lifecycle_head.lifecycle_state = 'active'
+          )
     ), ranked AS (
         SELECT scored.*,
                row_number() OVER (
@@ -219,6 +259,14 @@ _COUNT_CHUNK_FTS_ELIGIBLE_SQL = """
                bm25(pc_topic_memory_chunk_fts) AS score, ({coverage}) AS coverage
         FROM pc_topic_memory_chunk_fts
         WHERE pc_topic_memory_chunk_fts MATCH :query AND scope_id = :scope_id
+          AND EXISTS (
+              SELECT 1 FROM pc_artifact_heads AS lifecycle_head
+              WHERE lifecycle_head.scope_id = pc_topic_memory_chunk_fts.scope_id
+                AND lifecycle_head.family = 'topic-memory'
+                AND lifecycle_head.artifact_id = pc_topic_memory_chunk_fts.artifact_id
+                AND lifecycle_head.revision = pc_topic_memory_chunk_fts.revision
+                AND lifecycle_head.lifecycle_state = 'active'
+          )
     ), ranked AS (
         SELECT scored.*,
                row_number() OVER (
@@ -254,6 +302,14 @@ _TOPIC_VECTOR_SEARCH_SQL = text(
           AND rowid IN (
               SELECT vector_id FROM pc_topic_memory_vector_topics
               WHERE scope_id = :scope_id AND profile_fingerprint = :profile_fingerprint
+                AND EXISTS (
+                    SELECT 1 FROM pc_artifact_heads AS lifecycle_head
+                    WHERE lifecycle_head.scope_id = pc_topic_memory_vector_topics.scope_id
+                      AND lifecycle_head.family = 'topic-memory'
+                      AND lifecycle_head.artifact_id = pc_topic_memory_vector_topics.artifact_id
+                      AND lifecycle_head.revision = pc_topic_memory_vector_topics.revision
+                      AND lifecycle_head.lifecycle_state = 'active'
+                )
           )
     )
     SELECT a.artifact_id, a.revision, a.title, a.summary, nearest.distance
@@ -274,6 +330,14 @@ _CHUNK_VECTOR_SEARCH_SQL = text(
           AND rowid IN (
               SELECT vector_id FROM pc_topic_memory_vector_chunks
               WHERE scope_id = :scope_id AND profile_fingerprint = :profile_fingerprint
+                AND EXISTS (
+                    SELECT 1 FROM pc_artifact_heads AS lifecycle_head
+                    WHERE lifecycle_head.scope_id = pc_topic_memory_vector_chunks.scope_id
+                      AND lifecycle_head.family = 'topic-memory'
+                      AND lifecycle_head.artifact_id = pc_topic_memory_vector_chunks.artifact_id
+                      AND lifecycle_head.revision = pc_topic_memory_vector_chunks.revision
+                      AND lifecycle_head.lifecycle_state = 'active'
+                )
           )
     ), ranked AS (
         SELECT a.artifact_id, a.revision, a.title, a.summary,

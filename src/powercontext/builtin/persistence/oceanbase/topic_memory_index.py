@@ -59,6 +59,7 @@ from powercontext.builtin.persistence.tables import (
     identity_string,
 )
 from powercontext.builtin.persistence.topic_memory_index import (
+    topic_memory_current_predicate,
     topic_memory_embedding_profile_fingerprint,
     validate_current_topic_vectors,
 )
@@ -93,6 +94,14 @@ WITH candidates AS (
     FROM pc_topic_memory_vector_topics AS v
     WHERE v.scope_id = :scope_id
       AND v.profile_fingerprint = :profile_fingerprint
+      AND EXISTS (
+          SELECT 1 FROM pc_artifact_heads AS lifecycle_head
+          WHERE lifecycle_head.scope_id = v.scope_id
+            AND lifecycle_head.family = 'topic-memory'
+            AND lifecycle_head.artifact_id = v.artifact_id
+            AND lifecycle_head.revision = v.revision
+            AND lifecycle_head.lifecycle_state = 'active'
+      )
     ORDER BY l2_distance(v.embedding, :query_vector) APPROXIMATE
     LIMIT :candidate_limit
 )
@@ -109,6 +118,14 @@ WITH neighbors AS (
     FROM pc_topic_memory_vector_chunks AS v
     WHERE v.scope_id = :scope_id
       AND v.profile_fingerprint = :profile_fingerprint
+      AND EXISTS (
+          SELECT 1 FROM pc_artifact_heads AS lifecycle_head
+          WHERE lifecycle_head.scope_id = v.scope_id
+            AND lifecycle_head.family = 'topic-memory'
+            AND lifecycle_head.artifact_id = v.artifact_id
+            AND lifecycle_head.revision = v.revision
+            AND lifecycle_head.lifecycle_state = 'active'
+      )
     ORDER BY l2_distance(v.embedding, :query_vector) APPROXIMATE
     LIMIT :neighbor_limit
 ), ranked AS (
@@ -185,6 +202,7 @@ class OceanBaseTopicMemoryFTSIndex:
             .select_from(TOPIC_MEMORY_ACTIVE_TOPICS_TABLE)
             .where(
                 TOPIC_MEMORY_ACTIVE_TOPICS_TABLE.c.scope_id == scope_id,
+                topic_memory_current_predicate(TOPIC_MEMORY_ACTIVE_TOPICS_TABLE),
                 topic_score,
             )
         )
@@ -193,6 +211,7 @@ class OceanBaseTopicMemoryFTSIndex:
             .select_from(TOPIC_MEMORY_ACTIVE_TOPICS_TABLE)
             .where(
                 TOPIC_MEMORY_ACTIVE_TOPICS_TABLE.c.scope_id == scope_id,
+                topic_memory_current_predicate(TOPIC_MEMORY_ACTIVE_TOPICS_TABLE),
                 topic_score,
                 topic_coverage,
             )
@@ -207,6 +226,7 @@ class OceanBaseTopicMemoryFTSIndex:
                 )
                 .where(
                     TOPIC_MEMORY_ACTIVE_TOPICS_TABLE.c.scope_id == scope_id,
+                    topic_memory_current_predicate(TOPIC_MEMORY_ACTIVE_TOPICS_TABLE),
                     topic_score,
                     topic_coverage,
                 )
@@ -258,6 +278,7 @@ class OceanBaseTopicMemoryFTSIndex:
             )
             .where(
                 TOPIC_MEMORY_ACTIVE_CHUNKS_TABLE.c.scope_id == scope_id,
+                topic_memory_current_predicate(TOPIC_MEMORY_ACTIVE_CHUNKS_TABLE),
                 chunk_score,
             )
             .subquery()

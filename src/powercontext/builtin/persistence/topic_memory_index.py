@@ -33,7 +33,28 @@ from powercontext.builtin.artifacts.topic_memory import (
     TopicMemorySearchRequest,
     TopicMemoryStorageInvariantError,
 )
-from powercontext.builtin.persistence.tables import TOPIC_MEMORY_ACTIVE_CHUNKS_TABLE, TOPIC_MEMORY_ACTIVE_TOPICS_TABLE
+from powercontext.builtin.persistence.tables import (
+    ARTIFACT_HEADS_TABLE,
+    TOPIC_MEMORY_ACTIVE_CHUNKS_TABLE,
+    TOPIC_MEMORY_ACTIVE_TOPICS_TABLE,
+)
+
+
+def topic_memory_current_predicate(table: Table) -> ColumnElement[bool]:
+    """Keep unavailable heads out of candidate selection, before its LIMIT."""
+    head = ARTIFACT_HEADS_TABLE.alias("lifecycle_head")
+    return (
+        select(head.c.artifact_id)
+        .where(
+            head.c.scope_id == table.c.scope_id,
+            head.c.family == TopicMemory.family,
+            head.c.artifact_id == table.c.artifact_id,
+            head.c.revision == table.c.revision,
+            head.c.lifecycle_state == "active",
+        )
+        .correlate(table)
+        .exists()
+    )
 
 
 class TopicMemoryIndex(Protocol):
