@@ -204,9 +204,10 @@ Principal，并注入 Authorization Provider。HTTP 与 MCP 使用同一个策�
 }
 ```
 
-`/v1/memory/remember` 和 `/v1/memory/entries/revise` 的正文在 Unicode NFC 规范化并去掉首尾空白后，
-最多为 8192 个 UTF-8 字节。这是字节数限制，不是字符数限制。正文超限时返回 HTTP `422`，
-顶层错误码仍为 `invalid_request`：
+`/v1/memory/remember` 和 `/v1/memory/entries/revise` 写入的独立笔记，在 Unicode NFC 规范化并去掉首尾空白后，
+最多为 8192 个 UTF-8 字节。带有已校验 Source 引用的条目最多支持 65536 字节，以保留完整采集证据；
+修订这类条目时保留原 Source 引用，并沿用该上限。这些是字节数限制，不是字符数限制。
+独立笔记正文超限时返回 HTTP `422`，顶层错误码仍为 `invalid_request`：
 
 ```json
 {

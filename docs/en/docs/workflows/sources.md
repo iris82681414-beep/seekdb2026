@@ -21,6 +21,10 @@ A successful capture means evidence was stored; it does not mean extraction succ
 keeping. Use Source references to trace a generated result back to its input. Do not retry a capture with changed
 content under the same identity as if it were a new observation.
 
+Memory entries with validated Source references can retain up to 65536 UTF-8 bytes of normalized evidence per
+entry. Standalone notes keep the 8192-byte limit. A successful write preserves the complete accepted body through
+search, restart, and citation readback; oversized evidence is rejected rather than silently truncated.
+
 ## Choose a capture path
 
 - Agent prompt hooks: use the host-specific capture switch in [Connect Agents](../integrations/index.md).

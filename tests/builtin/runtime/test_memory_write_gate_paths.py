@@ -566,13 +566,16 @@ def test_explicit_artifact_family_is_not_recovered_as_a_different_allowed_family
     asyncio.run(scenario())
 
 
-def test_incomplete_gate_evidence_is_held_before_backend_assessment(tmp_path: Path) -> None:
+@pytest.mark.parametrize("repetitions", [150, 800])
+def test_incomplete_gate_evidence_is_held_before_backend_assessment(tmp_path: Path, repetitions: int) -> None:
     async def scenario() -> None:
         gate = _ScriptedGate(_assessment(MemoryWriteVerdict.ACCEPT))
         async with open_builtin_contexts(_config(tmp_path), memory_write_gate=gate) as contexts:
             context = await contexts.get("project")
             long_source, _ = await context.sources.capture(
-                ContentCapture(source_id="corrected-requirements", content=f"{'PostgreSQL first. ' * 150}Use MySQL.")
+                ContentCapture(
+                    source_id="corrected-requirements", content=f"{'PostgreSQL first. ' * repetitions}Use MySQL."
+                )
             )
 
             plan = await context.artifacts.memory.plan_remember(

@@ -31,13 +31,17 @@ from powercontext.builtin.artifacts.memory.models import MemoryContent
 _ENTRY_HASH_DOMAIN = b"powercontext:entry-content:v1\0"
 _EMBEDDING_HASH_DOMAIN = b"powercontext:embedding-content:v1\0"
 _LOWER_HEX_64 = re.compile(r"[0-9a-f]{64}\Z")
+_ENTRY_TEXT_BYTES = 8 * 1024
+_SOURCE_BACKED_TEXT_BYTES = 64 * 1024
 
 
 class _CanonicalValueError(ValueError):
     def __init__(self, code: str, detail: object | None = None) -> None:
         self.code = code
         messages = {
-            "text-too-long": "memory entry text must not exceed 8192 UTF-8 bytes",
+            "text-too-long": (
+                f"memory entry text must not exceed {detail if detail is not None else _ENTRY_TEXT_BYTES} UTF-8 bytes"
+            ),
             "reason-too-long": "memory change reason must not exceed 512 Unicode code points",
             "identifier-empty": "memory identifiers must be non-empty strings",
             "identifier-ascii": "memory identifiers must contain only ASCII characters",
@@ -78,12 +82,18 @@ def canonical_json(value: object) -> bytes:
     return rfc8785.dumps(_validated_json(value))
 
 
-def normalize_text(value: str) -> str:
-    """Normalize and validate one durable entry body."""
+def entry_text_byte_limit(source_refs: Sequence[object]) -> int:
+    """Bound standalone notes and complete source-backed evidence separately."""
+
+    return _SOURCE_BACKED_TEXT_BYTES if source_refs else _ENTRY_TEXT_BYTES
+
+
+def normalize_text(value: str, *, max_bytes: int | None = _ENTRY_TEXT_BYTES) -> str:
+    """Normalize text under its capacity policy; transient evidence has no body limit."""
 
     normalized = _normalize_non_empty_string(value, "memory entry text")
-    if len(normalized.encode("utf-8")) > 8192:
-        raise _CanonicalValueError("text-too-long")
+    if max_bytes is not None and len(normalized.encode("utf-8")) > max_bytes:
+        raise _CanonicalValueError("text-too-long", max_bytes)
     return normalized
 
 
@@ -160,7 +170,7 @@ def entry_content_bytes(
 
     return canonical_json({
         "kind": normalize_kind(kind),
-        "text": normalize_text(text),
+        "text": normalize_text(text, max_bytes=entry_text_byte_limit(source_refs)),
         "source_refs": normalize_refs(source_refs),
         "artifact_refs": normalize_refs(artifact_refs),
     })

@@ -36,6 +36,7 @@ from powercontext.builtin.artifacts.memory.canonical import (
     embedding_content_hash,
     entry_content_bytes,
     entry_content_hash,
+    entry_text_byte_limit,
     memory_content_bytes,
     normalize_kind,
     normalize_query,
@@ -1717,8 +1718,8 @@ class MemoryService:
         artifacts: Sequence[ArtifactRef],
     ) -> _EntryMaterial:
         normalized_kind = normalize_kind(kind)
-        normalized_text = normalize_text(text)
         canonical_sources = _canonical_source_refs(sources)
+        normalized_text = normalize_text(text, max_bytes=entry_text_byte_limit(canonical_sources))
         canonical_artifacts = _canonical_artifact_refs(artifacts)
         source_refs = tuple(source.model_dump(mode="json") for source in canonical_sources)
         artifact_refs = tuple(artifact.model_dump(mode="json") for artifact in canonical_artifacts)
@@ -1824,7 +1825,8 @@ def _raise_if_write_held(plan: MemoryWritePlan) -> None:
 
 
 def _bounded_gate_evidence(identity: str, content: str) -> _GateEvidenceEntry:
-    normalized = normalize_text(content)
+    # The gate gets a bounded transient excerpt, not the complete durable body.
+    normalized = normalize_text(content, max_bytes=None)
     return _GateEvidenceEntry(
         text=f"{identity}\n{normalized[:_GATE_EVIDENCE_TEXT_LIMIT]}",
         complete=len(normalized) <= _GATE_EVIDENCE_TEXT_LIMIT,

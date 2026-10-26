@@ -9263,7 +9263,7 @@ components:
         text:
           type: string
           minLength: 1
-          description: Must not exceed 8192 UTF-8 bytes after normalization.
+          description: Must not exceed 8192 UTF-8 bytes after normalization for standalone entries, or 65536 bytes when the cited entry retains Source references.
         reason:
           type: string
           maxLength: 512
