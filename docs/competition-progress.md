@@ -17,7 +17,8 @@
 | --- | ---: | --- |
 | seekdb 基础实践 | 30 | 原生实例已部署；telemetry 已发送。公开 Fork、官方 Bug PR、本队验证行和平台核验待完成 |
 | AI_PROMPT | 10 | JSON、TEXT/LOB 和重复占位符实现已编译；原版完整 mysqltest 及新增真实 HTTP 回归通过 |
-| 其余五项 AI 函数增强 | 50 | 已保存官方基线失败证据，待逐项实现 |
+| AI_EMBED 单行、AI_COMPLETE | 20 | 请求/响应核心实现通过长文本、空配置、JSON 配置、维度及 16 组异常响应的原生回归，待正式完整验收 |
+| Ollama、AI_RERANK、跨行批量 AI_EMBED | 30 | 待实现，官方综合用例仍需全部通过 |
 | 文件即数据库 | 50 | 首轮基线在本机 SSH 文件分发步骤失败，须补齐测试环境后定位产品缺口 |
 | AI 列 | 50 | 原版用例在 AI COLUMN 语法处失败，待实现 |
 | 全文索引性能 | 50 | 待建立性能基线并优化 |
@@ -40,7 +41,7 @@ PowerContext 的十道代码题在官方固定依赖、CPUQuota 100% 和 MemoryM
 
 产品修改通过针对性 Ruff 和固定版本 ty 检查，75 项上下文与生命周期回归通过。全量开发钩子仍报告冻结公开样例的格式问题和测试类型诊断；钩子对原版样例的自动修改已恢复，未用修改测试的方式绕过验收。原始锁文件离线一致性检查通过。
 
-seekdb 官方基线和 AI_PROMPT 修改均已在服务器构建成功。基线可执行文件另存于 `/root/oceanbase2026/seekdb-baseline`。实例部署标识为 `becf1a63-c20a-8684-a088-a2f704ce1127`，来自实例 `run/telemetry.json` 的 `content.id`，`sent=true`；平台同步和核验仍待正式操作。
+seekdb 官方基线、AI_PROMPT 及后续请求/响应修改均已在服务器构建成功。新增请求验证覆盖 50,000 字符的真实 LOB 读入；16 组异常响应通过 loopback HTTP 返回，SQL 均拒绝异常输入且实例继续正常响应。基线可执行文件另存于 `/root/oceanbase2026/seekdb-baseline`。实例部署标识为 `becf1a63-c20a-8684-a088-a2f704ce1127`，来自实例 `run/telemetry.json` 的 `content.id`，`sent=true`；平台同步和核验仍待正式操作。
 
 ## 后续工作
 

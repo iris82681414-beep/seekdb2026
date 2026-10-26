@@ -1,0 +1,13 @@
+select ai_complete('request_complete', 'hello', null) = 'mock:hello' as null_config;
+null_config
+1
+select ai_complete('request_complete', 'hello', json_object('temperature',0.2)) = 'mock:hello' as object_config;
+object_config
+1
+select length(ai_complete('request_complete', content)) = 50005 as long_completion,
+json_length(ai_embed('request_embed', content, 4)) = 4 as long_embedding from request_lobs;
+long_completion	long_embedding
+1	1
+select json_length(ai_embed('request_embed', 'hello')) = 4 as default_dimension;
+default_dimension
+1

@@ -1,0 +1,45 @@
+# Request configuration, LOB reads and embedding dimension validation.
+connection default;
+--exec python3 mysql_test/test_suite/ai_column/include/ai_column_mock.py start 19127
+--disable_query_log
+--disable_result_log
+--error 0,11112
+call DBMS_AI_SERVICE.DROP_AI_MODEL_ENDPOINT('request_complete_ep');
+--error 0,11112
+call DBMS_AI_SERVICE.DROP_AI_MODEL_ENDPOINT('request_embed_ep');
+--error 0,11118
+call DBMS_AI_SERVICE.DROP_AI_MODEL('request_complete');
+--error 0,11118
+call DBMS_AI_SERVICE.DROP_AI_MODEL('request_embed');
+call DBMS_AI_SERVICE.CREATE_AI_MODEL('request_complete', '{"type":"completion","model_name":"mock-complete"}');
+call DBMS_AI_SERVICE.CREATE_AI_MODEL('request_embed', '{"type":"dense_embedding","model_name":"mock-embed"}');
+call DBMS_AI_SERVICE.CREATE_AI_MODEL_ENDPOINT('request_complete_ep',
+  '{"ai_model_name":"request_complete","url":"http://127.0.0.1:19127/v1/chat/completions","access_key":"mock-key","provider":"openai"}');
+call DBMS_AI_SERVICE.CREATE_AI_MODEL_ENDPOINT('request_embed_ep',
+  '{"ai_model_name":"request_embed","url":"http://127.0.0.1:19127/v1/embeddings","access_key":"mock-key","provider":"openai"}');
+drop table if exists request_lobs;
+create table request_lobs(content longtext);
+insert into request_lobs values(repeat('ocean',10000));
+--enable_result_log
+--enable_query_log
+select ai_complete('request_complete', 'hello', null) = 'mock:hello' as null_config;
+select ai_complete('request_complete', 'hello', json_object('temperature',0.2)) = 'mock:hello' as object_config;
+select length(ai_complete('request_complete', content)) = 50005 as long_completion,
+       json_length(ai_embed('request_embed', content, 4)) = 4 as long_embedding from request_lobs;
+select json_length(ai_embed('request_embed', 'hello')) = 4 as default_dimension;
+--disable_query_log
+--disable_result_log
+--error 1210
+select ai_complete('request_complete', 'hello', json_array(1));
+--error 1210
+select ai_embed('request_embed', 'hello', null);
+--error 1210
+select ai_embed('request_embed', 'hello', 0);
+--error 1210
+select ai_embed('request_embed', 'hello', 3);
+drop table request_lobs;
+call DBMS_AI_SERVICE.DROP_AI_MODEL_ENDPOINT('request_complete_ep');
+call DBMS_AI_SERVICE.DROP_AI_MODEL_ENDPOINT('request_embed_ep');
+call DBMS_AI_SERVICE.DROP_AI_MODEL('request_complete');
+call DBMS_AI_SERVICE.DROP_AI_MODEL('request_embed');
+--exec python3 mysql_test/test_suite/ai_column/include/ai_column_mock.py stop 19127
