@@ -6,6 +6,7 @@
 #include "sql/printer/ob_raw_expr_printer.h"
 #include "sql/ob_sql_utils.h"
 #include "query/vector/ob_vector_index_util.h"
+#include "sql/privilege_check/ob_ai_model_priv_util.h"
 
 namespace oceanbase
 {
@@ -66,6 +67,20 @@ int ObDDLResolver::finalize_ai_column(ObColumnSchemaV2 &column, ObTableSchema &t
   ObRawExpr *expr = nullptr;
   ObSEArray<ObQualifiedName, 4> names;
   if (!column.is_ai_column()) { return ret; }
+  if (!session_info_->is_inner() && params_.disable_privilege_check_ != PRIV_CHECK_FLAG_DISABLE) {
+    ObSchemaGetterGuard &guard = *schema_checker_->get_schema_guard();
+    ObSessionPrivInfo privileges;
+    ObAIServiceEndpointPrivUtil check(guard);
+    bool allowed = false;
+    const uint64_t user = session_info_->get_priv_user_id() == OB_INVALID_ID ?
+        OB_SYS_USER_ID : session_info_->get_priv_user_id();
+    OZ(guard.get_session_priv_info(user, session_info_->get_database_name(), privileges));
+    OZ(check.check_access_ai_model_priv(*allocator_, privileges, allowed));
+    if (OB_SUCC(ret) && !allowed) {
+      ret = OB_ERR_NO_PRIVILEGE;
+      LOG_USER_ERROR(OB_ERR_NO_PRIVILEGE, "access ai model");
+    }
+  }
   OZ(definition.parse(*allocator_, column.get_ai_column_definition()));
   if (OB_SUCC(ret) && definition.state_column_id_ != 0) { return ret; }
   OZ(ObRawExprUtils::build_generated_column_expr(definition.expression_, *params_.expr_factory_,
@@ -96,6 +111,10 @@ int ObDDLResolver::finalize_ai_column(ObColumnSchemaV2 &column, ObTableSchema &t
                part->get_expr_type() == T_FUN_SYS_AI_RERANK || part->is_query_ref_expr() ||
                part->is_udf_expr() || part->is_aggr_expr()) { ret = OB_NOT_SUPPORTED; }
       else {
+        if (part->get_expr_type() != T_FUN_SYS_AI_PROMPT &&
+            OB_FAIL(ObRawExprUtils::check_deterministic_single(part, ObResolverUtils::CHECK_FOR_GENERATED_COLUMN))) {
+          ret = OB_NOT_SUPPORTED;
+        }
         for (int64_t k = 0; OB_SUCC(ret) && k < part->get_param_count(); ++k) {
           ret = pending.push_back(part->get_param_expr(k));
         }
@@ -103,6 +122,9 @@ int ObDDLResolver::finalize_ai_column(ObColumnSchemaV2 &column, ObTableSchema &t
     }
   }
   OZ(expr->formalize(session_info_));
+  if (OB_SUCC(ret) && expr->get_param_count() >= 2) {
+    definition.input_is_json_ = expr->get_param_expr(1)->get_result_type().get_type() == ObJsonType;
+  }
   if (OB_SUCC(ret) && (expr->get_param_count() < 2 || expr->get_param_count() > 3 ||
       !expr->get_param_expr(0)->is_static_scalar_const_expr())) { ret = OB_INVALID_ARGUMENT; }
   ObObj model_value;
@@ -144,7 +166,8 @@ int ObDDLResolver::finalize_ai_column(ObColumnSchemaV2 &column, ObTableSchema &t
       definition.system_prompt_ = ObString("Return exactly one finite base-10 number within the destination SQL numeric precision and scale. Do not include commentary.");
     } else if (ob_is_string_type(column.get_data_type()) || ob_is_text_tc(column.get_data_type())) {
       definition.system_prompt_ = ObString("Return only the requested plain text, without quotes, markdown or commentary.");
-    } else if (ob_is_datetime_tc(column.get_data_type()) || ob_is_date_tc(column.get_data_type())) {
+    } else if (ob_is_datetime_or_mysql_datetime_tc(column.get_data_type()) ||
+               ob_is_date_or_mysql_date(column.get_data_type())) {
       definition.system_prompt_ = ObString("Return only one SQL date or datetime in YYYY-MM-DD HH:MM:SS format, without quotes or commentary.");
     } else { ret = OB_NOT_SUPPORTED; }
   }

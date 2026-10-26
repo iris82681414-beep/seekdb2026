@@ -1358,7 +1358,8 @@ int ObAIFuncUtils::get_ai_func_info(ObIAllocator &allocator, const ObString &mod
   return ret;
 }
 
-int ObAIFuncModel::call_completion(ObString &prompt, ObJsonObject *config, ObString &result)
+int ObAIFuncModel::call_completion(ObString &prompt, ObJsonObject *config, ObString &result,
+                                  const ObString &system_prompt)
 {
   int ret = OB_SUCCESS;
   ObArray<ObString> headers;
@@ -1366,12 +1367,34 @@ int ObAIFuncModel::call_completion(ObString &prompt, ObJsonObject *config, ObStr
   ObJsonObject *response = nullptr;
   ObIJsonBase *result_base = nullptr;
   ObAIFuncIComplete *complete_provider = nullptr;
-  ObString prompt_str;
+  ObString prompt_str = system_prompt;
   ObString result_str;
   ObAIFuncClient client;
   ObString unencrypted_access_key;
   ObString request_model_name = get_request_model_name();
-  if (!is_completion_type()) {
+  ObJsonObject options(allocator_);
+  if (config != nullptr) {
+    const ObJsonNode *system = config->get_value("system_prompt");
+    if (system != nullptr && prompt_str.empty()) {
+      if (system->json_type() != ObJsonNodeType::J_STRING) { ret = OB_INVALID_ARGUMENT; }
+      else { prompt_str = static_cast<const ObJsonString *>(system)->get_str(); }
+    }
+    for (uint64_t i = 0; OB_SUCC(ret) && i < config->element_count(); ++i) {
+      ObString key;
+      OZ(config->get_key(i, key));
+      const bool reserved = key.case_compare("system_prompt") == 0 ||
+          (!prompt_str.empty() && (key.case_compare("messages") == 0 || key.case_compare("system") == 0 ||
+           key.case_compare("prompt") == 0 || key.case_compare("model") == 0 || key.case_compare("input") == 0));
+      if (!reserved) {
+        ObJsonNode *copy = config->get_value(i)->clone(allocator_, true);
+        if (copy == nullptr) { ret = OB_ALLOCATE_MEMORY_FAILED; }
+        else { ret = options.add(key, copy); }
+      }
+    }
+    config = &options;
+  }
+  if (OB_FAIL(ret)) {
+  } else if (!is_completion_type()) {
     ret = OB_INVALID_ARGUMENT;
     LOG_USER_ERROR(OB_INVALID_ARGUMENT, "ai_complete, info type is not completion");
   } else if (OB_FAIL(ObAIFuncUtils::get_complete_provider(*allocator_, endpoint_info_.get_provider(), complete_provider))) {

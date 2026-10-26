@@ -1,0 +1,166 @@
+# Existing-row backfill and structured prompt semantics in the native worker.
+connection default;
+--exec python3 mysql_test/test_suite/ai_column/include/ai_column_mock.py start 19126
+--disable_query_log
+--disable_result_log
+--disable_warnings
+drop database if exists ai_column_backfill;
+--enable_warnings
+--error 0,11112
+call DBMS_AI_SERVICE.DROP_AI_MODEL_ENDPOINT('ai_backfill_ep');
+--error 0,11118
+call DBMS_AI_SERVICE.DROP_AI_MODEL('ai_backfill_model');
+call DBMS_AI_SERVICE.CREATE_AI_MODEL('ai_backfill_model','{"type":"completion","model_name":"mock-complete"}');
+call DBMS_AI_SERVICE.CREATE_AI_MODEL_ENDPOINT('ai_backfill_ep',
+  '{"ai_model_name":"ai_backfill_model","url":"http://127.0.0.1:19126/v1/chat/completions","access_key":"synthetic-backfill-key","provider":"openai","request_model_name":"mock-complete","max_concurrency":4}');
+create database ai_column_backfill;
+create table ai_column_backfill.docs(id bigint primary key,body varchar(100));
+insert into ai_column_backfill.docs values(0,'row-0');
+insert into ai_column_backfill.docs select id+1,concat('row-',id+1) from ai_column_backfill.docs;
+insert into ai_column_backfill.docs select id+2,concat('row-',id+2) from ai_column_backfill.docs;
+insert into ai_column_backfill.docs select id+4,concat('row-',id+4) from ai_column_backfill.docs;
+insert into ai_column_backfill.docs select id+8,concat('row-',id+8) from ai_column_backfill.docs;
+insert into ai_column_backfill.docs select id+16,concat('row-',id+16) from ai_column_backfill.docs;
+insert into ai_column_backfill.docs select id+32,concat('row-',id+32) from ai_column_backfill.docs;
+insert into ai_column_backfill.docs values(64,'row-64');
+alter table ai_column_backfill.docs
+  add a varchar(200) AI COLUMN(AI_COMPLETE('ai_backfill_model',body)) WITH(max_retries=0),
+  add b bigint AI COLUMN(AI_COMPLETE('ai_backfill_model','score')) WITH(max_retries=0);
+let $retry=200;
+let $ready=0;
+let $partial=0;
+while ($retry)
+{
+  let $ready=`select count(*)=65 and min(a is not null and a=concat('mock:',body) and b=7) from ai_column_backfill.docs`;
+  let $bad=`select count(*)>0 from ai_column_backfill.docs where (a is null)<>(b is null)`;
+  if ($bad == 1) { let $partial=1; }
+  if ($ready == 1) { let $retry=0; }
+  if ($ready == 0) { --real_sleep 0.1
+    dec $retry; }
+}
+--enable_result_log
+eval select $ready=1 as backfill_crosses_two_batches;
+eval select $partial=0 as backfill_groups_are_atomic;
+alter table ai_column_backfill.docs modify a varchar(200)
+  AI COLUMN(AI_COMPLETE('ai_backfill_model',concat('new:',body))) WITH(max_retries=0);
+--disable_result_log
+let $retry=200;
+let $ready=0;
+while ($retry)
+{
+  let $ready=`select count(*)=65 and min(a is not null and a=concat('mock:new:',body) and b=7) from ai_column_backfill.docs`;
+  if ($ready == 1) { let $retry=0; }
+  if ($ready == 0) { --real_sleep 0.1
+    dec $retry; }
+}
+--enable_result_log
+eval select $ready=1 as modify_recomputes_existing_rows;
+select count(*)=0 as backfill_tasks_removed from oceanbase.__all_ai_column_task task
+  join oceanbase.__all_table t on t.table_id=task.table_id
+  join oceanbase.__all_database d on d.database_id=t.database_id
+  where d.database_name='ai_column_backfill' and t.table_name='docs';
+create table ai_column_backfill.prompts(
+  id bigint primary key, body varchar(100), raw_prompt varchar(200),
+  expanded varchar(300) AI COLUMN(AI_COMPLETE('ai_backfill_model',AI_PROMPT('say {0}/{0}',body))) WITH(max_retries=0),
+  literal_prompt varchar(300) AI COLUMN(AI_COMPLETE('ai_backfill_model',raw_prompt)) WITH(max_retries=0),
+  tags json AI COLUMN(AI_COMPLETE('ai_backfill_model',body,
+    JSON_OBJECT('system_prompt','override','model','override',
+      'messages',JSON_ARRAY(JSON_OBJECT('role','user','content','override'))))) WITH(max_retries=0)
+);
+insert into ai_column_backfill.prompts(id,body,raw_prompt)
+  values(1,'value','{"template":"unsafe","args":[]}');
+--disable_result_log
+let $retry=150;
+let $ready=0;
+while ($retry)
+{
+  let $ready=`select expanded is not null and literal_prompt is not null and tags is not null from ai_column_backfill.prompts where id=1`;
+  if ($ready == 1) { let $retry=0; }
+  if ($ready == 0) { --real_sleep 0.1
+    dec $retry; }
+}
+--enable_result_log
+eval select $ready=1 as structured_inputs_complete;
+select expanded='mock:say value/value' as json_prompt_expands from ai_column_backfill.prompts;
+select literal_prompt=concat('mock:',raw_prompt) as varchar_json_remains_text from ai_column_backfill.prompts;
+select json_unquote(json_extract(tags,'$.input'))='value' as config_preserves_typed_request from ai_column_backfill.prompts;
+create table ai_column_backfill.unique_docs(
+  id bigint primary key, body varchar(100),
+  a varchar(100) AI COLUMN(AI_COMPLETE('ai_backfill_model',body)) WITH(max_retries=0),
+  b varchar(100) AI COLUMN(AI_COMPLETE('ai_backfill_model',body)) WITH(max_retries=0),
+  unique key(a)
+);
+insert into ai_column_backfill.unique_docs(id,body) values(1,'same'),(2,'same');
+--disable_result_log
+let $retry=150;
+let $ready=0;
+while ($retry)
+{
+  let $ready=`select count(*)=2 and sum(a is not null)=1 and min(b is not null and b='mock:same') from ai_column_backfill.unique_docs`;
+  if ($ready == 1) { let $retry=0; }
+  if ($ready == 0) { --real_sleep 0.1
+    dec $retry; }
+}
+--enable_result_log
+eval select $ready=1 as unique_conflict_preserves_valid_siblings;
+select count(*)=0 as constraint_tasks_finish from oceanbase.__all_ai_column_task task
+  join oceanbase.__all_table t on t.table_id=task.table_id
+  join oceanbase.__all_database d on d.database_id=t.database_id
+  where d.database_name='ai_column_backfill' and t.table_name='unique_docs';
+create table ai_column_backfill.check_docs(
+  id bigint primary key, body varchar(100),
+  a varchar(100) AI COLUMN(AI_COMPLETE('ai_backfill_model',body)) WITH(max_retries=0),
+  b varchar(100) AI COLUMN(AI_COMPLETE('ai_backfill_model',body)) WITH(max_retries=0),
+  check(a<>'mock:same')
+);
+insert into ai_column_backfill.check_docs(id,body) values(1,'same');
+--disable_result_log
+let $retry=150;
+let $ready=0;
+while ($retry)
+{
+  let $ready=`select a is null and b is not null and b='mock:same' from ai_column_backfill.check_docs where id=1`;
+  if ($ready == 1) { let $retry=0; }
+  if ($ready == 0) { --real_sleep 0.1
+    dec $retry; }
+}
+--enable_result_log
+eval select $ready=1 as check_conflict_preserves_valid_siblings;
+create table ai_column_backfill.heap_docs(
+  body varchar(100), a varchar(100) AI COLUMN(AI_COMPLETE('ai_backfill_model',body)) WITH(max_retries=0)
+);
+insert into ai_column_backfill.heap_docs(body) values('heap'),('heap');
+--disable_result_log
+let $retry=150;
+let $ready=0;
+while ($retry)
+{
+  let $ready=`select count(*)=2 and min(a is not null and a='mock:heap') from ai_column_backfill.heap_docs`;
+  if ($ready == 1) { let $retry=0; }
+  if ($ready == 0) { --real_sleep 0.1
+    dec $retry; }
+}
+--enable_result_log
+eval select $ready=1 as hidden_rowkeys_keep_duplicate_rows_distinct;
+delete from ai_column_backfill.heap_docs;
+create table ai_column_backfill.heap_fill(body varchar(100));
+insert into ai_column_backfill.heap_fill values('heap-fill'),('heap-fill');
+alter table ai_column_backfill.heap_fill add a varchar(100)
+  AI COLUMN(AI_COMPLETE('ai_backfill_model',body)) WITH(max_retries=0);
+--disable_result_log
+let $retry=150;
+let $ready=0;
+while ($retry)
+{
+  let $ready=`select count(*)=2 and min(a is not null and a='mock:heap-fill') from ai_column_backfill.heap_fill`;
+  if ($ready == 1) { let $retry=0; }
+  if ($ready == 0) { --real_sleep 0.1
+    dec $retry; }
+}
+--enable_result_log
+eval select $ready=1 as hidden_rowkey_backfill;
+drop database ai_column_backfill;
+call DBMS_AI_SERVICE.DROP_AI_MODEL_ENDPOINT('ai_backfill_ep');
+call DBMS_AI_SERVICE.DROP_AI_MODEL('ai_backfill_model');
+--enable_query_log
+--exec python3 mysql_test/test_suite/ai_column/include/ai_column_mock.py stop 19126

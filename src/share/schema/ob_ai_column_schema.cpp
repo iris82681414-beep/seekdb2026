@@ -38,6 +38,7 @@ int AiColumnDefinition::serialize(ObIAllocator &allocator, ObString &text) const
   OZ(add_number("request_column_id", request_column_id_));
   OZ(add_number("result_spec_column_id", result_spec_column_id_));
   OZ(add_number("definition_version", definition_version_));
+  OZ(add_number("input_is_json", input_is_json_ ? 1 : 0));
   ObJsonArray array(&allocator);
   for (int64_t i = 0; OB_SUCC(ret) && i < dependencies_.count(); ++i) {
     ObJsonUint *node = OB_NEWx(ObJsonUint, &allocator, dependencies_.at(i));
@@ -95,6 +96,12 @@ int AiColumnDefinition::parse(ObIAllocator &allocator, const ObString &text)
     OZ(get_number("request_column_id", request_column_id_));
     OZ(get_number("result_spec_column_id", result_spec_column_id_));
     OZ(get_number("definition_version", definition_version_));
+    uint64_t input_is_json = 0;
+    if (OB_SUCC(ret) && object.get_value("input_is_json") != nullptr) {
+      ret = get_number("input_is_json", input_is_json);
+    }
+    if (OB_SUCC(ret) && input_is_json > 1) { ret = OB_INVALID_ARGUMENT; }
+    input_is_json_ = input_is_json == 1;
     if (OB_SUCC(ret) && (retries > 100 || dimension > 65535)) { ret = OB_INVALID_ARGUMENT; }
     max_retries_ = retries;
     dimension_ = dimension;
