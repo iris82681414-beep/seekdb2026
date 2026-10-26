@@ -25,7 +25,8 @@ from typing import TYPE_CHECKING
 from urllib.parse import quote
 
 from pydantic import BaseModel, Field, field_validator
-from pypdf import PdfReader
+from pypdf import PageObject, PdfReader
+from typing_extensions import override
 
 from powercontext.builtin.artifacts.memory.models import MemoryCitation, MemoryHit
 from powercontext.builtin.runtime.models import GetMemoryEntryRequest, SearchMemoryRequest
@@ -35,6 +36,8 @@ from powercontext.sources.models import Source, SourceMaterialization
 from powercontext.sources.projections import TEXT_EVIDENCE_PROJECTION_KEY, TextEvidence
 
 if TYPE_CHECKING:
+    from pypdf._text_extraction._layout_mode import Font
+
     from powercontext.builtin.runtime.application import ScopedMemoryApplication
 
 _TOKEN = re.compile(r"[a-z]+|\d+")
@@ -170,6 +173,37 @@ class PDFPageSource(Source):
     text: str
 
 
+class _LayoutPage(PageObject):
+    @override
+    def _layout_mode_fonts(self) -> dict[str, Font]:
+        fonts = super()._layout_mode_fonts()
+        # Decode spacer glyphs before grouping positioned text runs. A font may
+        # map a spacer to LF or NBSP even inside one displayed table label.
+        for font in fonts.values():
+            for key, value in tuple(font.character_map.items()):
+                if isinstance(value, str):
+                    font.character_map[key] = value.translate({10: None, 13: None, 160: None})
+        return fonts
+
+
+def _page_text(page: PageObject) -> str:
+    plain = page.extract_text() or ""
+    text = plain
+    try:
+        layout_page = _LayoutPage(page.pdf, page.indirect_reference)
+        layout_page.update(page)
+        layout = layout_page.extract_text(extraction_mode="layout", layout_mode_strip_rotated=False) or ""
+        # Layout mode does not handle every font or transformation. Keep the
+        # original extraction whenever its non-whitespace characters differ.
+        if Counter(char for char in plain if not char.isspace()) == Counter(
+            char for char in layout if not char.isspace()
+        ):
+            text = layout
+    except Exception:
+        text = plain
+    return "\n".join(" ".join(line.split()) for line in text.replace("\u00a0", "").splitlines() if line.strip())
+
+
 def parse_pdf_document(value: PDFDocumentInput) -> tuple[PDFPageInput, ...]:
     """Extract every physical page atomically, including legitimate blank pages."""
     if not value.content:
@@ -184,7 +218,7 @@ def parse_pdf_document(value: PDFDocumentInput) -> tuple[PDFPageInput, ...]:
                 document_id=value.document_id,
                 document_sha256=digest,
                 page_number=number,
-                text=page.extract_text() or "",
+                text=_page_text(page),
             )
             for number, page in enumerate(reader.pages, start=1)
         )
