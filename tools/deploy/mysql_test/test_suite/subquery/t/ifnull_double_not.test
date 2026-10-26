@@ -1,0 +1,34 @@
+# Regression for GitHub issue #1477: eliminating even NOT chains must preserve
+# the result type already used by IFNULL's scalar subquery casts.
+SELECT 1 FROM dual WHERE IFNULL((SELECT FALSE), !(!(1 LIKE 'x')));
+SELECT 1 FROM dual WHERE IFNULL((SELECT FALSE), !(1 LIKE 'x'));
+SELECT 1 FROM dual WHERE IFNULL(FALSE, !(!(1 LIKE 'x')));
+SELECT 1 FROM dual WHERE IFNULL((SELECT TRUE), !(!(1 LIKE 'x')));
+SELECT IFNULL((SELECT NULL), !(!(1 LIKE 'x'))) AS res;
+SELECT IFNULL((SELECT NULL), !(!('x' LIKE 'x'))) AS res;
+SELECT IFNULL((SELECT NULL), !(!(NULL LIKE 'x'))) AS res;
+SELECT IFNULL((SELECT FALSE), !(!(!(!(1 LIKE 'x'))))) AS res;
+SELECT IFNULL((SELECT NULL), !(!(!(1 LIKE 'x')))) AS res;
+SELECT IFNULL(!(!(1 LIKE 'x')), (SELECT TRUE)) AS res;
+SELECT IFNULL(!(!(NULL LIKE 'x')), (SELECT TRUE)) AS res;
+
+# Boolean conversion must normalize nonzero numbers and retain SQL NULL.
+SELECT IFNULL((SELECT NULL), !(!(2))) AS res;
+SELECT IFNULL((SELECT NULL), !(!(-2))) AS res;
+SELECT IFNULL((SELECT NULL), !(!(0))) AS res;
+SELECT IFNULL((SELECT NULL), !(!(NULL))) AS res;
+
+--disable_warnings
+DROP TABLE IF EXISTS ifnull_not_values;
+--enable_warnings
+CREATE TABLE ifnull_not_values (id INT PRIMARY KEY, v VARCHAR(10), n INT);
+INSERT INTO ifnull_not_values VALUES (1, 'x', 2), (2, 'y', 0), (3, NULL, NULL);
+SELECT id, IFNULL((SELECT NULL), !(!(v LIKE 'x'))) AS fallback,
+       IFNULL(!(!(v LIKE 'x')), (SELECT 7)) AS first_arg,
+       IFNULL((SELECT NULL), !(!(n))) AS numeric_value
+FROM ifnull_not_values ORDER BY id;
+SELECT id FROM ifnull_not_values
+WHERE IFNULL((SELECT FALSE), !(!(v LIKE 'x'))) ORDER BY id;
+SELECT id FROM ifnull_not_values
+WHERE IFNULL((SELECT NULL), !(!(v LIKE 'x'))) ORDER BY id;
+DROP TABLE ifnull_not_values;

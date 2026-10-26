@@ -1279,6 +1279,9 @@ int ObTransformSimplifyExpr::inner_remove_dummy_nvl(ObDMLStmt *stmt,
           ret = OB_ERR_UNEXPECTED;
           LOG_WARN("unexpected null bool expr", K(ret));
         } else if (OB_FAIL(new_child->formalize(ctx_->session_info_))) {
+        // The parent has already been formalized with the original NOT result type.
+        } else if (OB_FAIL(ObTransformUtils::add_cast_for_replace_if_need(
+                               *ctx_->expr_factory_, child_0, new_child, ctx_->session_info_))) {
         } else {
           op_expr->get_param_expr(0) = new_child;
           if (OB_FAIL(expr->formalize(ctx_->session_info_))) {
@@ -2382,6 +2385,9 @@ int ObTransformSimplifyExpr::do_push_not(ObRawExpr *&expr,
       } else if (OB_ISNULL(temp)) {
         ret = OB_ERR_UNEXPECTED;
       } else if (OB_FAIL(temp->formalize(ctx_->session_info_))) {
+      // Boolean-shaped predicates can have a wider result type than NOT.
+      } else if (OB_FAIL(ObTransformUtils::add_cast_for_replace_if_need(
+                             *expr_factory, expr, temp, ctx_->session_info_))) {
       } else {
         expr = temp;
         is_valid = false;
