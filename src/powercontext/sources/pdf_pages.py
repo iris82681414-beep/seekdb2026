@@ -126,17 +126,80 @@ _STOP_WORDS = frozenset([
     "millions",
     "percent",
     "percentage",
+    "please",
+    "following",
+    "information",
+    "provided",
+    "within",
+    "round",
+    "decimal",
+    "places",
+    "place",
+    "units",
+    "two",
+    "one",
+    "billions",
+    "billion",
+    "investment",
+    "banking",
+    "banker",
+    "financial",
+    "useful",
+    "relevant",
+    "metric",
+    "company",
+    "like",
+    "explain",
+    "your",
+    "you",
+    "we",
+    "our",
+    "it",
+    "s",
+    "year",
+    "end",
+    "data",
+    "profile",
+    "improving",
 ])
 # General accounting vocabulary expands terminology, never document-specific answers.
 _FINANCIAL_TERMS = (
     frozenset({"geography", "geographies", "geographic", "geographical", "region", "regions", "segments", "countries"}),
     frozenset({"legal", "litigation", "lawsuit", "lawsuits", "proceedings", "battles"}),
-    frozenset({"capex", "capital", "expenditures", "purchases", "property", "equipment"}),
+    frozenset({"capex", "expenditures", "purchases", "property", "equipment"}),
     frozenset({"ebitda", "depreciation", "amortization", "operating", "income"}),
     frozenset({"profit", "profits", "earnings", "income"}),
     frozenset({"restructuring", "charges", "costs"}),
     frozenset({"revenue", "revenues", "sales"}),
     frozenset({"cash", "flow", "flows", "activities"}),
+)
+_ACCOUNTING_CONCEPTS = (
+    (r"\b(?:ppne|ppe|pp\s*&\s*e|fixed\s+assets?)\b", "property plant equipment assets balance sheet"),
+    (r"\b(?:ar|accounts?\s+receivables?)\b", "accounts trade receivables balance sheet"),
+    (r"\b(?:working\s+capital|quick\s+ratio|liquidity)\b", "balance sheet current assets liabilities cash receivables"),
+    (r"\b(?:gross|operating)\s+margin\b", "income operations revenue sales cost profit operating"),
+    (r"\b(?:cogs|cost\s+of\s+goods)\b", "cost goods sales revenue"),
+    (r"\bcapital[ -]intensive\b", "property plant equipment assets revenue capital expenditures cash flows"),
+    (r"\b(?:ebitdar?|cash\s*flow\s+conversion)\b", "income operations cash flow depreciation amortization"),
+)
+_STATEMENT_INTENTS = (
+    (
+        r"\b(?:balance\s+sheet|financial\s+position|quick\s+ratio|working\s+capital|ppne|ppe|pp\s*&\s*e|"
+        r"net\s+ar|asset\s+turnover|capital[ -]intensive)\b",
+        r"balance\s+sheets?|statements?\s+of\s+financial\s+position",
+        "balance sheet financial position",
+    ),
+    (
+        r"\b(?:income\s+statement|statement\s+of\s+(?:income|operations)|p\s*&\s*l|"
+        r"(?:gross|operating)\s+margin|ebitdar?|asset\s+turnover|capital[ -]intensive)\b",
+        r"(?:statements?\s+of\s+(?:(?:net|comprehensive)\s+)*(?:income|earnings|operations)|income\s+statements?)",
+        "income earnings operations",
+    ),
+    (
+        r"\b(?:cash\s*flows?|capex|capital\s+expenditures?|ebitdar?|cash\s+dividends?)\b",
+        r"statements?\s+of\s+cash\s+flows?",
+        "cash flow activities",
+    ),
 )
 
 
@@ -274,28 +337,40 @@ def _stem(term: str) -> str:
 
 
 def _query_variants(question: str) -> tuple[tuple[str, ...], tuple[str, ...], tuple[str, ...]]:
-    terms = tuple(dict.fromkeys(term for term in _TOKEN.findall(question.lower()) if term not in _STOP_WORDS))
+    normalized = re.sub(r"\bcashflow\b", "cash flow", question.lower())
+    terms = tuple(dict.fromkeys(term for term in _TOKEN.findall(normalized) if term not in _STOP_WORDS))
     expanded = set(terms)
     queries = [question, " ".join(terms)]
     for group in _FINANCIAL_TERMS:
         if group.intersection(terms):
             expanded.update(group)
             queries.append(" ".join(sorted(group)))
+    for pattern, vocabulary in _ACCOUNTING_CONCEPTS:
+        if re.search(pattern, normalized):
+            expanded.update(vocabulary.split())
+            queries.append(vocabulary)
+    for intent, _heading, vocabulary in _STATEMENT_INTENTS:
+        if re.search(intent, normalized):
+            queries.append(vocabulary)
     if len(terms) > 8:
         queries.extend(" ".join(terms[start : start + 6]) for start in range(0, len(terms), 6))
     return terms, tuple(sorted(expanded - set(terms))), tuple(dict.fromkeys(query for query in queries if query))[:10]
 
 
 def _rerank_pages(
-    hits: tuple[MemoryHit, ...], terms: tuple[str, ...], expanded: tuple[str, ...]
+    hits: tuple[MemoryHit, ...], terms: tuple[str, ...], expanded: tuple[str, ...], *, question: str = ""
 ) -> tuple[MemoryHit, ...]:
     documents = [Counter(_stem(term) for term in _TOKEN.findall(hit.text.lower())) for hit in hits]
     frequencies: Counter[str] = Counter()
     for document in documents:
         frequencies.update(document.keys())
     weights = dict.fromkeys((_stem(term) for term in expanded), 0.4)
-    weights.update(dict.fromkeys((_stem(term) for term in terms), 1.0))
+    weights.update({_stem(term): 0.15 if term.isdigit() else 1.0 for term in terms})
     average_length = sum(sum(document.values()) for document in documents) / max(len(documents), 1)
+    requested_years = {int(year) for year in re.findall(r"(?<!\d)((?:19|20)\d{2})(?!\d)", question)}
+    quarter = re.search(r"(?:\b|(?<=\d))q([1-4])\b|\bq([1-4])(?=(?:19|20)\d{2})", question.lower())
+    requested_quarter = next((value for value in quarter.groups() if value), None) if quarter else None
+    headings = [heading for intent, heading, _vocabulary in _STATEMENT_INTENTS if re.search(intent, question.lower())]
     scores = []
     for position, (hit, document) in enumerate(zip(hits, documents, strict=True)):
         length = sum(document.values())
@@ -306,6 +381,23 @@ def _rerank_pages(
                 inverse_frequency = math.log1p((len(documents) - frequencies[term] + 0.5) / (frequencies[term] + 0.5))
                 saturation = count * 2.2 / (count + 1.2 * (0.25 + 0.75 * length / max(average_length, 1)))
                 score += weight * inverse_frequency * saturation
+        header = hit.text.split("\n", 1)[-1][:1200]
+        if any(
+            re.search(
+                r"(?im)^\s*(?:(?:consolidated|combined|condensed|unaudited|and)\s+){0,5}(?:" + heading + r")\b",
+                header,
+            )
+            for heading in headings
+        ):
+            score *= 2.0
+        # The projection's first line is the caller's document ID. When it
+        # explicitly names a report period, use it as a soft preference; body
+        # years often describe historical comparisons or future obligations.
+        period = re.search(r"(?<!\d)((?:19|20)\d{2})(?:[_ -]?q([1-4]))?", hit.text.split("\n", 1)[0].lower())
+        if requested_years and period and int(period.group(1)) in requested_years:
+            score *= 1.4
+            if requested_quarter and period.group(2) == requested_quarter:
+                score *= 1.4
         scores.append((score, hit.score, -position, hit))
     return tuple(item[-1] for item in sorted(scores, key=lambda item: item[:3], reverse=True))
 
@@ -326,7 +418,7 @@ async def search_pdf_pages(
             candidates.setdefault((hit.entry_id, hit.entry_version_id), hit)
     citations: list[MemoryCitation] = []
     pages: set[str] = set()
-    for hit in _rerank_pages(tuple(candidates.values()), terms, expanded):
+    for hit in _rerank_pages(tuple(candidates.values()), terms, expanded, question=question):
         citation = MemoryCitation(
             memory_ref=hit.memory_ref, entry_id=hit.entry_id, entry_version_id=hit.entry_version_id
         )
