@@ -105,19 +105,13 @@
 
 来源：[判题时效](https://oceanbase.yuque.com/org-wiki-obtech-vh7w9r/hc3pio/cedao0wehhx1gcg4)、[旧测试注意事项](https://oceanbase.yuque.com/org-wiki-obtech-vh7w9r/hc3pio/yt95uatolcbtfgow)。
 
-## 当前项目与建议顺序
+## 当前项目与交付状态
 
-- 本地目录：`/Users/liwangsheng/project/oceanbase`。
-- 远端：`git@github.com:iris82681414-beep/seekdb2026.git`；本机 SSH 已成功访问并克隆。
-- 官方比赛分支已导入本地并保留历史，尚未推送用户远端。仓库可见性尚未核验，推送答题代码前应确认其为 Private。
-- 已核对官方 `2026-competition` 分支，2026 年 10 月 26 日读取时最新提交为 `5bce9e06d1281347ad61344e4b01fab9158c58a2`，提交说明为 `upload 2026-competition testcases`。后续开发需重新检查更新。
+- 当前 seekdb 工作目录为 `/Users/liwangsheng/.codex/worktrees/issue-1477/oceanbase`；原目录 `/Users/liwangsheng/project/oceanbase` 保留私有测试产物，PowerContext 位于其 `.competition/powercontext`。
+- 用户远端为 `git@github.com:iris82681414-beep/seekdb2026.git`。2026 年 10 月 27 日经 GitHub 接口重新核验为私有仓库；两套产品均已保留官方历史并推送私有答题分支。
+- seekdb 使用私有 `2026-competition` 分支；PowerContext 使用私有 `powercontext-2026-competition` 分支，后者也是仓库当前默认分支。正式提测应明确选择产品对应的分支与 commit，不能直接依赖默认分支。
+- 同日重新核对官方 `2026-competition`：seekdb 为 `5bce9e06d1281347ad61344e4b01fab9158c58a2`，PowerContext 为 `dab240063bfcfa7917898dc44da4baadb3747bd0`，与采用的赛题基线一致。
+- 用户要求暂缓 AI 生态题、正式提测及公开上传。私有导入仓库没有 GitHub Fork 关系，不满足公开 Fork 子题；指定 Bug #1477 的独立私有修复也尚未提交官方 PR。
+- 已实现内容、各题证据与剩余门槛以 [实施进度](competition-progress.md) 为准。当前没有平台确认分数，公开回归和独立测量不能折算成正式成绩。
 
-建议按以下顺序推进：
-
-1. 导入官方比赛分支，保留官方历史，记录基线提交；阅读源码中的 `AGENTS.md` 并准备构建和 Mock 测试环境。
-2. 完成部署，单独准备公开 Fork 和符合题目要求的 Bug 修复 PR，逐项核验基础实践分数。
-3. 优先检查 AI_PROMPT、AI_EMBED 单行、AI_COMPLETE 等子题的当前失败项，按各 10 分的边界逐项修复；以实际基线结果决定实现顺序。
-4. 再扩展 Ollama、Rerank 和跨行批量。每次变更同时验证相关 SQL 行为，并记录平台返回的分数与提交版本。
-5. 根据剩余时间和已定位的瓶颈，选择文件 SQL、AI 列、全文索引或 PowerContext。50 分题涉及的模块较多，应先评估公开测试和实现缺口再排期。
-
-官方基线：[比赛分支](https://github.com/oceanbase/seekdb/tree/2026-competition)、[本次读取的提交](https://github.com/oceanbase/seekdb/commit/5bce9e06d1281347ad61344e4b01fab9158c58a2)。
+官方基线：[seekdb 比赛分支](https://github.com/oceanbase/seekdb/tree/2026-competition)、[PowerContext 比赛分支](https://github.com/oceanbase/powercontext/tree/2026-competition)。

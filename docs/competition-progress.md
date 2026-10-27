@@ -7,46 +7,82 @@
 - seekdb 保留官方 `2026-competition` 历史，基线为 `5bce9e06d1281347ad61344e4b01fab9158c58a2`。用户私有仓库已建立 `main` 和 `2026-competition` 分支。
 - seekdb 最新内核实现提交为 `3c2738049ea434300517356249ee4bbe897861bb`，包含 FTS 锁优化、大赛指定 Bug #1477、TOKENIZE 大字段及空配置崩溃修复。独立 Bug 分支提交为 `34b696a50198bdb8d5280f3f881ede6405d96625`，基于官方 master，保存在用户私有仓库。
 - PowerContext 位于本地 `.competition/powercontext`，保留比赛分支及冻结产品提交 `9db1753434162c0aa7c9f1189a1722e617880a52`。
-- PowerContext 最新实现已推送至私有仓库 `powercontext-2026-competition`，完整提交为 `5c7e7450d11377db2ea94f7b63312af777b97a0d`。
+- PowerContext 最新实现已推送至私有仓库 `powercontext-2026-competition`，完整提交为 `a06ae43ae42fdd362485a7b0de4552ad10e53436`。
 - GitHub 仓库当前默认分支仍是 PowerContext 答题分支；正式提测须明确选取产品对应的分支和 commit。
 - 华为云现有实例为 Ubuntu 24.04 x86_64、4 核、约 15 GB 内存。专用目录 `/root/oceanbase2026`，日志位于 `logs`，测试产物位于 `results`。
+- 当前原生主实例为 `/root/oceanbase2026/instances/core-ai-column-strict`，SQL 端口 2881；运行二进制 SHA-256 为 `970e2a68101a5053602fb95b130d3fce945dcd4e545f544bbc95f804f719042d`。部署标识文件中的 ID 为 `8df70a0e-f2ad-8202-8b3b-ad658ab165d9`，正式部署核验须从该实例重新读取并核对平台同步结果。
 - 连接信息保存在仓库外 `/Users/liwangsheng/.config/oceanbase2026/server.env`，文件权限 600、目录权限 700。额外源码、下载数据和操作脚本均由本地排除规则排除，未提交到 Git。
 
 ## 实现与验收
 
-| 项目 | 分值 | 已取得的证据及剩余事项 |
-| --- | ---: | --- |
-| seekdb 基础实践 | 30 | 原生实例已部署；telemetry 已发送。指定 Bug #1477 已私有修复并通过原生回归和 576 组独立对照；公开 Fork、官方 PR、本队验证行和平台核验暂缓 |
-| AI_PROMPT | 10 | JSON、TEXT/LOB 和重复占位符实现已编译；原版完整 mysqltest 及新增真实 HTTP 回归通过 |
-| AI_EMBED 单行、AI_COMPLETE | 20 | 请求/响应核心实现通过长文本、空配置、JSON 配置、维度及 17 组异常响应的原生回归，待正式完整验收 |
-| Ollama Provider | 10 | 原生免 Key、可选认证、生成、参数和向量路径回归通过；同轮 12 项 mysqltest 全通过 |
-| AI_RERANK、跨行批量 AI_EMBED | 20 | 原生 SQL 实现及回归已通过；重排跨三批完整排序、14 类异常响应；向量按模型/维度分组、NULL/LOB、乱序响应和实际合并请求已验证 |
-| 文件即数据库 | 50 | 原生三格式读取、批量/重扫、DESCRIBE、glob、CSV COPY 已实现；原版及新增 2 项 mysqltest、8 项 Rust 测试、30 项独立 SQL 专项通过，隐藏边界继续核验 |
-| AI 列 | 50 | 五组功能均已实现，10 项原版及新增 AI COLUMN 回归通过；另有重试权限、事务、组合主键和向量索引等 17 项独立检查通过；平台隐藏测试及统一性能计分尚未验证 |
-| 全文索引性能 | 50 | 文档独占词频表锁优化已完成原生同版本 A/B/A 对照：中文分词耗时下降 8.01%，五项原版用例双路径通过，384 次并发结果一致；另补齐 TEXT/LOB 分词读取，896 组边界对照及 128 次并发通过；固定 CI 内部报告三轮均为 100/100，不作为正式成绩 |
-| PowerContext 仓库准备 | 10 | 冻结历史和私有分支已准备，待平台读取配置及核验 |
-| CSV 行级采集 | 20 | Linux 公开验收 17 项通过 |
-| Pi 会话采集 | 20 | Linux 公开验收 15 项通过 |
-| 财报 PDF | 50 | 503 页公开样例及新增回归共 18 项 Linux 验收通过，含原生 seekdb；84 份完整年报共 12,013 页及 189 条标注完成 Linux 解析验证；总体召回为 90.37%，32 个公司组均超过 70%；独立五公司联合范围召回 75.76%，平台冻结字数门槛仍未核对 |
-| HTTP 重排 | 20 | Linux 公开验收 10 项通过 |
-| 上下文增量传输 | 20 | Linux 公开验收 14 项通过；另已完成真实 QMSum 40 轮独立成本测量，正式序列待验证 |
-| 数量触发记忆处理 | 20 | Linux 公开验收 17 项通过，覆盖单窗、数量/时间 OR、重复身份、lineage、重启及故障恢复 |
-| Embedding 合并和缓存 | 20 | Linux 公开验收 8 项通过，包含六个 scope 的四次请求预算 |
-| 来源撤回与恢复 | 20 | Linux 公开验收 4 项通过；另有原生存储失败后跨重启恢复及 scope 隔离回归通过 |
-| 预算内证据选择 | 20 | Linux 公开验收及新增回归通过；未参与调整的 48 次独立请求召回 68.08%、完整覆盖 64.58%，达到独立样本门槛；正式质量序列仍待验证 |
-| seekdb 单 SQL 混合检索 | 20 | 原生 seekdb Linux 验收通过，含两类索引 EXPLAIN、过滤、版本和停用恢复；独立三范围 60 次对照平均召回 95%、逐查询无退化，搜索延迟中位数 36.31 ms；平台隐藏向量仍待验证 |
-| 高德地图 Skill | 20 | 已有单文件与格式校验记录；按用户要求暂缓，不再推进 |
-| 其余六道生态题 | 120 | 按用户要求暂缓 |
+| 序号 | 项目 | 题面分值 | 私有证据及剩余事项 |
+| ---: | --- | ---: | --- |
+| 1 | 部署 | 10 | 实例运行，部署标识已保存；待平台同步与核验 |
+| 2 | 公开 Fork | 10 | 按要求暂缓；私有导入仓库不具备 Fork 关系 |
+| 3 | 官方 Bug PR | 10 | #1477 独立修复及 576 组对照完成；官方 PR 暂缓 |
+| 4 | AI_PROMPT | 10 | 原版及 TEXT/LOB、JSON、占位符回归通过 |
+| 5 | AI_EMBED 单行 | 10 | 长文本、配置、维度及异常响应原生回归通过 |
+| 6 | AI_COMPLETE | 10 | 长文本、配置及异常响应原生回归通过 |
+| 7 | Ollama Provider | 10 | 免 Key、可选认证、生成和向量原生回归通过 |
+| 8 | AI_RERANK | 10 | 三批全局排序、稳定顺序与异常响应回归通过 |
+| 9 | AI_EMBED 跨行批量 | 10 | 分组、NULL/LOB、乱序响应及 1,100 行映射回归通过 |
+| 10 | 文件即数据库 | 50 | 原版及新增 2 项 mysqltest、8 项 Rust 测试及 SQL 专项通过 |
+| 11 | AI 列 | 50 | 五组实现及 10 项回归通过，独立事务、权限、索引检查通过 |
+| 12 | 全文索引性能 | 50 | 锁优化同机对照和正确性通过；LOB、NULL 崩溃修复通过，性能满分未证实 |
+| 13 | 仓库准备 | 10 | 冻结历史和私有分支具备；待平台读取与核验 |
+| 14 | CSV 行级采集 | 20 | Linux 原版 17 项通过 |
+| 15 | Pi 会话采集 | 20 | Linux 原版 15 项及新增 9 项回归通过，拒绝整个归档中的非法 JSON 常量 |
+| 16 | 财报 PDF | 50 | 原版及新增 18 项通过；12,013 页解析及独立召回验证，冻结字数待核验 |
+| 17 | HTTP 重排 | 20 | Linux 原版 10 项通过；正式冻结向量质量门槛待核验 |
+| 18 | 上下文增量传输 | 20 | Linux 原版 14 项通过；独立 QMSum 40 轮净节省 68.16% |
+| 19 | 数量触发记忆处理 | 20 | Linux 原版 17 项通过，含时间 OR、lineage、重启和失败恢复 |
+| 20 | Embedding 合并和缓存 | 20 | Linux 原版 8 项通过，含六个 scope 的四次请求预算 |
+| 21 | 来源撤回与恢复 | 20 | Linux 原版 4 项通过，另有失败跨重启及 scope 隔离回归 |
+| 22 | 预算内证据选择 | 20 | 原版 3 项通过；独立 48 请求召回 68.08%、完整覆盖 64.58% |
+| 23 | seekdb 单 SQL 混合检索 | 20 | 原生验收通过；独立 60 次平均召回 95%、逐查询无退化 |
+| 24 | AMD | 20 | 按用户要求暂缓 |
+| 25 | MiniMax | 20 | 按用户要求暂缓 |
+| 26 | Qoder | 20 | 按用户要求暂缓 |
+| 27 | 阶跃星辰 | 20 | 按用户要求暂缓 |
+| 28 | Dify | 20 | 按用户要求暂缓 |
+| 29 | 高德地图 | 20 | Skill 格式已校验并私有保留；按用户要求暂缓 |
+| 30 | 魔搭 | 20 | 按用户要求暂缓 |
 
-PowerContext 的十道代码题已在完整提交 `5c7e7450d11377db2ea94f7b63312af777b97a0d`、官方固定依赖、CPUQuota 100% 和 MemoryMax 2G 限制下，完成最新一轮原版完整回归：95 项全部通过，无失败、无跳过，覆盖题面分值合计 230 分。分项数量为 CSV 17、Pi 15、PDF 6、HTTP 重排 10、增量上下文 14、数量触发 17、Embedding 8、来源生命周期 4、预算证据 3、原生混合检索 1。原版测试、依赖锁文件、工作负载和评分文件保持原样。已逐文件核对服务器与本机的全部 430 个产品源码文件，无差异、无额外源码；测试依据源码内容摘要，不把服务器旧 Git HEAD 当成提交版本。完整日志为 `.competition/results/powercontext-final-public.log`，退出码 0。公开用例通过不等于平台正式得分。
+2026 年 10 月 27 日已按上述 30 项复核，总计 620 分。19 道代码题涉及题面分值 440 分，公开回归和独立测量已有记录；部署与仓库准备涉及 20 分，公开 Fork/PR 涉及 20 分，AI 生态涉及 140 分。以上是题目覆盖范围，正式成绩未知，不能记作已得分。
+
+PowerContext 的十道代码题已在完整提交 `a06ae43ae42fdd362485a7b0de4552ad10e53436`、官方固定依赖、CPUQuota 100% 和 MemoryMax 2G 配置下，完成全部 95 项原版回归及 9 项新增 Pi 回归，无测试失败或跳过。原版分项数量为 CSV 17、Pi 15、PDF 6、HTTP 重排 10、增量上下文 14、数量触发 17、Embedding 8、来源生命周期 4、预算证据 3、原生混合检索 1，涉及题面分值合计 230 分。原版测试、依赖锁文件、工作负载和评分文件保持原样；86 个冻结输入文件与官方基线相同。测试前后逐文件核对全部 430 个产品源码文件，无差异、无额外源码，源码清单 SHA-256 为 `6e632efb6164d40d629ef25d0a498c3b1f4538d417bda127bb5e3a91c01b1d09`。验证依据源码摘要，不把服务器旧 Git HEAD 当作候选版本。原生用例使用固定 `pylibseekdb==1.3.0.post4` 嵌入式实例，与单独运行的 seekdb 主实例分开。
+
+本次执行先通过前九组 94 项，最后一组因验证脚本的临时目录过长而等待：109 字节的 Unix socket 绝对路径被拒绝，同一实例以短相对路径可连接。确认原因后停止该次验证，保留日志，仅缩短临时目录，单独重跑最后一组和新增回归，分别为 1 项、9 项通过，退出码均为 0。产品与冻结输入未变。前 94 项日志为 `.competition/results/powercontext-pi-json-path-setup-error.log`，后续通过日志为 `powercontext-pi-json-public.log`，汇总为 `powercontext-pi-json-validation.json`；原先 `5c7e7450` 的完整 95 项日志继续保留于 `powercontext-final-public.log`。
+
+Pi 修复拒绝 Python 默认 JSON 解析器额外接受的 `NaN`、`Infinity`、`-Infinity`，包括会话头和未选中分支中的非法值，满足题面“校验整个归档”的要求。旧版在新增测试中为 6 项失败、3 项通过，修改后 9 项全部通过；合法的同名字符串和普通数值保持可读。修改文件的 Ruff、格式和针对性 ty 检查通过。记录为 `.competition/results/powercontext-pi-json-before.log`。公开用例通过仍不等于平台正式得分。
+
+## 尚待正式核验的门槛
+
+所有代码题仍需平台隐藏测试；PowerContext 题目按全项满足判定，公开用例数量不能按比例换算分数。下面保留尚未证实的主要门槛：
+
+| 项目 | 正式门槛与当前证据边界 |
+| --- | --- |
+| 部署、仓库、公开材料 | 部署 UUID 须与平台同步；私有仓库授权、产品分支和完整 commit 须核验。公开 Fork 的 README 和官方 Bug PR 正文分别需要本队验证行，均按用户要求暂缓 |
+| PDF | 正式五份财报共 1,151 页、24 问，各组 Recall@20 至少 70%；每个物理页词项数为冻结值的 90%–110%，每条证据召回和标注整页 F1 均至少 95%。独立 84 份年报测量不能替代未公开的冻结计数与分组 |
+| HTTP 重排 | 173 篇摘要、20 问、冻结 384 维 MiniLM 向量，batch_size=7；Recall@10 至少 95%、MRR@10 至少 80%，还须符合真实服务分数的全局稳定排序。公开协议测试尚不证明该冻结质量序列 |
+| 增量、预算证据 | 正式增量 40 轮相对原始完整正文至少节省 45%；预算证据 48 次请求平均召回至少 65%、完整覆盖至少 40%。现有 QMSum 和 SciFact 独立测量达到对应门槛，但输入序列与平台不同 |
+| 混合检索 | 正式 60 次查询须逐条 Recall/MRR 不低于同库冻结双查询路径，平均召回至少 95%、完整搜索延迟中位数至多 500 ms，并有单 SQL 与双索引证据。现有独立测量使用文本特征向量，未替代平台冻结向量 |
+| 全文索引 | 构建、分词和查询三类提升率等权平均，综合耗时下降 50% 才是内部报告满分。固定 CI 报告在修改前已达 100/100；现有同机优化幅度不证明正式 50 分 |
+| AI 生态 | 七题共 140 分，按用户要求暂缓；现有单文件 Skill 材料没有公开或正式提交 |
+
+逐项复核记录保存在本地 `.competition/results/competition-readiness-audit-20261027.json`；正式分数字段保留为空。
+
+## 分阶段验证记录
+
+以下保留各阶段的提交、实例和原始测量，便于复现；旧阶段的实例路径、部署标识和未实现项不代表当前状态，当前版本以“环境与提交”和最新整体验证为准。本次仅改动 Pi 解析，先前 PDF、质量和性能测量仍标注其实际测量版本，不冒充重测结果。
 
 独立增量测量使用固定 QMSum commit 的 ES2004a 原文，SHA-256 为 `911e56db0d8482f1e730bae0a8fcf0ab0095c94abb000ba0516e975fa6e48b31`。初始 8 个真实 turn，40 轮中追加 3 个 turn 并切换查询，形成 8 种不同 Context；每轮均经序列化独立重建并逐字核对。原始完整正文累计 150,035 bytes，增量协议累计 47,768 bytes，净节省 68.16%；完整 v1 pack 累计 208,255 bytes，逐轮 gzip 累计 67,115 bytes。该独立序列不是平台正式成本序列，结果保存于 `.competition/results/context-pack-measurement.json`。
 
 产品修改通过针对性 Ruff 和固定版本 ty 检查，75 项上下文与生命周期回归通过。全量开发钩子仍报告冻结公开样例的格式问题和测试类型诊断；钩子对原版样例的自动修改已恢复，未用修改测试的方式绕过验收。原始锁文件离线一致性检查通过。
 
-seekdb 官方基线、AI_PROMPT 及后续请求/响应修改均已在服务器构建成功。新增请求验证覆盖 50,000 字符的真实 LOB 读入；17 组异常响应通过 loopback HTTP 返回，SQL 均拒绝异常输入且实例继续正常响应。基线可执行文件另存于 `/root/oceanbase2026/seekdb-baseline`。实例部署标识为 `becf1a63-c20a-8684-a088-a2f704ce1127`，来自实例 `run/telemetry.json` 的 `content.id`，`sent=true`；平台同步和核验仍待正式操作。
+seekdb 官方基线、AI_PROMPT 及后续请求/响应修改均已在服务器构建成功。新增请求验证覆盖 50,000 字符的真实 LOB 读入；17 组异常响应通过 loopback HTTP 返回，SQL 均拒绝异常输入且实例继续正常响应。基线可执行文件另存于 `/root/oceanbase2026/seekdb-baseline`。初始部署实例的标识为 `becf1a63-c20a-8684-a088-a2f704ce1127`，来自实例 `run/telemetry.json` 的 `content.id`，`sent=true`；平台同步和核验仍待正式操作。
 
-AI 函数增强的六项实现已覆盖。Linux 原生实例使用未修改的 `ai_function_enhancement` 综合用例与其他原版回归，以及新增的重排、批量向量等用例，共 12 项 mysqltest 通过。HTTP 响应由本地确定性协议 fixture 生成，未使用平台 Mock 或真实在线模型；该记录不替代平台隐藏测试。完整结果位于 `.competition/results/seekdb-ai-complete.json`。Endpoint 的 `max_concurrency` 已补齐 1..1024 整数校验、默认值 8、系统表存储、视图和复制语义；在全新实例上，包含原版 Endpoint DDL 及新增边界回归的 12 项 mysqltest 全通过。该修改只交付参数存储，AI COLUMN 后台实际限流尚待实现。
+AI 函数增强的六项实现已覆盖。Linux 原生实例使用未修改的 `ai_function_enhancement` 综合用例与其他原版回归，以及新增的重排、批量向量等用例，共 12 项 mysqltest 通过。HTTP 响应由本地确定性协议 fixture 生成，未使用平台 Mock 或真实在线模型；该记录不替代平台隐藏测试。完整结果位于 `.competition/results/seekdb-ai-complete.json`。Endpoint 的 `max_concurrency` 已补齐 1..1024 整数校验、默认值 8、系统表存储、视图和复制语义；在全新实例上，包含原版 Endpoint DDL 及新增边界回归的 12 项 mysqltest 全通过。该阶段仅验证参数存储；后台实际限流的后续验证见下文 AI COLUMN Worker 记录。
 
 全文索引冻结基线使用独立实例和原版 benchmark，配置为 20,000 行、分词 3,000 轮、查询 200 轮、3 个样本和 30 轮预热。四类查询命中为 8001、11000、7332、20，与固定基线一致，配置差异为空。原始二进制相对仓库内固定 CI 基线的内部报告已为 100/100，说明该分数受本机环境影响，不能据此宣称产品优化或正式 50 分。测量保存于 `.competition/results/fts-baseline-score.json`，后续性能修改仍须同机前后比较。
 
@@ -85,13 +121,13 @@ File SQL 该轮测试实例为 `/root/oceanbase2026/instances/core-files`，验�
 
 AI COLUMN 的 DDL 阶段已完成原生实现，定义作为列元数据持久保存，提供目录视图 `__all_ai_column`，并建立后续使用的持久化任务表。每个 AI 列具有三个独立隐藏列；修改定义会复用这些列并更新定义版本，删除列时清理活动元数据。原版 `ai_column_ddl` 和新增 `ai_column_ddl_changes` 两项 mysqltest 通过；27 项独立检查覆盖普通字段前向引用、普通列转 AI 列、批量添加、修改参数、删除依赖保护，以及非法选项、嵌套 AI、AI 列依赖和维度不一致等拒绝路径。实际停止并重启实例后，修改过的定义、SHOW CREATE 和隐藏列归属逐项一致。记录为 `.competition/results/seekdb-ai-column-ddl.json`、`seekdb-ai-column-ddl-independent.json` 和 `seekdb-ai-column-restart.json`。
 
-当前原生实例为 `/root/oceanbase2026/instances/core-ai-column`，管理路径为 `/root/oceanbase2026/seekdb-ai-column-ddl`，其验证副本 `seekdb-ai-column-ddl-modify` 的 SHA-256 为 `ece2d0ec169304d3df3422a1452fa062bbb553dda45708d3572c7533588f9b48`。此前的 `core-files` 保留并停机。该版本的既有 12 项 AI 函数 mysqltest 再次全部通过，记录为 `.competition/results/seekdb-ai-after-ai-column-ddl.json`；AI 响应仍为本地协议 fixture。此阶段尚未验证 后台模型调用、Strict Read、手动重试和向量索引维护，不宣称 AI 列题完成或取得 50 分。
+DDL 阶段原生实例为 `/root/oceanbase2026/instances/core-ai-column`，管理路径为 `/root/oceanbase2026/seekdb-ai-column-ddl`，其验证副本 `seekdb-ai-column-ddl-modify` 的 SHA-256 为 `ece2d0ec169304d3df3422a1452fa062bbb553dda45708d3572c7533588f9b48`。此前的 `core-files` 保留并停机。该版本的既有 12 项 AI 函数 mysqltest 再次全部通过，记录为 `.competition/results/seekdb-ai-after-ai-column-ddl.json`；AI 响应仍为本地协议 fixture。该 DDL 阶段尚未验证后台模型调用、Strict Read、手动重试和向量索引维护；后续记录包含这些功能的实际验证。
 
 AI COLUMN 的业务写入现已在同一事务内清空受影响结果、更新隐藏状态并写入持久化任务；同一行受影响的列共享请求标识，无关字段更新保留结果与任务。12 项独立 SQL 检查全部通过，覆盖提交、回滚、主键变更、批量插入与删除、显式结果赋值拒绝和隐式列清单。新增 `ai_column_transactions` 回归进一步验证语句失败、保存点及整事务回滚，以及 REPLACE、冲突更新、INSERT SELECT、联表更新、二进制和微秒时间戳主键。不依赖在线模型；两项既有 DDL 和 12 项 AI 函数 mysqltest 同轮通过。记录为 `.competition/results/seekdb-ai-column-t1-independent.json`、`seekdb-ai-column-t1-regression.json` 和 `seekdb-ai-after-ai-column-t1.json`。
 
 AI COLUMN 后台计算已接入原生服务生命周期，支持持久任务认领、实际 Endpoint 并发限制、重试、过期任务隔离和同一行结果的事务发布。新增或修改 AI 列会对已有数据分批计算，使用主键游标避免反复扫描已处理的行。输出通过原生类型和精度检查；唯一索引或检查约束拒绝某列时，该列结束为失败，其余有效列仍在同一事务中发布。原版 DDL、T1、Worker、向量索引用例及新增 DDL、事务、回填回归，共 7 项 AI COLUMN mysqltest 全部通过；同轮 12 项 AI 函数回归全部通过。新增回填用例覆盖 65 行、同组原子可见、修改定义重算、AI_PROMPT 与普通文本区分、请求配置保护、约束失败收尾及无显式主键的重复行。
 
-15 项独立后台检查全部通过，包括两个共享 URL 的 Endpoint 实测并发峰值分别为 2 和 1、非法整数/日期/JSON/超长文本/数值溢出收尾，以及二进制、UTF-8 和时间戳主键的写入及回填。另一次真实测试实例中断验证在 HTTP 请求进行中发送 SIGKILL，重启后 7.958 秒完成租约恢复和任务清理；这些是自建协议 fixture 的结果，不是平台提测。记录为 `.competition/results/seekdb-ai-column-worker.json`、`seekdb-ai-column-worker-independent.json`、`seekdb-ai-column-worker-restart.json` 和 `seekdb-ai-after-ai-column-worker.json`。两项 File SQL 回归同轮通过，记录为 `.competition/results/seekdb-file-after-ai-column-worker.json`。当前验证副本为 `/root/oceanbase2026/seekdb-ai-column-worker-constraints2`，SHA-256 为 `8e45e4ce0d6c09ea30b06b0e6bf82fbf418d7b651abd6f058fab7cc2d05814a3`；管理路径继续为 `seekdb-ai-column-ddl`。Strict Read 和手动 RETRY 仍待实现，不宣称 AI 列题完成。
+15 项独立后台检查全部通过，包括两个共享 URL 的 Endpoint 实测并发峰值分别为 2 和 1、非法整数/日期/JSON/超长文本/数值溢出收尾，以及二进制、UTF-8 和时间戳主键的写入及回填。另一次真实测试实例中断验证在 HTTP 请求进行中发送 SIGKILL，重启后 7.958 秒完成租约恢复和任务清理；这些是自建协议 fixture 的结果，不是平台提测。记录为 `.competition/results/seekdb-ai-column-worker.json`、`seekdb-ai-column-worker-independent.json`、`seekdb-ai-column-worker-restart.json` 和 `seekdb-ai-after-ai-column-worker.json`。两项 File SQL 回归同轮通过，记录为 `.competition/results/seekdb-file-after-ai-column-worker.json`。该 Worker 阶段验证副本为 `/root/oceanbase2026/seekdb-ai-column-worker-constraints2`，SHA-256 为 `8e45e4ce0d6c09ea30b06b0e6bf82fbf418d7b651abd6f058fab7cc2d05814a3`；管理路径继续为 `seekdb-ai-column-ddl`。该阶段尚未实现 Strict Read 和手动 RETRY；后续分别补齐并验证。
 
 Strict Read 已增加 `ai_column_strict_read` 开关，默认关闭。开启后，在语句使用的事务快照中，对实际引用的 AI 列做全列就绪检查；待处理、失败或定义版本过期时返回 11120。普通列、独立就绪列、空表和已就绪的 NULL 结果可读；缓存计划每次执行都遵守当前开关。新增回归通过 13 项输出断言和 9 项预期错误检查，包含视图、投影裁剪、别名、子查询、拒绝写入、缓存 PREPARE 切换及空向量。另有 16 项独立检查通过，覆盖自己的未提交写入、其他会话隔离、可重复读快照、全局设置继承和定义版本过期。实际重启后，全局设置和 READY NULL / FAILED NULL 的区别均恢复，4 项检查通过。
 
@@ -99,7 +135,7 @@ Strict Read 已增加 `ai_column_strict_read` 开关，默认关闭。开启后�
 
 手动 `ALTER TABLE … RETRY AI COLUMN … [WHERE …]` 已补齐，只重试指定列和命中行，支持 READY、FAILED、PENDING 状态及普通业务条件。未加引号的 `status` 是计算状态，反引号或表名限定的同名字段仍表示业务字段。操作通过当前用户身份执行原生 UPDATE，结果失效和任务登记同事务提交；运行时授权检查防止内部缓存计划被普通写入复用。原版重试与严格读取用例、新增组合主键和事务边界用例均通过，全部 10 项 AI COLUMN 回归记录为 `.competition/results/seekdb-ai-column-retry.json`。
 
-17 项独立检查进一步验证二进制组合主键、隐藏主键重复行、条件错误时回滚、关闭自动提交时的 DDL 提交边界、普通账号重试及拒绝越权子查询，以及 VSAG 索引失效与重新发布。另复现并修复修改定义后的旧结果窗口：同一组 256 行数据，修复前操作返回后有 4 行仍返回旧结果，修复后为 0；修改操作会同步失效尚未登记新版本的行，后台继续计算。记录为 `.competition/results/seekdb-ai-column-retry-independent.json`、`seekdb-ai-column-ddl-visibility-before.json` 和 `seekdb-ai-column-ddl-visibility-after.json`。这组行为验证使用副本 `seekdb-ai-column-retry-behavior-validated`，SHA-256 为 `178694a048bec4058f8413cb65471acbfdac5fae09490b4101a6df8930808c5a`；随后只修正两处非法重试语句的错误文字。最终回归副本为 `/root/oceanbase2026/seekdb-ai-column-retry-final`，SHA-256 为 `dea2203fd8b9b1582b62298c056b3713765bf6bfec45c55a306479d65c9356d6`，现运行于上述 strict 测试目录，管理路径保持不变。尚不据此宣称平台 50 分。 最终副本的同轮 12 项 AI 函数与 2 项 File SQL 回归亦全部通过，记录为 `.competition/results/seekdb-ai-after-ai-column-retry.json` 和 `seekdb-file-after-ai-column-retry.json`。
+17 项独立检查进一步验证二进制组合主键、隐藏主键重复行、条件错误时回滚、关闭自动提交时的 DDL 提交边界、普通账号重试及拒绝越权子查询，以及 VSAG 索引失效与重新发布。另复现并修复修改定义后的旧结果窗口：同一组 256 行数据，修复前操作返回后有 4 行仍返回旧结果，修复后为 0；修改操作会同步失效尚未登记新版本的行，后台继续计算。记录为 `.competition/results/seekdb-ai-column-retry-independent.json`、`seekdb-ai-column-ddl-visibility-before.json` 和 `seekdb-ai-column-ddl-visibility-after.json`。这组行为验证使用副本 `seekdb-ai-column-retry-behavior-validated`，SHA-256 为 `178694a048bec4058f8413cb65471acbfdac5fae09490b4101a6df8930808c5a`；随后只修正两处非法重试语句的错误文字。最终回归副本为 `/root/oceanbase2026/seekdb-ai-column-retry-final`，SHA-256 为 `dea2203fd8b9b1582b62298c056b3713765bf6bfec45c55a306479d65c9356d6`，该阶段运行于上述 strict 测试目录；当前实例已更新为后续 TOKENIZE 修复版本，管理路径保持不变。尚不据此宣称平台 50 分。 最终副本的同轮 12 项 AI 函数与 2 项 File SQL 回归亦全部通过，记录为 `.competition/results/seekdb-ai-after-ai-column-retry.json` 和 `seekdb-file-after-ai-column-retry.json`。
 
 ## TOKENIZE 大字段边界修复
 
@@ -132,6 +168,6 @@ Strict Read 已增加 `ai_column_strict_read` 开关，默认关闭。开启后�
 ## 后续工作
 
 1. 保留 seekdb 已实现代码、验证快照及指定 Bug #1477 的独立私有分支。公开 Fork、官方 Bug PR 与本队验证行按用户后续指示处理。
-2. 保留 PowerContext 最新 95 项整体验证和独立质量、成本记录；正式质量序列与冻结非标注字数仍待平台核验。
+2. 保留 PowerContext 最新 95 项原版及 9 项 Pi 回归验证和独立质量、成本记录；正式质量序列与冻结非标注字数仍待平台核验。
 3. AI 生态题暂缓，保留已有私有材料。
 4. 正式提测暂不执行。保留可复现交付物和测试记录，后续按用户指示安排。
