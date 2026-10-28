@@ -534,6 +534,7 @@ seekdb_semantic_unity_cc_library(
         ":cluster_version_interface",
         ":error_codes",
         ":io",
+        ":local_storage_interface",
         ":resource_limit_interface",
         ":sql_persistence_support",
         ":task_control",
@@ -1644,7 +1645,8 @@ _SHARE_RUNTIME_DEPS = [
 _SHARE_RUNTIME_SEMANTIC_DEPS = [
     dep
     for dep in _SHARE_RUNTIME_DEPS
-    if dep.startswith(":") and not dep.startswith(":_generated_")
+    if dep.startswith(":") and not dep.startswith(":_generated_") and
+       dep not in [":local_table_schema", ":local_storage_interface"]
 ]
 
 _SHARE_RUNTIME_OBLIB_DEPS = [

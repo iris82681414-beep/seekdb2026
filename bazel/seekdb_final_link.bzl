@@ -232,6 +232,12 @@ def _seekdb_final_link_impl(ctx):
 
     group_inputs = _static_inputs_from_deps(ctx.attr.group_deps)
     whole_group_inputs = _static_inputs_from_deps(ctx.attr.whole_group_deps)
+    # Rust staticlibs bundle common Rust/CXX runtime objects. Keep them out of
+    # --whole-archive so multiple exported crates do not define that runtime
+    # more than once; search these archives after the retained C++ objects.
+    selective_inputs = _ordered_link_files_from_targets(ctx.attr.selective_link_files)
+    selective_paths = {file.path: True for file in selective_inputs}
+    whole_group_inputs = [file for file in whole_group_inputs if file.path not in selective_paths]
     whole_inputs, whole_transitive_inputs = _whole_archive_inputs(
         ctx.attr.whole_archive_deps,
     )
@@ -252,6 +258,7 @@ def _seekdb_final_link_impl(ctx):
         direct_objects +
         group_inputs +
         whole_group_inputs +
+        selective_inputs +
         whole_inputs +
         tail_inputs +
         ordered_link_files +
@@ -287,6 +294,12 @@ def _seekdb_final_link_impl(ctx):
         ordered_link_args.append("-Wl,--whole-archive")
         ordered_link_args.extend(_file_paths(whole_inputs))
         ordered_link_args.append("-Wl,--no-whole-archive")
+    if selective_inputs and is_macos:
+        ordered_link_args.extend(_file_paths(selective_inputs))
+    elif selective_inputs:
+        ordered_link_args.append("-Wl,--start-group")
+        ordered_link_args.extend(_file_paths(selective_inputs))
+        ordered_link_args.append("-Wl,--end-group")
     ordered_link_args.extend(_file_paths(tail_inputs))
     ordered_link_args.extend(_file_paths(ordered_link_files))
     ordered_link_args.extend(_file_paths(static_cpp_runtime_inputs))
@@ -358,6 +371,7 @@ seekdb_final_link = rule(
         "whole_archive_deps": attr.label_list(providers = [CcInfo]),
         "tail_deps": attr.label_list(providers = [CcInfo]),
         "ordered_link_files": attr.label_list(allow_files = True),
+        "selective_link_files": attr.label_list(allow_files = True),
         "extra_inputs": attr.label_list(allow_files = True),
         "system_libs": attr.string_list(),
         "linkopts": attr.string_list(),

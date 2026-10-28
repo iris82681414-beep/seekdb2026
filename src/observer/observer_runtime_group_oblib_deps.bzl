@@ -60,6 +60,7 @@ _OBSERVER_RUNTIME_GROUP_OBLIB_DEPS = {
         "//src/oblib:oblib_mysql_protocol_runtime",
         "//src/oblib:oblib_restore_advanced",
         "//src/oblib:oblib_rpc",
+        "//src/oblib:oblib_rpc_transport_services",
     ],
     "ob_server_change_stream_0": [
         "//src/oblib:common_sql_mode",

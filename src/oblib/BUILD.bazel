@@ -33,6 +33,7 @@ declare_oblib_header_interfaces(_OBLIB_INTERFACE_VISIBILITY)
 
 native_cc_library(
     name = "_jemalloc_headers",
+    linkstatic = True,
     deps = select({
         "//bazel:sanity_enabled": ["//deps/external:jemalloc_headers"],
         "//conditions:default": [],
