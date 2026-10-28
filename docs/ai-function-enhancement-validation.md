@@ -45,7 +45,8 @@
 环境：Windows 工作区、WSL Ubuntu 22.04 x86_64、仓库 SDK Clang 17、
 Bazel 8.2.1、Rust 1.98.1。隔离实例使用 `memory_budget=2G`、`log_disk_size=4G`。
 
-1. 完整 `//src/observer:seekdb` 与 `//unittest/sql:test_ai_functions` 构建成功。
+1. 完整 `//src/observer:seekdb` 与 AI 单测构建成功。兼容性修复后，单测目标为
+   `//unittest/sql/engine/expr:test_ai_functions`。
 2. 新增 C++ 测试 **8 项全部通过**，无跳过。
 3. AI suite 的 **14 项 mysqltest 全部通过**。第一轮有三项因缺少 MTR 使用的
    `admin` 账号而在连接步骤失败；补齐本地账号后只重跑这三项，全部通过，未改测试断言。
@@ -92,12 +93,34 @@ loopback fixture。未访问平台私有 Mock，没有测试真实模型效果�
 python3 bazel.py --bazel=/path/to/bazel-8.2.1 build \
   --jobs=8 --local_resources=memory=12000 \
   --action_env=RUSTUP_TOOLCHAIN=1.98.1 \
-  //src/observer:seekdb //unittest/sql:test_ai_functions
-./build_bazel/bin/unittest/sql/test_ai_functions
+  //src/observer:seekdb //unittest/sql/engine/expr:test_ai_functions
+./build_bazel/bin/unittest/sql/engine/expr/test_ai_functions
 ```
 
 本机原始日志、fixture 和执行脚本保留于仓库外
 `D:\OceanBase2026\ai-functions-evidence`，未提交模型密钥、二进制或实例数据。
+
+## 平台执行失败后的构建兼容修复
+
+2026-10-28 提交 `7b88a039c0b3aceaaefc29db1e039bfb34bae357` 的平台记录显示
+“执行失败 / 0.000”；尚未取得平台错误日志，不能断言平台失败原因。
+本地排查确定了一个会阻止 CMake 配置的问题：新增的 `unittest/sql/BUILD.bazel`
+会被 `tools/cmake/emit_bazel_source_inventory.py` 当作兼容 pretest 模块读取，
+但独立 AI 测试没有该模块要求的 `seekdb_module_cc_test` 声明。
+旧版执行 inventory 生成器实际返回错误：
+
+```text
+unittest/sql/BUILD.bazel must contain exactly one seekdb_module_cc_test call
+```
+
+修复将独立测试包移到 `unittest/sql/engine/expr/BUILD.bazel`，只向该包开放
+SQL 测试接口；保留原 CMake 模块协议及其检查。独立 `main()` 也改为只在
+Bazel 独立测试目标启用，避免和模块共用测试入口冲突。
+
+本次补测：inventory 生成、`bash build.sh release`、带 CI 参数
+`-DOB_USE_CCACHE=ON -DNEED_PARSER_CACHE=OFF` 的配置均通过；迁移后的
+Bazel 目标通过全部 8 项 C++ 单测。此前 14 项 SQL 结果对应相同 AI 生产代码，
+没有把它们写成 CMake 新产物的重测。尚未完成 CMake 全量编译或平台重测。
 
 ## 提测
 

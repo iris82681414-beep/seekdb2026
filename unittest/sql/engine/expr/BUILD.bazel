@@ -1,15 +1,17 @@
 load("@rules_cc//cc:cc_test.bzl", "cc_test")
 load("//bazel:defs.bzl", cc_library = "seekdb_cc_library")
+load("//bazel:seekdb_build_config.bzl", "SEEKDB_RELEASE_LOCAL_DEFINES")
 
 package(default_testonly = True)
 
 cc_library(
     name = "ai_function_cases",
     srcs = [
-        "engine/expr/ob_expr_ai_prompt_test.cpp",
-        "engine/expr/test_ob_openai_utils.cpp",
-        "engine/expr/test_ai_http_client.cpp",
+        "ob_expr_ai_prompt_test.cpp",
+        "test_ob_openai_utils.cpp",
+        "test_ai_http_client.cpp",
     ],
+    local_defines = SEEKDB_RELEASE_LOCAL_DEFINES + ["SEEKDB_AI_FUNCTION_STANDALONE_TEST"],
     alwayslink = True,
     deps = [
         "@seekdb_3rd_headers//:gtest",

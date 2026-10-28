@@ -59,8 +59,10 @@ TEST(AIPrompt, invalid_indices_and_literal_braces)
 }
 } // namespace
 
+#ifdef SEEKDB_AI_FUNCTION_STANDALONE_TEST
 int main(int argc, char **argv)
 {
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }
+#endif
