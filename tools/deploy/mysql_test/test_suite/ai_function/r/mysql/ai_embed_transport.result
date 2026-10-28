@@ -1,0 +1,9 @@
+select json_extract(ai_embed('transport_embed','7:retry',3),'$[0]') = 7 as partial_transfer_retry;
+partial_transfer_retry
+1
+select id, if(content is null, v is null, json_extract(v,'$[0]') = id) as mapped
+from (select id,content,ai_embed('transport_embed',content,3) as v from transport_rows) x order by id;
+id	mapped
+1	1
+2	1
+3	1

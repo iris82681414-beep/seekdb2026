@@ -1,0 +1,27 @@
+load("@rules_cc//cc:cc_test.bzl", "cc_test")
+load("//bazel:defs.bzl", cc_library = "seekdb_cc_library")
+
+package(default_testonly = True)
+
+cc_library(
+    name = "ai_function_cases",
+    srcs = [
+        "engine/expr/ob_expr_ai_prompt_test.cpp",
+        "engine/expr/test_ob_openai_utils.cpp",
+        "engine/expr/test_ai_http_client.cpp",
+    ],
+    alwayslink = True,
+    deps = [
+        "@seekdb_3rd_headers//:gtest",
+        "//src/sql:sql_unit_test_interface",
+    ],
+)
+
+cc_test(
+    name = "test_ai_functions",
+    size = "small",
+    linkstatic = True,
+    features = ["-static_cpp_runtime", "-static_link_cpp_runtimes"],
+    deps = [":ai_function_cases", "//src/observer:liboceanbase"],
+    target_compatible_with = ["@platforms//os:linux"],
+)

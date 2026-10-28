@@ -3,6 +3,7 @@ import json
 import os
 from pathlib import Path
 import secrets
+import socket
 import stat
 import subprocess
 import sys
@@ -43,6 +44,7 @@ def stop():
 def serve():
     token = json.loads(STATE.read_text())['token']
     events = []
+    attempts = {}
 
     class Handler(BaseHTTPRequestHandler):
         def log_message(self, *_):
@@ -69,6 +71,21 @@ def serve():
                 threading.Thread(target=server.shutdown, daemon=True).start()
                 return
             body = json.loads(data)
+            attempts[self.path] = attempts.get(self.path, 0) + 1
+            if self.path == '/always-unavailable':
+                self.reply(503, {'error': 'temporary failure'})
+                return
+            if self.path == '/retry-partial' and attempts[self.path] == 1:
+                # libcurl receives a prefix and CURLE_PARTIAL_FILE. The next
+                # successful response must not be appended to this prefix.
+                self.send_response(200)
+                self.send_header('Content-Length', '1000')
+                self.end_headers()
+                self.wfile.write(b'{"data":[')
+                self.wfile.flush()
+                self.connection.shutdown(socket.SHUT_RDWR)
+                self.close_connection = True
+                return
             inputs = body.get('input')
             dimension = body.get('dimensions', 3)
             if not isinstance(inputs, list) or not 1 <= len(inputs) <= 16 or any(not isinstance(x, str) or not x for x in inputs):
@@ -87,6 +104,14 @@ def serve():
                      for i, text in reversed(list(enumerate(inputs)))]
             if self.path == '/invalid-batch':
                 items[-1]['index'] = len(inputs)
+            elif self.path == '/duplicate-index':
+                items[-1]['index'] = items[0]['index']
+            elif self.path == '/string-element':
+                items[0]['embedding'][0] = '1'
+            elif self.path == '/null-element':
+                items[0]['embedding'][0] = None
+            elif self.path == '/mixed-dimensions' and len(items) > 1:
+                items[-1]['embedding'].pop()
             self.reply(200, {'data': items})
 
     server = ThreadingHTTPServer(('127.0.0.1', PORT), Handler)

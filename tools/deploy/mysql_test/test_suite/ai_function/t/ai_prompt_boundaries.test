@@ -1,0 +1,28 @@
+connection default;
+--exec python3 mysql_test/test_suite/ai_column/include/ai_column_mock.py start 19136
+--disable_query_log
+--disable_result_log
+--error 0,11112
+call DBMS_AI_SERVICE.DROP_AI_MODEL_ENDPOINT('prompt_boundary_ep');
+--error 0,11118
+call DBMS_AI_SERVICE.DROP_AI_MODEL('prompt_boundary');
+drop table if exists prompt_boundary_lob;
+call DBMS_AI_SERVICE.CREATE_AI_MODEL('prompt_boundary', '{"type":"completion","model_name":"fixture"}');
+call DBMS_AI_SERVICE.CREATE_AI_MODEL_ENDPOINT('prompt_boundary_ep', '{"ai_model_name":"prompt_boundary","url":"http://127.0.0.1:19136/v1/chat/completions","access_key":"fixture","provider":"openai"}');
+create table prompt_boundary_lob(t longtext,a longtext);
+insert into prompt_boundary_lob values(concat(repeat('x',50000),'{0}/{0}'),concat('世界',char(10),'"\\{1}'));
+--enable_result_log
+--enable_query_log
+select ai_complete('prompt_boundary',ai_prompt(t,a)) = concat('mock:',repeat('x',50000),a,'/',a) as long_unicode_escape from prompt_boundary_lob;
+select json_extract(ai_prompt('outer {0}',ai_prompt('inner {0}','世界')),'$.args[0].template') = 'inner {0}' as nested_prompt;
+select ai_complete('prompt_boundary',ai_prompt('{0}/{0}', 'literal {1}')) = 'mock:literal {1}/literal {1}' as no_recursive_replacement;
+--disable_query_log
+--disable_result_log
+--error 1210
+select ai_complete('prompt_boundary',ai_prompt('{1}','x'));
+--error 1210
+select ai_complete('prompt_boundary',ai_prompt('{99999999999999999999999999999999999}','x'));
+drop table prompt_boundary_lob;
+call DBMS_AI_SERVICE.DROP_AI_MODEL_ENDPOINT('prompt_boundary_ep');
+call DBMS_AI_SERVICE.DROP_AI_MODEL('prompt_boundary');
+--exec python3 mysql_test/test_suite/ai_column/include/ai_column_mock.py stop 19136

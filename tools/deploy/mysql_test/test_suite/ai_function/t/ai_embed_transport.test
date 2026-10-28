@@ -1,0 +1,42 @@
+# A failed HTTP attempt must not contaminate a later embedding response.
+connection default;
+--exec python3 mysql_test/test_suite/ai_function/include/ai_embed_batch_mock.py start 19135
+--disable_query_log
+--disable_result_log
+--error 0,11112
+call DBMS_AI_SERVICE.DROP_AI_MODEL_ENDPOINT('transport_embed_ep');
+--error 0,11118
+call DBMS_AI_SERVICE.DROP_AI_MODEL('transport_embed');
+drop table if exists transport_rows;
+call DBMS_AI_SERVICE.CREATE_AI_MODEL('transport_embed', '{"type":"dense_embedding","model_name":"transport-model"}');
+call DBMS_AI_SERVICE.CREATE_AI_MODEL_ENDPOINT('transport_embed_ep', '{"ai_model_name":"transport_embed","url":"http://127.0.0.1:19135/retry-partial","access_key":"fixture","provider":"openai"}');
+--enable_result_log
+--enable_query_log
+select json_extract(ai_embed('transport_embed','7:retry',3),'$[0]') = 7 as partial_transfer_retry;
+--disable_query_log
+--disable_result_log
+create table transport_rows(id int primary key, content text);
+insert into transport_rows values(1,'1:a'),(2,null),(3,'3:c');
+call DBMS_AI_SERVICE.ALTER_AI_MODEL_ENDPOINT('transport_embed_ep', '{"url":"http://127.0.0.1:19135/duplicate-index"}');
+--error 4070
+select ai_embed('transport_embed',content) from transport_rows;
+call DBMS_AI_SERVICE.ALTER_AI_MODEL_ENDPOINT('transport_embed_ep', '{"url":"http://127.0.0.1:19135/string-element"}');
+--error 4070
+select ai_embed('transport_embed',content) from transport_rows;
+call DBMS_AI_SERVICE.ALTER_AI_MODEL_ENDPOINT('transport_embed_ep', '{"url":"http://127.0.0.1:19135/null-element"}');
+--error 4070
+select ai_embed('transport_embed',content) from transport_rows;
+call DBMS_AI_SERVICE.ALTER_AI_MODEL_ENDPOINT('transport_embed_ep', '{"url":"http://127.0.0.1:19135/mixed-dimensions"}');
+--error 1210
+select ai_embed('transport_embed',content) from transport_rows;
+call DBMS_AI_SERVICE.ALTER_AI_MODEL_ENDPOINT('transport_embed_ep', '{"url":"http://127.0.0.1:19135/embeddings"}');
+--enable_result_log
+--enable_query_log
+select id, if(content is null, v is null, json_extract(v,'$[0]') = id) as mapped
+  from (select id,content,ai_embed('transport_embed',content,3) as v from transport_rows) x order by id;
+--disable_query_log
+--disable_result_log
+drop table transport_rows;
+call DBMS_AI_SERVICE.DROP_AI_MODEL_ENDPOINT('transport_embed_ep');
+call DBMS_AI_SERVICE.DROP_AI_MODEL('transport_embed');
+--exec python3 mysql_test/test_suite/ai_function/include/ai_embed_batch_mock.py stop 19135

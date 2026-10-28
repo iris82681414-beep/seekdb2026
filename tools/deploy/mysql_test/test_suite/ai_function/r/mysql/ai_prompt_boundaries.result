@@ -1,0 +1,9 @@
+select ai_complete('prompt_boundary',ai_prompt(t,a)) = concat('mock:',repeat('x',50000),a,'/',a) as long_unicode_escape from prompt_boundary_lob;
+long_unicode_escape
+1
+select json_extract(ai_prompt('outer {0}',ai_prompt('inner {0}','世界')),'$.args[0].template') = 'inner {0}' as nested_prompt;
+nested_prompt
+1
+select ai_complete('prompt_boundary',ai_prompt('{0}/{0}', 'literal {1}')) = 'mock:literal {1}/literal {1}' as no_recursive_replacement;
+no_recursive_replacement
+1
