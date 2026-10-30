@@ -120,7 +120,27 @@ Bazel 独立测试目标启用，避免和模块共用测试入口冲突。
 本次补测：inventory 生成、`bash build.sh release`、带 CI 参数
 `-DOB_USE_CCACHE=ON -DNEED_PARSER_CACHE=OFF` 的配置均通过；迁移后的
 Bazel 目标通过全部 8 项 C++ 单测。此前 14 项 SQL 结果对应相同 AI 生产代码，
-没有把它们写成 CMake 新产物的重测。尚未完成 CMake 全量编译或平台重测。
+没有把它们写成 CMake 新产物的重测。当时尚未完成 CMake 全量编译或平台重测。
+
+## 2026-10-30 完整 CMake 构建与回归补测
+
+在代码提交 `3168c9b36b27a23c222844fc1a4dd2bb960ef837` 上补齐实际编译和运行验证。
+本次没有改动六项功能的生产实现。对照私有仓库导出的 6,948 个源码、构建和测试文件，
+Linux 构建目录与当前分支完全一致。
+
+- `cmake --build build_release --target seekdb -j8` 完整构建通过，包含最终链接。
+  使用前述带 `-DOB_USE_CCACHE=ON -DNEED_PARSER_CACHE=OFF` 的 Release 配置、
+  SDK Clang 17 及 Rust 1.98.1。
+- 重新执行独立 Bazel AI C++ 测试产物：8 项全部通过。
+- 使用本次 CMake 生成的 `build_release/src/observer/seekdb` 启动新的隔离实例，
+  `memory_budget=2G`、`log_disk_size=4G`；准备本地 MTR `admin` 测试账号后，
+  上文列出的全部 14 项 AI mysqltest 一次运行全部通过。
+- SQL 回归结束后正常停止实例；未使用 AMD 部署实例或修改其他任务的数据库。
+- 本次使用本地协议 fixture，未访问平台隐藏 Mock；平台重新提测与得分尚未核验。
+
+本次构建、运行日志和逐项结果保留于仓库外的
+`D:\OceanBase2026\ai-functions-evidence`：`cmake-release-20261030.log`、
+`cmake-runtime-20261030.log`、`validation-cmake-20261030.json`。
 
 ## 提测
 
