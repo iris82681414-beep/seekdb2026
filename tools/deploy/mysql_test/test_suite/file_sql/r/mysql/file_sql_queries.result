@@ -3,6 +3,7 @@ id	name
 3	CHEN
 rows_found
 3
+# NUL in a JSON field name is rejected before exposing SQL metadata
 # native CSV/JSON and CSV/Parquet joins
 matched	id_sum
 3	6
@@ -41,6 +42,6 @@ literal_match
 literal_missing
 0
 visible_files
-7
+8
 hidden_files
 1

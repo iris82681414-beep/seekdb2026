@@ -12,6 +12,14 @@ drop table if exists file_sql_weights;
 eval select id, upper(name) AS name from read_csv('$FILE_SQL_DATA_DIR/basic.csv') where score > 90 order by id desc limit 1;
 eval select count(*) AS rows_found from read_ndjson('$FILE_SQL_DATA_DIR/basic.jsonl');
 
+--echo # NUL in a JSON field name is rejected before exposing SQL metadata
+--disable_result_log
+--error 1210
+eval select * from read_json('$FILE_SQL_DATA_DIR/nul-column-name.jsonl');
+--error 1210
+eval describe select * from read_ndjson('$FILE_SQL_DATA_DIR/nul-column-name.jsonl');
+--enable_result_log
+
 --echo # native CSV/JSON and CSV/Parquet joins
 eval select count(*) AS matched, sum(c.id) AS id_sum from read_csv('$FILE_SQL_DATA_DIR/basic.csv') c join read_json('$FILE_SQL_DATA_DIR/basic.jsonl') j on c.id = j.id;
 eval select count(*) AS pairs, sum(c.id) AS csv_sum, sum(p.c1) AS parquet_sum from read_csv('$FILE_SQL_DATA_DIR/basic.csv') c cross join read_parquet('$FILE_SQL_DATA_DIR/simple.parquet') p;

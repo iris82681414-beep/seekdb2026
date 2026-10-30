@@ -32,6 +32,7 @@ file
 basic.csv
 basic.jsonl
 invalid.txt
+nul-column-name.jsonl
 simple.parquet
 # COPY query to CSV and read it back
 id	name	score

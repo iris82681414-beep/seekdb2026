@@ -1,0 +1,25 @@
+load("@rules_cc//cc:cc_test.bzl", "cc_test")
+load("//bazel:defs.bzl", cc_library = "seekdb_cc_library")
+load("//bazel:seekdb_build_config.bzl", "SEEKDB_RELEASE_LOCAL_DEFINES")
+
+package(default_testonly = True)
+
+cc_library(
+    name = "file_sql_parser_cases",
+    srcs = ["test_file_sql_parser.cpp"],
+    local_defines = SEEKDB_RELEASE_LOCAL_DEFINES + ["SEEKDB_FILE_SQL_STANDALONE_TEST"],
+    alwayslink = True,
+    deps = [
+        "@seekdb_3rd_headers//:gtest",
+        "//src/sql:sql_unit_test_interface",
+    ],
+)
+
+cc_test(
+    name = "test_file_sql_parser",
+    size = "small",
+    linkstatic = True,
+    features = ["-static_cpp_runtime", "-static_link_cpp_runtimes"],
+    deps = [":file_sql_parser_cases", "//src/observer:liboceanbase"],
+    target_compatible_with = ["@platforms//os:linux"],
+)

@@ -281,6 +281,7 @@ seekdb_test_interface(
     visibility = [
         "//unittest/sql:__pkg__",
         "//unittest/sql/engine/expr:__pkg__",
+        "//unittest/sql/parser:__pkg__",
     ],
 )
 

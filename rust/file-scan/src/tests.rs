@@ -306,3 +306,87 @@ fn copy_custom_delimiter_escape_and_sticky_failure() {
     assert!(writer.finish() < 0);
     assert!(writer_open(-1, b"{}", br#"["value"]"#).writer_status() < 0);
 }
+
+#[test]
+fn jsonl_rejects_nul_in_column_names() {
+    let file = TestFile::new(b"{\"bad\\u0000name\":1}\n");
+    let mut scan = file.open("json", "{}");
+    scan.infer(16);
+    assert!(scan.status() < 0, "NUL cannot be part of a SQL column name");
+    assert!(scan.next_row().is_empty());
+}
+
+#[test]
+fn csv_null_dates_numeric_boundaries_and_order_independent_widening() {
+    let rows = [
+        "NULL,2024-02-29,9223372036854775807,1,true\n",
+        "NULL,2024-03-01 12:13:14.123456,9223372036854775808,2.5,2\n",
+    ];
+    for reversed in [false, true] {
+        let ordered = if reversed { [rows[1], rows[0]] } else { rows };
+        let file = TestFile::new(
+            format!("n,day,boundary,number,flag\n{}{}", ordered[0], ordered[1]).as_bytes(),
+        );
+        let mut scan = file.open("csv", r#"{"header":true,"nullstr":"NULL"}"#);
+        infer(&mut scan);
+        assert_eq!(
+            scan.schema
+                .iter()
+                .map(|column| column.kind)
+                .collect::<Vec<_>>(),
+            vec![0, 6, 4, 2, 1]
+        );
+        assert!(scan.columns()[0].nullable);
+        assert_eq!(scan.columns()[1].scale, 6);
+        let mut integers = Vec::new();
+        for _ in 0..2 {
+            let row = scan.next_row();
+            assert_eq!(scan.status(), 0);
+            assert!(row[0].is_null);
+            assert!(row[1].integer > 0);
+            assert!(row[3].number.is_finite());
+            integers.push(row[2].text.clone());
+        }
+        integers.sort();
+        assert_eq!(integers, vec!["9223372036854775807", "9223372036854775808"]);
+    }
+}
+
+#[test]
+fn changes_during_scan_fail_without_returning_buffered_rows() {
+    let mut file = TestFile::new(b"id\n1\n2\n");
+    let mut scan = file.open("csv", "{}");
+    infer(&mut scan);
+    assert_eq!(values(&mut scan), vec![Some("1".into())]);
+    file.file.seek(SeekFrom::End(0)).unwrap();
+    file.file.write_all(b"3\n").unwrap();
+    assert!(scan.next_row().is_empty());
+    assert!(scan.status() < 0);
+    assert!(scan.next_row().is_empty());
+}
+
+#[test]
+fn parquet_empty_file_keeps_footer_schema() {
+    use parquet::{file::writer::SerializedFileWriter, schema::parser::parse_message_type};
+    let file = TestFile::new(b"");
+    let schema = Arc::new(
+        parse_message_type("message t { REQUIRED INT64 id; OPTIONAL BOOLEAN flag; }").unwrap(),
+    );
+    SerializedFileWriter::new(file.file.try_clone().unwrap(), schema, Default::default())
+        .unwrap()
+        .close()
+        .unwrap();
+    let mut scan = file.open("parquet", "{}");
+    infer(&mut scan);
+    assert_eq!(
+        scan.schema
+            .iter()
+            .map(|column| column.kind)
+            .collect::<Vec<_>>(),
+        vec![1, 3]
+    );
+    assert!(!scan.columns()[0].nullable);
+    assert!(scan.columns()[1].nullable);
+    assert!(scan.next_row().is_empty());
+    assert_eq!(scan.status(), 1);
+}
