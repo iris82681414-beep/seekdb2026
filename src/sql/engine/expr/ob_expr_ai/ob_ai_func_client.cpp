@@ -23,13 +23,13 @@ namespace common
 {
 
 const int64_t ObAIFuncClient::CURL_MAX_TIMEOUT_SEC = INT_MAX/1000;
-ObAIFuncClient::ObAIFuncClient()
+ObAIFuncClient::ObAIFuncClient(bool enable_retry)
     : allocator_(nullptr), url_(nullptr), header_list_(nullptr),
       curlm_(nullptr), curl_(nullptr), curl_handles_(), response_buffers_() 
 {
   is_finished_.store(false);
   abs_timeout_ts_ = 0;
-  max_retry_times_ = 3;  // default retry 3 times
+  max_retry_times_ = enable_retry ? 3 : 0;
   timeout_sec_ = 60; // default timeout 1 minute
 }
 
@@ -308,8 +308,10 @@ int ObAIFuncClient::send_post_batch(common::ObIAllocator &allocator,
     if (OB_FAIL(init(allocator, url, headers))) {
     }
     const int64_t original_count = responses.count();
-    // retry if need
-    for (int64_t i = 0; OB_SUCC(ret) && i < max_retry_times_; ++i) {
+    // Preserve the existing batch attempt count, but disabling retries still
+    // requires the initial request rather than returning success without I/O.
+    const int64_t attempts = std::max(int64_t(1), max_retry_times_);
+    for (int64_t i = 0; OB_SUCC(ret) && i < attempts; ++i) {
       ret = send_post_batch(data_array, responses);
       if (is_timeout()) {
         ret = OB_TIMEOUT;
@@ -317,7 +319,7 @@ int ObAIFuncClient::send_post_batch(common::ObIAllocator &allocator,
         while (responses.count() > original_count) {
           responses.pop_back();
         }
-        if (i + 1 < max_retry_times_) {
+        if (i + 1 < attempts) {
           ret = OB_SUCCESS;
           int64_t delay_ms = 1000 * (1 << i) + rand() % 1000;
           ob_usleep(delay_ms * 1000);

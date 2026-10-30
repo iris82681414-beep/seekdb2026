@@ -644,7 +644,8 @@ int AiColumnService::Impl::process(ColumnTask &task)
       }
     }
     if (OB_SUCC(ret)) {
-      ObAIFuncModel model(allocator, *info, endpoint);
+      // The task queue owns retries; one dispatch must issue only one request.
+      ObAIFuncModel model(allocator, *info, endpoint, false /* enable_retry */);
       ObString content = column_view(prompt);
       if (embedding) {
         ObJsonObject dimensions(&allocator);

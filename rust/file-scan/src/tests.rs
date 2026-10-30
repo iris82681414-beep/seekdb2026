@@ -159,6 +159,21 @@ fn invalid_records_and_resource_limits_fail_before_results() {
     assert_eq!(file.open("csv", r#"{"sample_size":10}"#).status(), -3);
 }
 #[test]
+fn jsonl_rejects_nul_column_names_before_schema_publication() {
+    for bytes in [
+        b"{\"bad\\u0000name\":1}\n".as_slice(),
+        b"{\"ok\":1}\n{\"bad\\u0000name\":2}\n",
+    ] {
+        let file = TestFile::new(bytes);
+        let mut scan = file.open("json", "{}");
+        while scan.status() == 0 && scan.infer(1) == 0 {}
+        assert!(scan.status() < 0, "NUL-containing JSON key was accepted");
+        assert!(scan.error().contains("JSONL line"));
+        assert!(scan.next_row().is_empty());
+    }
+}
+
+#[test]
 fn serialized_definition_revalidates_file_and_owns_its_descriptor() {
     let mut file = TestFile::new(b"id\n1\n2\n");
     let mut scan = file.open("csv", "{}");

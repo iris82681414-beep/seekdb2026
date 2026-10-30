@@ -28,7 +28,7 @@ namespace common
 class ObAIFuncClient: public ObAIFuncHandle
 {
 public:
-  ObAIFuncClient();
+  explicit ObAIFuncClient(bool enable_retry = true);
   virtual ~ObAIFuncClient();
   int init(common::ObIAllocator &allocator, const ObString &url, ObArray<ObString> &headers);
   void clean_up();

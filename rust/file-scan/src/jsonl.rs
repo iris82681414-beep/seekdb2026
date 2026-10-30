@@ -95,8 +95,8 @@ impl<'de> Visitor<'de> for FlatRecord {
             if !keys.insert(key.clone()) {
                 return Err(de::Error::custom("Duplicate JSON field"));
             }
-            if key.is_empty() || key.len() > 256 {
-                return Err(de::Error::custom("Invalid JSON column name length"));
+            if key.is_empty() || key.len() > 256 || key.contains('\0') {
+                return Err(de::Error::custom("Invalid JSON column name"));
             }
             let raw = map.next_value::<&RawValue>()?.get();
             let cell = match raw.as_bytes()[0] {
