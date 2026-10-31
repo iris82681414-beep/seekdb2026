@@ -76,7 +76,35 @@ C++ AI 单测的已有 Bazel 目标为 `//unittest/sql/engine/expr:test_ai_funct
 - Parquet footer 结构计数、page/dictionary 解码预分配及总体内存预算；目前的 footer/RowGroup/column 限制和 batch size 不足以证明这些分配有界。
 - AI COLUMN 崩溃恢复、尝试持久化、分组重叠、DDL/backfill、严格读取和向量索引事务验证。
 - 六项 AI 函数本次完整 SQL 重跑。
-- 原始全文基线、性能瓶颈 profile、候选优化及同机 baseline→candidate→baseline 验证。
+- 原始全文基线、性能瓶颈 profile、候选优化的运行验证及同机 baseline→candidate→baseline 性能验证。
+
+## 全文索引第二轮增量（2026-10-31）
+
+### 平台基准记录
+
+用户提供的平台记录：`feat/kernel-contest-validation` / `faecffc7d819fafd819fa5ba790d6cc6a77b49fd`，2026-10-31 00:18 执行成功，**得分 7.381 / 50**。这不是耗时，也不是已核实的提升百分比。当前没有九项耗时明细、完整结果校验报告或 profile，无法据此判定哪类成本占主导。
+
+### 源码开销依据与修改
+
+1. **词频聚合：两次查找改为一次，并避免重复词替换节点的分配。** `ObAddWord::groupby_word` 原先先 `get_refactored`，再 `set_refactored(..., overwrite=1)`；底层分别哈希及遍历 bucket，覆盖路径另分配替换节点。现在复用 `ObHashMap::set_or_update`，原地更新已有 pair。首次插入仍计 1，后续加 `word_freq`；回调同步替换 key，保留 collation 相等但字节不同的最后词项。非分组重复错误、过滤、doc length 和字符集比较保持原逻辑。
+2. **BENG：直接规范化到调用方 allocator，移除中间复制。** 原 normalizer 在每轮复用的私有 arena 中调用 `ObCharset::tolower`，BENG 再在自己的输出 allocator 分配并 memcpy。现在 English analyzer 增加显式持久输出模式，BENG 直接选择它的输出 allocator，默认两参 analyzer 调用仍使用 scratch 模式。字符集转换、修剪、token 顺序、频次和 byte-based char length 不变；输出字节仍由调用方持有，不能借用迭代器下一轮即失效的临时缓冲区。
+
+两项作用于已有共享分词链，供 TOKENIZE、索引构建和查询词处理复用；没有修改检索执行算法、词典或分词规则。这些是源码可确认的重复工作，**不是 profile 证明的主瓶颈，也没有实测加速比例**。
+
+### 新回归与构建声明
+
+新增 `unittest/storage/test_fts_token_pipeline.cpp`，目标 `//unittest/storage:test_fts_token_pipeline`。覆盖旧分组算法对照、非 1 初始频次、collation 等价 key/最后代表值、大小写、停用词/长度边界、非分组重复及非法输入、未初始化 map、默认/持久 analyzer 对照、过滤/聚合开关、BENG 输出在后续 token、EOF、parser 销毁及原输入修改后的有效性。包含长 token、UTF-8/Latin1、非 ASCII 与坏字节输入对照，以及两种 allocator 分离和 analyzer 重初始化。
+
+该目标为 Linux-only 静态链接 C++ 单测；生产 translation units 已在原 inventory 注册，不新增生产清单。CMake inventory reader 原先看到 `unittest/storage/BUILD.bazel` 就要求统一测试农场宏，会拒绝此独立 cc_test 包。本轮最小修正为显式 standalone `cc_test` 保持 Bazel-owned，原统一宏数量与字段校验保留。没有为构建脚本新增测试。
+
+### 本轮实际验证与限制
+
+- `git diff --check` 已通过；接口、调用点和 allocator 生命周期已做静态核对。官方基准五文件 SHA-256 再核对一致。
+- 尝试运行源码 inventory 生成命令，但执行权限检查在运行前拒绝：需要显式授权执行目标仓库脚本。**该命令未执行，未生成可供核验的本轮 inventory**，没有换工具或主机绕过。
+- 用户询问已有 SSH 后，对已授权主机做只读连接检查，返回 `Connection refused`，退出码 255；未进入远程主机，未改变现有部署。不在仓库发布连接地址。
+- 按「不要编译，直接 push」要求，**本轮生产源码与新增 C++ 回归均未编译、未执行**。没有候选生产 binary、候选 SQL 结果或新性能报告；IDE 缺失 include 配置的诊断不算编译证据。
+
+推送后仍须平台或之后单独授权环境验证运行正确性与九项性能。不得使用旧 binary 冒充候选，不能只核对命中 COUNT。官方基准会重建 `fts_large_bench`，只能在专用实例执行，不能对保留部署运行。
 
 ## 冻结全文基准
 

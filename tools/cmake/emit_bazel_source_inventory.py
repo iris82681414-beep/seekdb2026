@@ -27,7 +27,7 @@ import ast
 import re
 import sys
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Mapping, Sequence, Tuple
+from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple
 
 
 # Python 3.14 removed these deprecated AST compatibility node classes.  Keep
@@ -193,19 +193,26 @@ PRETEST_MODULES: Sequence[str] = (
 )
 
 
-def _pretest_spec(path: Path, module: str) -> Mapping[str, Any]:
+def _pretest_spec(path: Path, module: str) -> Optional[Mapping[str, Any]]:
     try:
         tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
     except (OSError, SyntaxError) as exc:
         raise InventoryError("cannot parse %s: %s" % (path, exc)) from exc
 
     matches: List[ast.Call] = []
+    has_standalone_test = False
     for statement in tree.body:
         if not isinstance(statement, ast.Expr) or not isinstance(statement.value, ast.Call):
             continue
         call = statement.value
-        if isinstance(call.func, ast.Name) and call.func.id == "seekdb_module_cc_test":
-            matches.append(call)
+        if isinstance(call.func, ast.Name):
+            if call.func.id == "seekdb_module_cc_test":
+                matches.append(call)
+            elif call.func.id == "cc_test":
+                has_standalone_test = True
+    if not matches and has_standalone_test:
+        # Standalone test packages remain Bazel-owned, outside the CMake farm.
+        return None
     if len(matches) != 1:
         raise InventoryError(
             "%s must contain exactly one seekdb_module_cc_test call" % path
@@ -383,16 +390,17 @@ def emit(repo: Path, output: Path) -> None:
             paths.append(path)
         _emit_set(lines, name, paths)
 
-    pretest_modules = [
-        module
-        for module in PRETEST_MODULES
-        if (repo / "unittest" / module / "BUILD.bazel").is_file()
-    ]
-    lines.append("set(SEEKDB_PRETEST_MODULES %s)" % " ".join(pretest_modules))
+    pretest_specs = {}
+    for module in PRETEST_MODULES:
+        path = repo / "unittest" / module / "BUILD.bazel"
+        if path.is_file():
+            spec = _pretest_spec(path, module)
+            if spec is not None:
+                pretest_specs[module] = spec
+    lines.append("set(SEEKDB_PRETEST_MODULES %s)" % " ".join(pretest_specs))
     lines.append("")
-    for module in pretest_modules:
+    for module, spec in pretest_specs.items():
         relative = "unittest/%s/BUILD.bazel" % module
-        spec = _pretest_spec(repo / relative, module)
         prefix = "SEEKDB_PRETEST_%s" % _cmake_name(module).upper()
         exception_paths = [
             "unittest/%s/%s" % (module, source)
