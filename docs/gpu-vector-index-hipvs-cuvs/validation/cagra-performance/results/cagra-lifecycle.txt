@@ -1,0 +1,2 @@
+[2026-11-01 11:19:32.245681] INFO  [LIB] ob_cuvs_serialize (ob_vsag_adaptor.cpp:443) [48439][T1_PX_G0][Y100B427F000001-00065F3533734254-0-0] [lt=26] [OBVSAG][cuVS] serialized GPU CAGRA snapshot(key=0x77c786c5b000, n=250000, dim32=128, built=true, build_us=12728259, graph_bytes=256001713)
+[2026-11-01 11:20:44.213160] INFO  [LIB] ob_cuvs_deserialize (ob_vsag_adaptor.cpp:509) [57195][T1_ReqWorker][YB427F000001-00065F35386D5F56-0-0] [lt=8] [OBVSAG][cuVS] deserialized GPU CAGRA snapshot(key=0x70892c2a9000, n64=250000, dim32=128, graph_bytes=256001713)

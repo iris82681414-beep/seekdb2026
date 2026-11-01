@@ -1,0 +1,6 @@
+write: n=10000 top1=0 distance=0
+[seekdb_cuvs] snapshot shape mismatch: 10000 x 32, expected 9999 x 32
+[seekdb_cuvs] deserialize failed: (null)
+[seekdb_cuvs] snapshot shape mismatch: 10000 x 32, expected 10000 x 33
+[seekdb_cuvs] deserialize failed: (null)
+read: n=10000 top1=0 distance=0

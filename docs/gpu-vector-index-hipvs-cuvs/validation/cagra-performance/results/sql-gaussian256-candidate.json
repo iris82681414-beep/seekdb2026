@@ -1,0 +1,19 @@
+{
+  "label": "candidate",
+  "dataset": "gaussian256",
+  "lib": "cuvs",
+  "rows": 250000,
+  "dimension": 256,
+  "queries": 1024,
+  "ddl_s": 18.091847030445933,
+  "build_first_query_s": 18.115243770182133,
+  "recall_10": 0.98974609375,
+  "qps_10": 229.69826929985862,
+  "p95_ms_10": 4.637270048260689,
+  "recall_100": 0.98158203125,
+  "qps_100": 208.45553286927364,
+  "p95_ms_100": 5.1219746470451355,
+  "peak_vram_bytes": 1054810112,
+  "peak_host_rss_bytes": 3156639744,
+  "vram_source": "/sys/class/drm/renderD128/device/mem_info_vram_used"
+}

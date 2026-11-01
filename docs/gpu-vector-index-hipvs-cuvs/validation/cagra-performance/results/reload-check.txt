@@ -1,0 +1,12 @@
+('==================================================================',)
+('|ID|OPERATOR         |NAME                 |EST.ROWS|EST.TIME(us)|',)
+('------------------------------------------------------------------',)
+('|0 |VECTOR INDEX SCAN|items_sift(idx_items)|1       |7           |',)
+('==================================================================',)
+('Outputs & filters:',)
+('-------------------------------------',)
+('  0 - output([items_sift.id]), filter(nil), rowset=16',)
+('      access([items_sift.id]), partitions(p0)',)
+('      is_index_back=true, is_global_index=false, ',)
+('      range_key([items_sift.__vid_1793531957451188], [items_sift.__type_17_1793531958063878]), range(MIN,MIN ; MAX,MAX)always true',)
+{"queries": 32, "k": 100, "unchanged_id_sets": true, "recall_100": 1.0}

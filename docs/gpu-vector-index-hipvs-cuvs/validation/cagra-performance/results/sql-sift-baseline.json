@@ -1,0 +1,19 @@
+{
+  "label": "baseline",
+  "dataset": "sift",
+  "lib": "cuvs",
+  "rows": 250000,
+  "dimension": 128,
+  "queries": 4096,
+  "ddl_s": 49.34584313444793,
+  "build_first_query_s": 49.38236787542701,
+  "recall_10": 0.999951171875,
+  "qps_10": 140.7172190058132,
+  "p95_ms_10": 8.27773381024599,
+  "recall_100": 0.99997314453125,
+  "qps_100": 128.5531767702489,
+  "p95_ms_100": 9.051361586898565,
+  "peak_vram_bytes": 734179328,
+  "peak_host_rss_bytes": 3015090176,
+  "vram_source": "/sys/class/drm/renderD128/device/mem_info_vram_used"
+}

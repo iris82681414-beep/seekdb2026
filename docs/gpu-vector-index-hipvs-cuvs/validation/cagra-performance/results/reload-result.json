@@ -1,0 +1,6 @@
+{
+  "queries": 32,
+  "k": 100,
+  "unchanged_id_sets": true,
+  "recall_100": 1.0
+}

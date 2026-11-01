@@ -1,0 +1,19 @@
+{
+  "label": "cpu",
+  "dataset": "sift",
+  "lib": "vsag",
+  "rows": 250000,
+  "dimension": 128,
+  "queries": 128,
+  "ddl_s": 80.89952846802771,
+  "build_first_query_s": 81.04676026850939,
+  "recall_10": 0.99140625,
+  "qps_10": 2860.1830862417946,
+  "p95_ms_10": 0.5181739106774329,
+  "recall_100": 0.963203125,
+  "qps_100": 1343.6933177321373,
+  "p95_ms_100": 0.8313690312206744,
+  "peak_vram_bytes": 719736832,
+  "peak_host_rss_bytes": 2438696960,
+  "vram_source": "/sys/class/drm/renderD128/device/mem_info_vram_used"
+}
