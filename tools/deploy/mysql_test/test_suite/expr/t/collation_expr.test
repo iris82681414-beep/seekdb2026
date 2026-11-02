@@ -283,3 +283,64 @@ create or replace view v1(c1,c2,c3,c4) as select cast('abc' as char(10)), cast('
 show create view v1;
 drop table coll_test;
 drop view v1;
+
+# Ready collation lookups must retain comparison and padding semantics.
+create table short_comparison_keys (
+  id int primary key,
+  a varchar(256) collate utf8mb4_general_ci,
+  b varchar(256) collate utf8mb4_general_ci
+);
+insert into short_comparison_keys values
+  (1, '', ''), (2, 'a', 'a'), (3, 'a', 'A'), (4, 'é', 'e'),
+  (5, 'a', 'a '), (6, '', ' '),
+  (7, concat('a', char(0), 'b'), concat('a', char(0), 'b')),
+  (8, repeat('x', 63), repeat('x', 63)),
+  (9, repeat('x', 64), repeat('x', 64)),
+  (10, repeat('x', 65), repeat('x', 65)),
+  (11, concat(repeat('x', 63), 'a'), concat(repeat('x', 63), 'b')),
+  (12, concat(repeat('x', 64), 'a'), concat(repeat('x', 64), 'b')),
+  (13, repeat('数', 21), repeat('数', 21)),
+  (14, repeat('数', 22), repeat('数', 22)),
+  (15, '数据库', '数据仓'),
+  (16, '😀', '😀'), (17, '😀', '😁'),
+  (18, concat(repeat('x', 63), 'A'), concat(repeat('x', 63), 'a')),
+  (19, repeat(' ', 64), ''), (20, 'é', 'é'),
+  (21, concat(char(0), 'a'), concat(char(0), 'b')),
+  (22, null, 'a'), (23, null, null), (24, 'a', null);
+select id, a = b as eq, a < b as lt, sign(strcmp(a, b)) as cmp
+  from short_comparison_keys order by id;
+select id from short_comparison_keys order by a, id;
+select count(distinct a) as distinct_keys from short_comparison_keys;
+select id from short_comparison_keys where a = 'a' order by id;
+prepare short_key_compare from 'select id, a = ? as eq from short_comparison_keys where id in (2, 3, 5, 9, 18) order by id';
+set @short_key = 'A';
+execute short_key_compare using @short_key;
+set @short_key = repeat('x', 64);
+execute short_key_compare using @short_key;
+deallocate prepare short_key_compare;
+drop table short_comparison_keys;
+
+# Exercise each retained collation through stored values and ordered scans.
+create table ready_collation_keys (
+  id int primary key,
+  general_key varchar(128) collate utf8mb4_general_ci,
+  unicode_key varchar(128) collate utf8mb4_unicode_ci,
+  binary_key varchar(128) collate utf8mb4_bin,
+  raw_key varbinary(128)
+);
+insert into ready_collation_keys (id, general_key) values
+  (1, ''), (2, 'a'), (3, 'A'), (4, 'a '), (5, 'é'), (6, 'e'),
+  (7, 'ß'), (8, 'ss'), (9, '数据库'), (10, '数据仓'),
+  (11, concat('a', char(0), 'b')), (12, null);
+update ready_collation_keys set unicode_key=general_key, binary_key=general_key, raw_key=general_key;
+select id, general_key='a' as g, unicode_key='a' as u,
+  binary_key='a' as b, raw_key=_binary'a' as r from ready_collation_keys order by id;
+select id, general_key='ss' as g, unicode_key='ss' as u,
+  binary_key='ss' as b, raw_key=_binary'ss' as r from ready_collation_keys where id in (7,8) order by id;
+select id from ready_collation_keys order by general_key, id;
+select id from ready_collation_keys order by unicode_key, id;
+select id from ready_collation_keys order by binary_key, id;
+select id from ready_collation_keys order by raw_key, id;
+select count(distinct general_key) as g, count(distinct unicode_key) as u,
+  count(distinct binary_key) as b, count(distinct raw_key) as r from ready_collation_keys;
+drop table ready_collation_keys;
