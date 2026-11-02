@@ -681,17 +681,19 @@ ANALYZE TABLE ann_predicate_1535;
 --disable_query_log
 --let $and_expr= ((p=1) OR (q=1))
 --let $or_expr= ((p=1) AND (q=1))
---let $count= 127
-while ($count)
+--let $depth= 10
+while ($depth)
 {
-  --let $and_expr= $and_expr AND ((p=1) OR (q=1))
-  --let $or_expr= $or_expr OR ((p=1) AND (q=1))
-  --dec $count
+  --let $and_expr= ($and_expr) AND ($and_expr)
+  --let $or_expr= ($or_expr) OR ($or_expr)
+  --dec $depth
 }
 --echo # Root AND absorption in ANN filters
+--replace_regex / +$//
 eval EXPLAIN BASIC SELECT id FROM ann_predicate_1535 WHERE p=1 AND $and_expr ORDER BY l2_distance(embedding,'[0,0,0]') APPROXIMATE LIMIT 10;
 eval SELECT id FROM ann_predicate_1535 WHERE p=1 AND $and_expr ORDER BY l2_distance(embedding,'[0,0,0]') APPROXIMATE LIMIT 10;
 --echo # Nested OR absorption in ANN filters
+--replace_regex / +$//
 eval EXPLAIN BASIC SELECT id FROM ann_predicate_1535 WHERE p=1 OR $or_expr ORDER BY l2_distance(embedding,'[0,0,0]') APPROXIMATE LIMIT 10;
 eval SELECT id FROM ann_predicate_1535 WHERE p=1 OR $or_expr ORDER BY l2_distance(embedding,'[0,0,0]') APPROXIMATE LIMIT 10;
 --echo # Duplicate expressions retain three-valued Boolean results
