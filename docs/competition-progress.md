@@ -4,13 +4,13 @@
 
 ## 环境与提交
 
-- seekdb 保留官方 `2026-competition` 历史，基线为 `5bce9e06d1281347ad61344e4b01fab9158c58a2`。用户私有仓库已建立 `main` 和 `2026-competition` 分支。
+- seekdb 保留官方 `2026-competition` 历史，基线为 `5bce9e06d1281347ad61344e4b01fab9158c58a2`。2026-11-02 新建私有答题仓库 [wsaitr/seekdb2026-answers](https://github.com/wsaitr/seekdb2026-answers)，seekdb 使用 `main` 和 `2026-competition` 分支，PowerContext 使用 `powercontext-2026-competition` 分支。
 - seekdb 最新内核实现提交为 `3c2738049ea434300517356249ee4bbe897861bb`，包含 FTS 锁优化、大赛指定 Bug #1477、TOKENIZE 大字段及空配置崩溃修复。旧选题 #1477 的独立私有分支仍为 `34b696a50198bdb8d5280f3f881ede6405d96625`。2026-11-02 重新核对时，该 Issue 已由官方 PR #1586 合入 master，后续另准备仍开放的 #1535，不重复提交已合入的修复。
 - PowerContext 位于本地 `.competition/powercontext`，保留比赛分支及冻结产品提交 `9db1753434162c0aa7c9f1189a1722e617880a52`。
 - PowerContext 最新实现已推送至私有仓库 `powercontext-2026-competition`，完整提交为 `a06ae43ae42fdd362485a7b0de4552ad10e53436`。
-- GitHub 仓库当前默认分支仍是 PowerContext 答题分支；正式提测须明确选取产品对应的分支和 commit。
+- 原仓库 `iris82681414-beep/seekdb2026` 在 2026-11-02 重新核验时为公开，当前账号没有管理权限；已停止向原仓库推送。此次发现前推送的 `37bcc309` 仅包含两份进度文档，没有 SSH 密钥或 ENV。后续代码与文档同步到新私有仓库，保留原远端配置。正式提测须明确选取产品对应的分支和完整 commit。
 - 华为云现有实例为 Ubuntu 24.04 x86_64、4 核、约 15 GB 内存。专用目录 `/root/oceanbase2026`，日志位于 `logs`，测试产物位于 `results`。
-- 2026-10-27 最后验证的原生主实例为 `/root/oceanbase2026/instances/core-ai-column-strict`，SQL 端口 2881；运行二进制 SHA-256 为 `970e2a68101a5053602fb95b130d3fce945dcd4e545f544bbc95f804f719042d`。部署标识文件中的 ID 为 `8df70a0e-f2ad-8202-8b3b-ad658ab165d9`，正式部署核验须从该实例重新读取并核对平台同步结果。2026-11-02 原服务器 SSH 连接超时，当前运行状态尚未重新确认，不将历史进程信息当作在线证明。
+- 2026-11-02 重新验证原生主实例 `/root/oceanbase2026/instances/core-ai-column-strict`，SQL 端口 2881、进程 617400：SQL 正常，运行二进制与此前验证的 SHA-256 `970e2a68101a5053602fb95b130d3fce945dcd4e545f544bbc95f804f719042d` 一致，89 个 AI 列定义标识摘要未变，待处理任务为 0。部署标识文件中的 ID 仍为 `8df70a0e-f2ad-8202-8b3b-ad658ab165d9`，平台同步与核验仍待正式操作。连接超时源于客户端出口 IP 变化，已在该实例独占安全组中补充当前客户端的 TCP 22 `/32` 规则，保留全部旧规则；未重启实例或重置 SSH 配置。
 - 2026-11-02 新增独立验证服务器：Ubuntu 24.04.4 x86_64，cgroup 实际配额 16 核、59,055,800,320 bytes（55 GiB）内存；`/tmp` 仅 4 GiB，构建及数据库临时文件放在专用磁盘目录。专用 SSH 密钥、连接档案和主机指纹与原配置分开保存，未改动原 SSH 配置。
 - 连接信息保存在仓库外 `/Users/liwangsheng/.config/oceanbase2026/server.env`，文件权限 600、目录权限 700。额外源码、下载数据和操作脚本均由本地排除规则排除，未提交到 Git。
 
@@ -59,9 +59,9 @@ Pi 修复拒绝 Python 默认 JSON 解析器额外接受的 `NaN`、`Infinity`�
 
 ## 2026-11-02 恢复工作核查
 
-官方两套比赛分支仍分别为 seekdb `5bce9e06`、PowerContext `dab24006`，比赛交付基线未变。官方 master 已更新到 `7341096ecac94bb69635aa3eedd451bc56980b6c`，当前构建系统为 Bazel；新验证环境采用该提交原样构建，不将旧答题分支的整合构建当成当前 master 的证据。
+官方两套比赛分支仍分别为 seekdb `5bce9e06`、PowerContext `dab24006`，比赛交付基线未变。官方 master 已更新到 `7341096ecac94bb69635aa3eedd451bc56980b6c`，当前构建系统为 Bazel。该提交原样构建尚未完成，依赖源受到新服务器代理限制；比赛答题分支采用原有 CMake 构建另行准备，不将它作为当前 master 的完整构建证据。
 
-[#1477](https://github.com/oceanbase/seekdb/issues/1477) 于 2026-10-27 关闭，修复已随 [#1586](https://github.com/oceanbase/seekdb/pull/1586) 合入，官方提交为 `4b28bcbff0a476b25f2f668c2560a1b77b2095e5`。旧私有分支与 576 组对照保留为历史证据。当前另选仍开放、带 `2026-competition` 标签的 [#1535](https://github.com/oceanbase/seekdb/issues/1535)：相同筛选集合的重复 AND/OR 条件造成 ANN 性能差异。源码中存在超过 100 个条件时跳过去重的限制，目前仅作为待验证原因；尚未修改产品或宣称已修复。先完成新服务器的原样构建，再按题面 200,000 行、8 个查询向量和均衡 AB/BA 顺序做前后对照，同时核对完整筛选集合与精确 Top-K。
+[#1477](https://github.com/oceanbase/seekdb/issues/1477) 于 2026-10-27 关闭，修复已随 [#1586](https://github.com/oceanbase/seekdb/pull/1586) 合入，官方提交为 `4b28bcbff0a476b25f2f668c2560a1b77b2095e5`。旧私有分支与 576 组对照保留为历史证据。当前另选仍开放、带 `2026-competition` 标签的 [#1535](https://github.com/oceanbase/seekdb/issues/1535)：相同筛选集合的重复 AND/OR 条件造成 ANN 性能差异。源码中超过 100 个条件时跳过去重的限制仅是待验证假设；尚未修改产品或宣称修复。原服务器恢复后，在已有准确版本的原生实例中新建专用测试库，准备 200,000 行、8 个查询向量的均衡 AB/BA 对照，并核对完整筛选集合与精确 Top-K。涉及的三个去重函数与当前 master 逐字一致，但这仍不替代完整 master 验证。
 
 AI 生态、正式提测和公开动作仍按用户要求暂缓。新服务器可用不代表这些限制已取消。
 

@@ -107,11 +107,11 @@
 
 ## 当前项目与交付状态
 
-- 当前 seekdb 工作目录为 `/Users/liwangsheng/.codex/worktrees/issue-1477/oceanbase`；原目录 `/Users/liwangsheng/project/oceanbase` 保留私有测试产物，PowerContext 位于其 `.competition/powercontext`。
-- 用户远端为 `git@github.com:iris82681414-beep/seekdb2026.git`。2026 年 10 月 27 日经 GitHub 接口重新核验为私有仓库；两套产品均已保留官方历史并推送私有答题分支。
-- seekdb 使用私有 `2026-competition` 分支；PowerContext 使用私有 `powercontext-2026-competition` 分支，后者也是仓库当前默认分支。正式提测应明确选择产品对应的分支与 commit，不能直接依赖默认分支。
-- 同日重新核对官方 `2026-competition`：seekdb 为 `5bce9e06d1281347ad61344e4b01fab9158c58a2`，PowerContext 为 `dab240063bfcfa7917898dc44da4baadb3747bd0`，与采用的赛题基线一致。
-- 用户要求暂缓 AI 生态题、正式提测及公开上传。私有导入仓库没有 GitHub Fork 关系，不满足公开 Fork 子题；指定 Bug #1477 的独立私有修复也尚未提交官方 PR。
+- 当前 master 独立工作目录为 `/Users/liwangsheng/.codex/worktrees/issue-1535/oceanbase`；原答题目录 `/Users/liwangsheng/project/oceanbase` 保留实现与私有测试产物，PowerContext 位于其 `.competition/powercontext`。
+- 原远端 `git@github.com:iris82681414-beep/seekdb2026.git` 在 2026 年 11 月 2 日重新核验时为公开，当前账号没有管理权限，已停止推送。新私有答题仓库为 [wsaitr/seekdb2026-answers](https://github.com/wsaitr/seekdb2026-answers)，保留两套产品的官方历史。
+- seekdb 使用新私有仓库的 `2026-competition` 分支；PowerContext 使用 `powercontext-2026-competition` 分支。正式提测应明确选择产品对应的分支与完整 commit，不能依赖默认分支。
+- 2026 年 11 月 2 日重新核对官方 `2026-competition`：seekdb 为 `5bce9e06d1281347ad61344e4b01fab9158c58a2`，PowerContext 为 `dab240063bfcfa7917898dc44da4baadb3747bd0`，与采用的赛题基线一致。
+- 用户要求暂缓 AI 生态题、正式提测及公开上传。新私有仓库没有 GitHub Fork 关系，不满足公开 Fork 子题。旧选题 #1477 已由官方 #1586 合入，独立修复与测试留作历史记录；当前准备开放选题 #1535，官方 PR 暂缓。
 - 已实现内容、各题证据与剩余门槛以 [实施进度](competition-progress.md) 为准。当前没有平台确认分数，公开回归和独立测量不能折算成正式成绩。
 
 官方基线：[seekdb 比赛分支](https://github.com/oceanbase/seekdb/tree/2026-competition)、[PowerContext 比赛分支](https://github.com/oceanbase/powercontext/tree/2026-competition)。
