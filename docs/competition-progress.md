@@ -5,7 +5,7 @@
 ## 环境与提交
 
 - seekdb 保留官方 `2026-competition` 历史，基线为 `5bce9e06d1281347ad61344e4b01fab9158c58a2`。2026-11-02 新建私有答题仓库 [wsaitr/seekdb2026-answers](https://github.com/wsaitr/seekdb2026-answers)，seekdb 使用 `main` 和 `2026-competition` 分支，PowerContext 使用 `powercontext-2026-competition` 分支。
-- seekdb 最新答题代码提交为 `d49bff3746ebaed45d75cf87a279ffa7c7c96951`，减少 AI 列回填完成后的重复结构遍历。此前 #1535 ANN 筛选规范化实现 `c3cbb49753c6d00dac4ac4b978aac6b556be95e2` 和强化 1,024 分支回归 `0b42d1627d37de226c883e7b23829f871021563a` 保留；FTS、AI 函数、AI 列、文件 SQL、#1477 和 TOKENIZE 修复也保留。#1477 已由官方 PR #1586 合入，旧独立私有提交 `34b696a50198bdb8d5280f3f881ede6405d96625` 仅作历史证据。
+- seekdb 最新答题代码提交为 `b84454603d7d36b3195b03657c123b4c220b457c`，减少字符比较中对已初始化字符集的重复查找；对应运行快照为 `f696332e…`。此前 `d49bff3746ebaed45d75cf87a279ffa7c7c96951` 的 AI 列空闲扫描优化、#1535 ANN 筛选规范化实现 `c3cbb49753c6d00dac4ac4b978aac6b556be95e2` 和强化 1,024 分支回归 `0b42d1627d37de226c883e7b23829f871021563a` 保留；FTS、AI 函数、AI 列、文件 SQL、#1477 和 TOKENIZE 修复也保留。#1477 已由官方 PR #1586 合入，旧独立私有提交 `34b696a50198bdb8d5280f3f881ede6405d96625` 仅作历史证据。
 - 2026-11-03 再次核对时，官方 master 为 `977315404c8f1c66b371714b6ed5eba0f8eb5e38`，比上次的 `7341096e…` 多一次无关的 PL CALL 优化。#1535 仍开放并保留比赛标签。独立修复已同步至该基线，私有分支 `codex/fix-1535-master-nov3` 的提交为 `0bb05997390da348d1bbe748e1706e20633c0fb8`；五个修复文件与上一独立分支 `a83f21dc…` 逐字相同。该官方原样基线及修复版均已完整构建，修复版通过同库 20 万行对照和四项原生回归；复杂条件 ANN p50 从 133.965 ms 降至 3.590 ms，两个条件 Recall@10 均为 100%。这些是独立验证，尚未正式提测。
 - PowerContext 位于本地 `.competition/powercontext`，保留比赛分支及冻结产品提交 `9db1753434162c0aa7c9f1189a1722e617880a52`。
 - PowerContext 最新实现已推送至私有仓库 `powercontext-2026-competition`，完整提交为 `a06ae43ae42fdd362485a7b0de4552ad10e53436`。
@@ -167,6 +167,33 @@ PowerContext 已在新机的任务持久目录恢复，原生混合检索冒烟�
 这版存在普通排序退化，且尚未确定全部差异的来源，因此只保存实验，不合入、不部署。独立检查确认主实例仍为进程 2930684、`1a69e5c3…`，89 个 AI 列定义标识和部署 UUID 均相同。测试实例已停止，服务器源码及 19 个验证输入恢复至生产基线；已编译的实验输出单独保留，恢复的源文件使用新修改时间，确保后续构建重新编译字符集单元。
 
 完整记录位于本地 `.competition/fts-quality/nov3/`，包括 `utf8-equality-validation.json`、`utf8-equality-independent-verification.json`、`utf8-equality-final-verification.json` 和 `utf8-equality-complete-evidence.tar.gz`。归档包含三轮原版负载原始日志、普通排序执行计划、基线期望、8 项原生日志、实际验证源码及前述锁状态对照记录，不包含数据库冷备数据。未将这次小幅全文索引收益记作正式分数。
+
+## 2026-11-03 字符集就绪查找优化（已合入并更新主实例）
+
+继续检查字符比较热点，确认参数校验使用未初始化字符集入口，实际比较则使用就绪字符集入口，两者职责不同。新版本先检查排序规则范围、长度和指针，再读取既有的已初始化条目；首次初始化和异常参数仍走原有校验及初始化路径。字符权重、大小写、尾部空格处理及初始化锁保持原样。
+
+独立验证提交为 `0c37c66d01806b5bc0a74f3b8ae24cdfb7bc0cf4`，整合提交为 `b84454603d7d36b3195b03657c123b4c220b457c`。全部 6,936 个产品源码及构建文件与实际验证版本逐项匹配；原有字符集编译单元重新编译，构建耗时 23.83 秒。快照 `/root/oceanbase2026/seekdb-charset-ready-final` 的 SHA-256 为 `f696332e75fc1a07fda5ebd678fd72ebfa422dda5025e4dfa8cebc2acfc14425`，与构建输出使用不同 inode。
+
+既有表达式用例追加 24 组比较边界，以及另一张 12 行表对四种保留排序规则的比较、排序和去重检查；包括 `utf8mb4_general_ci`、`utf8mb4_unicode_ci`、`utf8mb4_bin` 和 `binary`。新增期望由原版原生执行记录，原测试及期望前缀保持一致。完整 `expr.collation_expr` 和 7 项全文索引回归均严格通过。
+
+独立新实例先运行原版默认全文索引负载“原版—候选—原版”，再进行回归初始化；配置仍为 20,000 行、3,000 次分词、每类查询 200 轮、3 组采样、30 轮预热及 CPUQuota 400% / MemoryMax 5G。五个原版负载及评分文件未变，命中数仍为 8,001、11,000、7,332、20。
+
+| 原版负载类别 | 相对两次原版均值的平均耗时降幅 |
+| --- | ---: |
+| 索引构建 | 4.13% |
+| 分词 | 1.54% |
+| 查询 | 4.52% |
+| 三类等权综合 | 3.40% |
+
+三类构建和四类查询的候选耗时都低于两次原版对照。四类查询分别观测下降 2.17%、4.24%、3.02%、8.65%；分词计时的两次原版对照存在波动，不能将综合值扩大为稳定的满分提升。
+
+同一份 20,000 行普通排序数据分别预热并采样 9 次，三段结果校验值一致。重复中文短键、相同前缀的不同短键、随机短键及长键的 p50，分别比两次原版均值下降 4.40%、2.45%、4.96%、2.68%，候选均低于两次原版对照。原始执行计划与逐次采样保留，未复用上一轮短键实验的计时。
+
+完成上述验证与私有推送后，主实例受控切换耗时 2.30 秒，没有回退。当前服务子进程为 2960915，运行 `f696332e…`；89 个 AI 列的定义标识摘要、待办任务数 0、严格读取配置和部署 UUID `8df70a0e-f2ad-8202-8b3b-ad658ab165d9` 均与切换前一致。CPU、内存及文件数、进程数、栈和锁页限制保持一致。独立新连接核验普通 SQL、四种排序规则、TOKENIZE 空配置及既有 Bug 查询均正常，既有 ANN 测试表的筛选计数仍为 1,993 行。
+
+当前持久服务为 `ob2026-primary-charset-ready-nov3.service`。更新器退出后 `active/exited`、`MainPID=0` 是预期状态，以实际服务子进程和 SQL 为准；前一持久服务已确认原进程结束、进程组为空后停用。上一版 `seekdb-ai-idle-schema-final` 和更早的 `seekdb-issue1535-final` 保留作为回退。构建输出仍与实际运行快照分离。
+
+本地 `.competition/fts-quality/nov3/` 保存 `charset-ready-validation.json`、`charset-ready-final-verification.json`、`charset-ready-independent-verification.json`、45 个文件的 `charset-ready-complete-evidence.tar.gz`，以及 `charset-ready-primary-update.json`、`charset-ready-primary-independent-health.json` 和部署归档。该轮已合入并部署，但正式平台得分仍未确认。
 
 ## 尚待正式核验的门槛
 
