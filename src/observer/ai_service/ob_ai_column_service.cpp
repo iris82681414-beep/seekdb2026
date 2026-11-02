@@ -477,6 +477,7 @@ struct AiColumnService::Impl
   std::map<uint64_t, int64_t> active;
   bool reclaimed = false;
   std::map<uint64_t, ColumnBackfill> backfills;
+  int64_t backfill_schema_version = OB_INVALID_VERSION;
 
   bool acquire(uint64_t endpoint, int64_t limit)
   {
@@ -841,7 +842,13 @@ int AiColumnService::Impl::backfill()
   int ret = OB_SUCCESS;
   ObSchemaGetterGuard guard;
   ObSEArray<const ObTableSchema *, 16> tables;
+  int64_t schema_version = OB_INVALID_VERSION;
+  bool complete = true;
   OZ(GCTX.schema_service_->get_runtime_schema_guard(guard));
+  OZ(guard.get_schema_version(schema_version));
+  if (OB_SUCC(ret) && schema_version > 0 && schema_version == backfill_schema_version) {
+    return OB_SUCCESS;
+  }
   OZ(guard.get_table_schemas_in_runtime(tables));
   for (int64_t n = 0; OB_SUCC(ret) && n < tables.count(); ++n) {
     const ObTableSchema *table = tables.at(n);
@@ -873,11 +880,15 @@ int AiColumnService::Impl::backfill()
       ColumnBackfill &progress = backfills[table->get_table_id()];
       if (progress.signature != signature) { progress = ColumnBackfill(); progress.signature = signature; }
       if (!progress.done) {
+        complete = false;
         ret = column_backfill_table(guard, *table, columns, definitions, progress);
         break; // Keep each coordinator round bounded so terminal groups are also published.
       }
     }
   }
+  // Cache only a fully visited snapshot. An unfinished batch or a scan error
+  // must retry even when no DDL changes the schema version.
+  if (OB_SUCC(ret) && complete) { backfill_schema_version = schema_version; }
   return ret;
 }
 
