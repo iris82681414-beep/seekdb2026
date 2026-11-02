@@ -108,6 +108,7 @@
 ## 当前项目与交付状态
 
 - 当前 master 独立工作目录为 `/Users/liwangsheng/.codex/worktrees/issue-1535/oceanbase`；原答题目录 `/Users/liwangsheng/project/oceanbase` 保留实现与私有测试产物，PowerContext 位于其 `.competition/powercontext`。
+- 2026 年 11 月 3 日核验的官方 master 为 `977315404c8f1c66b371714b6ed5eba0f8eb5e38`。#1535 独立私有分支已同步至该基线，提交为 `0bb05997390da348d1bbe748e1706e20633c0fb8`；原服务器上的独立 Bazel 构建准备流程运行中，尚无完整构建或该基线原生回归通过的结论。
 - 原远端 `git@github.com:iris82681414-beep/seekdb2026.git` 在 2026 年 11 月 3 日核验时仍为公开。用户已授权恢复私有后继续推送，但当前账号没有管理权限，原仓库继续停推。新私有答题副本为 [wsaitr/seekdb2026-answers](https://github.com/wsaitr/seekdb2026-answers)，保留两套产品的官方历史。
 - seekdb 使用新私有仓库的 `2026-competition` 分支；PowerContext 使用 `powercontext-2026-competition` 分支。正式提测应明确选择产品对应的分支与完整 commit，不能依赖默认分支。
 - 2026 年 11 月 2 日重新核对官方 `2026-competition`：seekdb 为 `5bce9e06d1281347ad61344e4b01fab9158c58a2`，PowerContext 为 `dab240063bfcfa7917898dc44da4baadb3747bd0`，与采用的赛题基线一致。
