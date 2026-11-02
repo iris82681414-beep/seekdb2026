@@ -5,12 +5,13 @@
 ## 环境与提交
 
 - seekdb 保留官方 `2026-competition` 历史，基线为 `5bce9e06d1281347ad61344e4b01fab9158c58a2`。用户私有仓库已建立 `main` 和 `2026-competition` 分支。
-- seekdb 最新内核实现提交为 `3c2738049ea434300517356249ee4bbe897861bb`，包含 FTS 锁优化、大赛指定 Bug #1477、TOKENIZE 大字段及空配置崩溃修复。独立 Bug 分支提交为 `34b696a50198bdb8d5280f3f881ede6405d96625`，基于官方 master，保存在用户私有仓库。
+- seekdb 最新内核实现提交为 `3c2738049ea434300517356249ee4bbe897861bb`，包含 FTS 锁优化、大赛指定 Bug #1477、TOKENIZE 大字段及空配置崩溃修复。旧选题 #1477 的独立私有分支仍为 `34b696a50198bdb8d5280f3f881ede6405d96625`。2026-11-02 重新核对时，该 Issue 已由官方 PR #1586 合入 master，后续另准备仍开放的 #1535，不重复提交已合入的修复。
 - PowerContext 位于本地 `.competition/powercontext`，保留比赛分支及冻结产品提交 `9db1753434162c0aa7c9f1189a1722e617880a52`。
 - PowerContext 最新实现已推送至私有仓库 `powercontext-2026-competition`，完整提交为 `a06ae43ae42fdd362485a7b0de4552ad10e53436`。
 - GitHub 仓库当前默认分支仍是 PowerContext 答题分支；正式提测须明确选取产品对应的分支和 commit。
 - 华为云现有实例为 Ubuntu 24.04 x86_64、4 核、约 15 GB 内存。专用目录 `/root/oceanbase2026`，日志位于 `logs`，测试产物位于 `results`。
-- 当前原生主实例为 `/root/oceanbase2026/instances/core-ai-column-strict`，SQL 端口 2881；运行二进制 SHA-256 为 `970e2a68101a5053602fb95b130d3fce945dcd4e545f544bbc95f804f719042d`。部署标识文件中的 ID 为 `8df70a0e-f2ad-8202-8b3b-ad658ab165d9`，正式部署核验须从该实例重新读取并核对平台同步结果。
+- 2026-10-27 最后验证的原生主实例为 `/root/oceanbase2026/instances/core-ai-column-strict`，SQL 端口 2881；运行二进制 SHA-256 为 `970e2a68101a5053602fb95b130d3fce945dcd4e545f544bbc95f804f719042d`。部署标识文件中的 ID 为 `8df70a0e-f2ad-8202-8b3b-ad658ab165d9`，正式部署核验须从该实例重新读取并核对平台同步结果。2026-11-02 原服务器 SSH 连接超时，当前运行状态尚未重新确认，不将历史进程信息当作在线证明。
+- 2026-11-02 新增独立验证服务器：Ubuntu 24.04.4 x86_64，cgroup 实际配额 16 核、59,055,800,320 bytes（55 GiB）内存；`/tmp` 仅 4 GiB，构建及数据库临时文件放在专用磁盘目录。专用 SSH 密钥、连接档案和主机指纹与原配置分开保存，未改动原 SSH 配置。
 - 连接信息保存在仓库外 `/Users/liwangsheng/.config/oceanbase2026/server.env`，文件权限 600、目录权限 700。额外源码、下载数据和操作脚本均由本地排除规则排除，未提交到 Git。
 
 ## 实现与验收
@@ -19,7 +20,7 @@
 | ---: | --- | ---: | --- |
 | 1 | 部署 | 10 | 实例运行，部署标识已保存；待平台同步与核验 |
 | 2 | 公开 Fork | 10 | 按要求暂缓；私有导入仓库不具备 Fork 关系 |
-| 3 | 官方 Bug PR | 10 | #1477 独立修复及 576 组对照完成；官方 PR 暂缓 |
+| 3 | 官方 Bug PR | 10 | #1477 已由官方 #1586 合入；开放选题 #1535 正在复现，官方 PR 暂缓 |
 | 4 | AI_PROMPT | 10 | 原版及 TEXT/LOB、JSON、占位符回归通过 |
 | 5 | AI_EMBED 单行 | 10 | 长文本、配置、维度及异常响应原生回归通过 |
 | 6 | AI_COMPLETE | 10 | 长文本、配置及异常响应原生回归通过 |
@@ -55,6 +56,14 @@ PowerContext 的十道代码题已在完整提交 `a06ae43ae42fdd362485a7b0de455
 本次执行先通过前九组 94 项，最后一组因验证脚本的临时目录过长而等待：109 字节的 Unix socket 绝对路径被拒绝，同一实例以短相对路径可连接。确认原因后停止该次验证，保留日志，仅缩短临时目录，单独重跑最后一组和新增回归，分别为 1 项、9 项通过，退出码均为 0。产品与冻结输入未变。前 94 项日志为 `.competition/results/powercontext-pi-json-path-setup-error.log`，后续通过日志为 `powercontext-pi-json-public.log`，汇总为 `powercontext-pi-json-validation.json`；原先 `5c7e7450` 的完整 95 项日志继续保留于 `powercontext-final-public.log`。
 
 Pi 修复拒绝 Python 默认 JSON 解析器额外接受的 `NaN`、`Infinity`、`-Infinity`，包括会话头和未选中分支中的非法值，满足题面“校验整个归档”的要求。旧版在新增测试中为 6 项失败、3 项通过，修改后 9 项全部通过；合法的同名字符串和普通数值保持可读。修改文件的 Ruff、格式和针对性 ty 检查通过。记录为 `.competition/results/powercontext-pi-json-before.log`。公开用例通过仍不等于平台正式得分。
+
+## 2026-11-02 恢复工作核查
+
+官方两套比赛分支仍分别为 seekdb `5bce9e06`、PowerContext `dab24006`，比赛交付基线未变。官方 master 已更新到 `7341096ecac94bb69635aa3eedd451bc56980b6c`，当前构建系统为 Bazel；新验证环境采用该提交原样构建，不将旧答题分支的整合构建当成当前 master 的证据。
+
+[#1477](https://github.com/oceanbase/seekdb/issues/1477) 于 2026-10-27 关闭，修复已随 [#1586](https://github.com/oceanbase/seekdb/pull/1586) 合入，官方提交为 `4b28bcbff0a476b25f2f668c2560a1b77b2095e5`。旧私有分支与 576 组对照保留为历史证据。当前另选仍开放、带 `2026-competition` 标签的 [#1535](https://github.com/oceanbase/seekdb/issues/1535)：相同筛选集合的重复 AND/OR 条件造成 ANN 性能差异。源码中存在超过 100 个条件时跳过去重的限制，目前仅作为待验证原因；尚未修改产品或宣称已修复。先完成新服务器的原样构建，再按题面 200,000 行、8 个查询向量和均衡 AB/BA 顺序做前后对照，同时核对完整筛选集合与精确 Top-K。
+
+AI 生态、正式提测和公开动作仍按用户要求暂缓。新服务器可用不代表这些限制已取消。
 
 ## 尚待正式核验的门槛
 
