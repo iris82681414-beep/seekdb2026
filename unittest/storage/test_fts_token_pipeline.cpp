@@ -161,8 +161,9 @@ TEST(FTSWordAggregation, case_stopword_and_length_filters_preserve_counts)
 
 TEST(BENGTokenPipeline, matches_scratch_normalization_and_owns_retained_tokens)
 {
-  for (const auto collation : {CS_TYPE_UTF8MB4_GENERAL_CI, CS_TYPE_UTF8MB4_BIN, CS_TYPE_LATIN1_SWEDISH_CI}) {
-    for (const std::string source : {std::string("The (QUICK), brown fox; database DATABASE! 123 ..."),
+  for (const auto collation : {CS_TYPE_UTF8MB4_GENERAL_CI, CS_TYPE_UTF8MB4_BIN,
+                               CS_TYPE_UTF8MB4_UNICODE_CI, CS_TYPE_BINARY}) {
+    for (const std::string &source : {std::string("The (QUICK), brown fox; database DATABASE! 123 ..."),
                                    std::string("École résumé OceanBase 稳定 DATABASE"),
                                    std::string("... !!!"), std::string("  a ab abc "),
                                    std::string("DATABASE ") + std::string(100000, 'X'),
@@ -227,7 +228,7 @@ TEST(BENGTokenPipeline, matches_scratch_normalization_and_owns_retained_tokens)
           EXPECT_EQ(reference_token.len_, length);
           EXPECT_EQ(length, char_length);
           EXPECT_EQ(reference_frequency, frequency);
-          expected.emplace_back(reference_token.ptr_, reference_token.len_);
+          expected.emplace_back(reference_token.ptr_, static_cast<size_t>(reference_token.len_));
           EXPECT_EQ(expected.back(), std::string(word, length));
           retained.emplace_back(length, word);
           ASSERT_EQ(OB_SUCCESS, add_word.process_word(word, length, char_length, frequency));
@@ -351,6 +352,12 @@ TEST(BENGTokenPipeline, invalid_parser_input_and_eof_outputs)
   EXPECT_EQ(0, char_length);
   EXPECT_EQ(0, frequency);
   EXPECT_EQ(OB_INVALID_ARGUMENT, parser.init(nullptr));
+  // Latin1 remains an enum value, but has no backing charset in this kernel.
+  EXPECT_EQ(nullptr, ObCharset::get_charset(CS_TYPE_LATIN1_SWEDISH_CI));
+  ObTextAnalysisCtx unsupported_ctx;
+  unsupported_ctx.cs_ = ObCharset::get_charset(CS_TYPE_LATIN1_SWEDISH_CI);
+  ObEnglishTextAnalyzer unsupported_analyzer;
+  EXPECT_EQ(OB_INVALID_ARGUMENT, unsupported_analyzer.init(unsupported_ctx, allocator));
   ObFTParserParam param;
   param.cs_ = ObCharset::get_charset(CS_TYPE_UTF8MB4_BIN);
   param.allocator_ = &allocator;

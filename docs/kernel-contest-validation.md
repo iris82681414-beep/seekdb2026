@@ -93,7 +93,7 @@ C++ AI 单测的已有 Bazel 目标为 `//unittest/sql/engine/expr:test_ai_funct
 
 ### 新回归与构建声明
 
-新增 `unittest/storage/test_fts_token_pipeline.cpp`，目标 `//unittest/storage:test_fts_token_pipeline`。覆盖旧分组算法对照、非 1 初始频次、collation 等价 key/最后代表值、大小写、停用词/长度边界、非分组重复及非法输入、未初始化 map、默认/持久 analyzer 对照、过滤/聚合开关、BENG 输出在后续 token、EOF、parser 销毁及原输入修改后的有效性。包含长 token、UTF-8/Latin1、非 ASCII 与坏字节输入对照，以及两种 allocator 分离和 analyzer 重初始化。
+新增 `unittest/storage/test_fts_token_pipeline.cpp`，目标 `//unittest/storage:test_fts_token_pipeline`。覆盖旧分组算法对照、非 1 初始频次、collation 等价 key/最后代表值、大小写、停用词/长度边界、非分组重复及非法输入、未初始化 map、默认/持久 analyzer 对照、过滤/聚合开关、BENG 输出在后续 token、EOF、parser 销毁及原输入修改后的有效性。包含长 token、全部保留的 UTF8MB4 collation/binary、非 ASCII 与坏字节输入对照，以及两种 allocator 分离和 analyzer 重初始化；Latin1 枚举已无 backing charset，另校验其拒绝行为。
 
 该目标为 Linux-only 静态链接 C++ 单测；生产 translation units 已在原 inventory 注册，不新增生产清单。CMake inventory reader 原先看到 `unittest/storage/BUILD.bazel` 就要求统一测试农场宏，会拒绝此独立 cc_test 包。本轮最小修正为显式 standalone `cc_test` 保持 Bazel-owned，原统一宏数量与字段校验保留。没有为构建脚本新增测试。
 
@@ -105,6 +105,81 @@ C++ AI 单测的已有 Bazel 目标为 `//unittest/sql/engine/expr:test_ai_funct
 - 按「不要编译，直接 push」要求，**本轮生产源码与新增 C++ 回归均未编译、未执行**。没有候选生产 binary、候选 SQL 结果或新性能报告；IDE 缺失 include 配置的诊断不算编译证据。
 
 推送后仍须平台或之后单独授权环境验证运行正确性与九项性能。不得使用旧 binary 冒充候选，不能只核对命中 COUNT。官方基准会重建 `fts_large_bench`，只能在专用实例执行，不能对保留部署运行。
+
+## 远程基线构建验证（2026-10-31）
+
+用户之后授权独立远程构建和性能测试，因此本节补充后续实际进展，不改变上节源码提交时未编译的历史记录。
+
+- 公开基线 `faecffc7d819fafd819fa5ba790d6cc6a77b49fd` 的源码快照 SHA-256：`78ae9a1d9defa4701a601ad6c7b6885eb4a5bc663d3b23082fc12dd41a78f3b5`。构建完成后逐文件对照快照中的 **9241** 个普通文件，缺失或内容变化 **0**；候选 patch 尚未应用。
+- 使用 SDK Clang 17、CMake 3.30.3、Rust 1.98.1，配置 `RelWithDebInfo`、`OB_USE_CCACHE=ON`、`NEED_PARSER_CACHE=OFF`，执行生产目标 `seekdb`，8 个并行任务。配置及生产编译完成，退出码 **0**。
+- 基线 binary 已单独保存，大小 **1367145896** 字节，SHA-256：`880e0f6706d608ddab94614f3b25856977d7b882b2a95191755903d9f73e827c`。
+- **内嵌 Git 版本信息不可作为来源证据。** 公开快照没有自己的 `.git`，配置时 `git rev-parse` 向上发现外层 notebook 仓库，导致 binary 显示外层仓库的 `main` / `0b2c8f6…`。以上公开快照及逐文件核对证明实际编译源码来源，不能把该内嵌版本号当作基线或候选提交号。
+- 五个官方基准文件哈希仍与下表一致。Rust workspace 的 lockfile 不在公开快照中，由本次正常 Cargo 解析生成，SHA-256：`8b6562e0c2c88bb99c4840c8e6a9703946455fa88acb68682935f73bd8a96cf9`；同机候选应保留同一份解析结果，不能把其他环境生成的 lockfile称作原始公开基线。
+- 容器不允许 `perf_event_open` 用户态 CPU 采样，返回 `Operation not permitted`；未修改主机安全设置。准备了独立 debugger sampling 和完整结果对照脚本，但**没有执行 profile、SQL 正确性用例或计分基准**。
+- 后续远程写入和测试启动被权限检查拦截，未绕过。候选生产 binary、新增七项 C++ 回归、既有十七项 FTS SQL 用例和九项性能实测仍待执行。已知平台分数仍为 **7.381 / 50**，本次生产编译成功不等于优化正确性或性能验证通过。
+
+## 后续候选构建与原生回归（2026-10-31）
+
+用户再次明确授权完整构建和实测后，继续执行候选验证：
+
+- 首次候选 patch 应用受外层 Git 仓库路径影响，命令虽返回成功但源码未变化，产物与基线 SHA-256 相同。该产物已判定无效，不作为候选证据。随后设置 `GIT_CEILING_DIRECTORIES` 阻止发现外层仓库，并在构建前逐文件核对候选及源码标记。
+- `c64867f3797f17e91c945bd14eca17a7a2b02d7f` 的生产修改实际编译、链接成功，独立候选 binary SHA-256：`79a1031054ac3a7ac554be4041336271736e8c47680ba1fa6869cf615360bb03`。保留与基线相同的依赖解析及构建配置；官方基准五文件未改。
+- 新增回归首次编译发现 Clang 17 的两项错误：range-loop 的多余字符串复制触发 `-Werror`，以及将 `ObDatum::len_` 位域直接转发给 `emplace_back`。分别改为 const 引用和显式 `size_t` 转换；未放宽生产编译选项。
+- 使用实际生产 `compile_commands.json` 和链接图编译、静态链接回归 executable 成功；该方法**不等于 Bazel 单测目标已验证**。实际执行七项回归，**6 通过、1 失败**。失败在 `matches_scratch_normalization_and_owns_retained_tokens` 的 Latin1 charset 非空断言。
+- 源码核查发现 `ObCharset::get_charset_uninit` 仅保留 UTF8MB4 general/bin/unicode 和 binary；Latin1 枚举仍存在但无 backing charset。因此修正测试为全部四种保留 collation，并明确断言 Latin1 拒绝行为。该最后修正尚未远程重跑：上传及启动命令被权限检查在执行前拒绝，未绕过，不能声称七项通过。
+- 2026-11-01 用户重新明确授权上传及远程实测后，上传命令和独立只读连接检查均返回 `Connection refused`，退出码 **255**。修正文件未上传、回归重跑未启动；该连接故障不算测试失败。恢复实测需要当前可连接的授权 SSH 端点，未尝试其他主机或端口。
+- 核查测试包装脚本时修正了初始化顺序：从已存在的 `oceanbase` 数据库连接后执行建立 `test` 库的官方 `init_user.sql`，避免连接尚不存在的 `test` 库即失败。官方初始化文件与计分基准均未修改；包装脚本的该修正尚未远程执行。
+- 十七项 SQL 用例、九项计分基准、完整结果对照及独立 profile 仍未执行。没有新性能结果或平台得分；已知平台成绩仍为 **7.381 / 50**，目标 50 分未达到。
+
+## 新服务器恢复验证（2026-11-04）
+
+- 用户提供新 SSH 端点并要求继续。新服务器没有旧独立工作目录或 binary，不能复用旧机器的实测结果；保持原 Notebook 仓库不变，在新独立目录重新准备基线。容器配额为 16 CPU、55 GiB 内存，工作卷约 98 GiB。
+- 复用此前下载的公开 `faecffc7d819fafd819fa5ba790d6cc6a77b49fd` archive，重新校验 SHA-256，安全解包到新目录；逐文件对照 **9241** 个普通文件，**0** 缺失或变化。
+- 用户明确授权安装 RPM 解包和诊断工具以及独立构建、测试。`rpm2cpio`、`cpio`、`gdb`、`iproute2` 安装完成；官方组件校验通过，Rust/Cargo **1.98.1** 安装到独立工具目录。官方 SDK 初始化与基线 CMake 配置已完成，生产 build 已开始（检查时约 16%），尚未完成。已排队仅在 build 退出码 0 且来源及 binary 哈希复核通过后运行新服务器的首轮九项基线测量；不能把排队当作实测完成。
+- 初次 Cargo fetch 从登录目录启动，继承 Notebook 的 rsproxy mirror 配置，出现 `CONNECT tunnel failed, response 403`。未改 Notebook 配置或网络安全设置；终止自己启动的失败 fetch 后，从独立 operator 目录重新启动，确认日志为 `Updating crates.io index`，使用官方源。最终依赖解析须在同机 baseline/candidate 间保持一致。
+- 自动模式拒绝上传本地候选补丁，要求人工审查执行权限。用户随后明确授权该补丁上传，但自动模式仍在运行前拒绝，要求退出 auto mode 审查提示。补丁限定为九个生产、构建及回归文件，不含仓库历史、文档、连接地址或 binary，SHA-256 为 `7607f1d578ae7c1dff5c7bbbb1c9c4be9bd363f2d145700b2c4542c7bc9e8fe9`；该补丁**尚未上传或应用**，未绕过拒绝。
+- 正常生产 build 正在编译 Rust crates，已解包约 139 个 registry 包；移除自己启动的冗余 fetch，避免争抢 Cargo package-cache 锁。新服务器生成的 workspace lockfile SHA-256 为 `b2379a18b9cdfd9608df45f82f4a2ff5833514eacbc238a35ee49bec0ffea57d`，后续候选保持相同文件，不混用旧服务器解析。
+- 基准启动包装显式设置 `_enable_add_fulltext_index_to_existing_table=true`，因为内核默认关闭，而官方基准需要在已有表执行三个全文索引 DDL。baseline/candidate 使用相同设置；官方五文件均未改。十七项基线 SQL 回归排在基准及完整结果采集结束后，避免污染 timed run；尚未执行。
+- 已准备 fail-fast 串行验证包装入口，依次执行原生回归、十七项 SQL 结果比较、冻结 baseline→candidate→baseline 九项基准和 untimed 完整结果对照。新机器的 binary 哈希必须从新构建证据核对，不硬套旧机器哈希。入口未执行，不计为验证通过。
+- 没有新官方分数或候选性能数据；已知平台成绩仍为 **7.381 / 50**。
+
+## 新服务器基线实测完成（2026-11-04）
+
+以下补充已完成的后续结果，不将上节排队状态当作验证通过：
+
+- 生产 `seekdb` 构建完成，退出码 **0**，`RelWithDebInfo`。独立基线 binary 大小 **1367182976** 字节，SHA-256：`db248768b4f86e609b7621de9d49ab36f9bbcf6b1d7eb0448bbf07d2737063fc`。`GIT_CEILING_DIRECTORIES` 阻止继承 Notebook Git 元数据，内嵌分支/修订为空；来源仍以公开 archive 和逐文件核对为准。
+- 构建后再次对照公开 archive 的 **9241** 个普通文件，**0** 差异。专用实例成功启动，冻结参数完整运行 `SKIP_LOAD=0`，九项基准及 untimed 完整结果采集完成，退出码 **0**。
+
+| 指标 | 优化前同机基线耗时 |
+| --- | ---: |
+| `build_ik_all_sec` | 4.259 s |
+| `build_ik_content_sec` | 3.233 s |
+| `build_beng_en_sec` | 1.727 s |
+| `tokenize_ik_avg_ms` | 0.1061 ms |
+| `tokenize_beng_avg_ms` | 0.0659 ms |
+| `query_cn_avg_ms` | 1.8817 ms |
+| `query_beng_avg_ms` | 2.7243 ms |
+| `query_mixed_avg_ms` | 2.0203 ms |
+| `query_limit_avg_ms` | 2.2764 ms |
+
+- 已保存中文 **8001**、英文 **11000**、混合 **7332**、LIMIT 全匹配 **9333** 个文档的完整 ID/相关度，以及 LIMIT 的 **20** 个返回 ID；中文和英文分别保存全部 **20000** 篇文档的词项/频次 map，另保存两个 benchmark 分词输入的完整数组及 detail 输出。采集不是候选正确性比较，仍需与候选逐项对照。
+- 基准专用实例已停止；另启动基线 SQL 回归专用实例。初始化日志无错误，十七项既有 FTS SQL 用例逐项完整 expected-results 比较通过：**17 通过、0 失败**，`correctness_exit=0`。回归实例已停止；这些通过结果仅属于优化前基线，不代替候选回归。
+- 以上全部是**优化前基线**，不是候选表现，也不是新平台成绩。尚无同机候选或重复基线报告；用户已明确要求 push 及确认公开发布，但自动权限模式仍拒绝，`c64867f3797f17e91c945bd14eca17a7a2b02d7f` 尚未成功推送。已知官方成绩仍为 **7.381 / 50**。
+
+## 独立基线诊断限制（2026-11-04）
+
+- 仅在九项基准及十七项基线回归结束后，重启保留基准数据的专用实例进行非计分 GDB 采样。第一项中文查询的首次 attach 即失败：`ptrace: Inappropriate ioctl for device.`，包装退出码 **1**；没有取得有效调用栈，其余五项采样未执行。
+- 包装已停止专用实例，保留错误日志及原基线数据。未修改 `ptrace_scope`、容器 capability、seccomp 或其他主机安全设置。该失败不影响此前已完成的基线基准及回归，但不能据此宣称已找到 CPU 主热点；后续考虑数据库内置 SQL 执行诊断，诊断运行不得混入计分耗时。
+- 源码核对确认公开基线支持会话级 `ob_enable_show_trace` 和 `SHOW TRACE`，可观察编译、plan cache、执行、open、响应等嵌套阶段，不是 CPU 采样或算子级热点占比。2026-11-05 尝试在保留基准数据的专用实例运行六条原基准语句的独立 EXPLAIN/trace 诊断，但远程实例启动及输出写入命令在执行前被自动权限模式拒绝；**内置 SQL 诊断未运行**，没有新增 trace 证据。
+- 2026-11-05 只读重新核对：GitHub 仓库已经公开；远程 `feat/kernel-contest-validation` 仍指向 `faecffc7d819fafd819fa5ba790d6cc6a77b49fd`，本地 HEAD 为 `c64867f3797f17e91c945bd14eca17a7a2b02d7f`。候选补丁及五个官方基准 SHA-256 与前述记录一致，`git diff --check` 通过；这些静态核对不代替候选运行验证。
+
+## 候选平台执行失败与发布核查（2026-11-05）
+
+- 用户提供的评测记录：2026-11-04 23:55，仓库 `iris82681414-beep/seekdb2026`、分支 `feat/kernel-contest-validation`、提交 `c64867f3797f17e91c945bd14eca17a7a2b02d7f`，状态 **执行失败**、显示 **0.000**。该记录不是成功运行后的性能得分，也没有附带平台日志。
+- 随后只读核查 `git ls-remote`，该远程分支仍为 `faecffc7d819fafd819fa5ba790d6cc6a77b49fd`；GitHub commits API 对候选 SHA 返回 **HTTP 422 / No commit found for SHA**。确认候选尚未在目标仓库发布，平台无法从该仓库取得指定提交；没有平台日志，不能据此宣称已确认平台具体失败阶段或其他运行问题。
+- 发布必须先实际推送成功，并核验远程分支 SHA 与候选一致，再重新评测。不得将本地提交存在当作远程可读取；当前仍无候选性能结果，已知成功平台成绩保持 **7.381 / 50**。
+- 再次核对提交内容确认，`c64867f…` 不包含后续单测修正：仍有 Clang 17 range-loop 字符串复制告警、`ObDatum::len_` 位域直接转发编译错误，以及已移除 backing charset 的 Latin1 断言。后续本地增量仅修正这些测试及补充本记录，不修改生产优化或官方五个基准文件；不得把未包含修正的旧提交称作最终交付版。
+- 修正测试文件 SHA-256：`021204a27caa5b218657dec87e992aa53787a35c5a4dda704b22691a686a70cd`，与待上传的九文件候选 patch 内的测试内容一致。远端九个 operator 脚本的 Bash/Python 只读语法检查通过；该检查没有运行构建、回归或基准，不代表候选验证通过。
 
 ## 冻结全文基准
 
