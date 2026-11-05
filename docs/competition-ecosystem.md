@@ -4,7 +4,7 @@
 
 | 题目 | 必须完成的实际工作 | 主要交付物与资源 |
 | --- | --- | --- |
-| [AMD](https://oceanbase.yuque.com/org-wiki-obtech-vh7w9r/hc3pio/seebnbaoxot1b0tb) | Radeon GPU 和 hipVS 参与 seekdb HNSW 的构建核心；完整构建产物可查询，CPU 路径保留 | seekdb PR、复现方法、至少三轮 CPU/GPU 构建中位数及 Recall@K。计时涵盖传输、同步和格式转换。题面引用的 12.65 倍是批量查询数据，不能当作构建成绩。正式平台提供 AMD GPU 配对评测；V5 构建满分门槛为 3 倍，查询满分为 1.10 倍 |
+| [AMD](https://oceanbase.yuque.com/org-wiki-obtech-vh7w9r/hc3pio/seebnbaoxot1b0tb) | 从 V5 冻结提交继续优化 GPU CAGRA 构建，持久化 GPU 快照并使用固定 hipVS 搜索；lib=vsag CPU 路径须可用 | 正式同轮配对评测为正确性 4 分、构建 14 分、查询 2 分；满分分别要求综合构建加速 3 倍、查询加速 1.5 倍。查询是 4,096 次单行 SQL。两组数据集的 Recall 还须不低于配对基线减 0.005，不能只满足绝对门槛 |
 | [MiniMax](https://oceanbase.yuque.com/org-wiki-obtech-vh7w9r/hc3pio/qlqnoryzrs7gtqbw) | 工程上下文模块从数据库检索规格、代码和测试；MiniMax 实际修改代码；PowerContext 保存状态并在重启后复用；规格更新后重新导入生效 | `minimax/` 源码、修改前后快照、相同目标测试由失败到通过的记录、回归结果、数据库及模型使用证据。一页技术说明。六项必做全部通过才得分，不能用环境失败代替修改前的功能失败 |
 | [Qoder](https://oceanbase.yuque.com/org-wiki-obtech-vh7w9r/hc3pio/uygu3273xzlrcmrm) | 主要开发工作真实使用 Qoder，项目核心接入 seekdb 或 PowerContext，通过 Qoder Sites 发布公开项目网站 | `qoder/` 项目、可复现样例、关键 Qoder 开发截图/录屏、个人账号 UID 和公开站点。只用 Qoder 发布其他工具完成的项目不符合要求；实际用户效果可以加分，必须可核对。细则权重待公布 |
 | [阶跃星辰](https://oceanbase.yuque.com/org-wiki-obtech-vh7w9r/hc3pio/kw9wfx4bu9pyvat9) | 浏览器本地完成文档和查询 embedding；INT8/FP16；WebGPU 优先并自动降级 WASM；经 seekdb-js 存储，混合检索在 seekdb 内完成 | `stepfun/` 可运行 Web 应用、源码、数据和一页技术说明。提供模型体积、量化前后质量、下载/加载/推理/写入刷新/检索分段计时；分别实测两条后端路径。不得调用云推理或回放预计算向量 |
