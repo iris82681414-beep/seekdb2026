@@ -382,8 +382,23 @@ static int ob_strnncollsp_utf8mb4(const ObCharsetInfo *cs,
   const unsigned char *se= src + srclen, *te= dst + dstlen;
   ObUnicaseInfo *uni_plane= cs->caseinfo;
   while ( src < se && dst < te ) {
-    int s_res= ob_mb_wc_utf8mb4(cs, &src_wc, src, se);
-    int t_res= ob_mb_wc_utf8mb4(cs, &dst_wc, dst, te);
+    int s_res;
+    int t_res;
+    if ((*src | *dst) < 0x80) {
+      // ASCII bytes are complete UTF-8 characters. Equal bytes have equal
+      // weights; unequal bytes still need the collation's case/accent mapping.
+      if (*src == *dst) {
+        ++src;
+        ++dst;
+        continue;
+      }
+      src_wc = *src;
+      dst_wc = *dst;
+      s_res = t_res = 1;
+    } else {
+      s_res = ob_mb_wc_utf8mb4(cs, &src_wc, src, se);
+      t_res = ob_mb_wc_utf8mb4(cs, &dst_wc, dst, te);
+    }
     if ( s_res <= 0 || t_res <= 0 ) {
       return bincmp_utf8mb4(src, se, dst, te);
     }

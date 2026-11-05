@@ -1,0 +1,56 @@
+# ASCII decoding must preserve collation, padding, grouping and index order.
+set names utf8mb4;
+--disable_warnings
+drop database if exists ascii_collation_loop;
+create database ascii_collation_loop;
+--enable_warnings
+use ascii_collation_loop;
+create table cmp(id int primary key, v varchar(512)) charset=utf8mb4 collate=utf8mb4_general_ci;
+insert into cmp values
+(1,'数据库'),
+(2,'数据库'),
+(3,'database'),
+(4,'database'),
+(5,'DATA'),
+(6,'data '),
+(7,'data'),
+(8,'á'),
+(9,'a'),
+(10,'á'),
+(11,'same-start-a-end'),
+(12,'same-start-b-end'),
+(13,''),
+(14,' '),
+(15,NULL),
+(16,CONVERT(X'610062' USING utf8mb4)),
+(17,CONVERT(X'610062' USING utf8mb4)),
+(18,'🔍'),
+(19,'🔍'),
+(20,CONCAT(REPEAT('x',128),'A',REPEAT('x',128))),
+(21,CONCAT(REPEAT('x',128),'A',REPEAT('x',128))),
+(22,CONCAT(REPEAT('x',128),'B',REPEAT('x',128))),
+(23,'aba'),
+(24,'aca');
+select id from cmp order by v collate utf8mb4_general_ci, id;
+select min(id) as first_id, count(*) as n, sum(id) as id_sum, sum(octet_length(v)) as byte_sum from cmp group by v collate utf8mb4_general_ci order by first_id;
+select count(*) as equal_pairs from cmp a join cmp b on a.v collate utf8mb4_general_ci = b.v collate utf8mb4_general_ci;
+select id from cmp order by v collate utf8mb4_unicode_ci, id;
+select min(id) as first_id, count(*) as n, sum(id) as id_sum, sum(octet_length(v)) as byte_sum from cmp group by v collate utf8mb4_unicode_ci order by first_id;
+select count(*) as equal_pairs from cmp a join cmp b on a.v collate utf8mb4_unicode_ci = b.v collate utf8mb4_unicode_ci;
+select id from cmp order by v collate utf8mb4_bin, id;
+select min(id) as first_id, count(*) as n, sum(id) as id_sum, sum(octet_length(v)) as byte_sum from cmp group by v collate utf8mb4_bin order by first_id;
+select count(*) as equal_pairs from cmp a join cmp b on a.v collate utf8mb4_bin = b.v collate utf8mb4_bin;
+create index k on cmp(v);
+select id from cmp force index(k) order by v, id;
+select count(*) as non_null_values from cmp where v=v;
+
+
+# Exercise all 16,384 ordered ASCII pairs, including NUL and control bytes.
+CREATE TABLE ascii_bytes(id INT PRIMARY KEY, v VARCHAR(8)) CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+INSERT INTO ascii_bytes VALUES (0,CONVERT(X'00' USING utf8mb4)),(1,CONVERT(X'01' USING utf8mb4)),(2,CONVERT(X'02' USING utf8mb4)),(3,CONVERT(X'03' USING utf8mb4)),(4,CONVERT(X'04' USING utf8mb4)),(5,CONVERT(X'05' USING utf8mb4)),(6,CONVERT(X'06' USING utf8mb4)),(7,CONVERT(X'07' USING utf8mb4)),(8,CONVERT(X'08' USING utf8mb4)),(9,CONVERT(X'09' USING utf8mb4)),(10,CONVERT(X'0a' USING utf8mb4)),(11,CONVERT(X'0b' USING utf8mb4)),(12,CONVERT(X'0c' USING utf8mb4)),(13,CONVERT(X'0d' USING utf8mb4)),(14,CONVERT(X'0e' USING utf8mb4)),(15,CONVERT(X'0f' USING utf8mb4)),(16,CONVERT(X'10' USING utf8mb4)),(17,CONVERT(X'11' USING utf8mb4)),(18,CONVERT(X'12' USING utf8mb4)),(19,CONVERT(X'13' USING utf8mb4)),(20,CONVERT(X'14' USING utf8mb4)),(21,CONVERT(X'15' USING utf8mb4)),(22,CONVERT(X'16' USING utf8mb4)),(23,CONVERT(X'17' USING utf8mb4)),(24,CONVERT(X'18' USING utf8mb4)),(25,CONVERT(X'19' USING utf8mb4)),(26,CONVERT(X'1a' USING utf8mb4)),(27,CONVERT(X'1b' USING utf8mb4)),(28,CONVERT(X'1c' USING utf8mb4)),(29,CONVERT(X'1d' USING utf8mb4)),(30,CONVERT(X'1e' USING utf8mb4)),(31,CONVERT(X'1f' USING utf8mb4)),(32,CONVERT(X'20' USING utf8mb4)),(33,CONVERT(X'21' USING utf8mb4)),(34,CONVERT(X'22' USING utf8mb4)),(35,CONVERT(X'23' USING utf8mb4)),(36,CONVERT(X'24' USING utf8mb4)),(37,CONVERT(X'25' USING utf8mb4)),(38,CONVERT(X'26' USING utf8mb4)),(39,CONVERT(X'27' USING utf8mb4)),(40,CONVERT(X'28' USING utf8mb4)),(41,CONVERT(X'29' USING utf8mb4)),(42,CONVERT(X'2a' USING utf8mb4)),(43,CONVERT(X'2b' USING utf8mb4)),(44,CONVERT(X'2c' USING utf8mb4)),(45,CONVERT(X'2d' USING utf8mb4)),(46,CONVERT(X'2e' USING utf8mb4)),(47,CONVERT(X'2f' USING utf8mb4)),(48,CONVERT(X'30' USING utf8mb4)),(49,CONVERT(X'31' USING utf8mb4)),(50,CONVERT(X'32' USING utf8mb4)),(51,CONVERT(X'33' USING utf8mb4)),(52,CONVERT(X'34' USING utf8mb4)),(53,CONVERT(X'35' USING utf8mb4)),(54,CONVERT(X'36' USING utf8mb4)),(55,CONVERT(X'37' USING utf8mb4)),(56,CONVERT(X'38' USING utf8mb4)),(57,CONVERT(X'39' USING utf8mb4)),(58,CONVERT(X'3a' USING utf8mb4)),(59,CONVERT(X'3b' USING utf8mb4)),(60,CONVERT(X'3c' USING utf8mb4)),(61,CONVERT(X'3d' USING utf8mb4)),(62,CONVERT(X'3e' USING utf8mb4)),(63,CONVERT(X'3f' USING utf8mb4)),(64,CONVERT(X'40' USING utf8mb4)),(65,CONVERT(X'41' USING utf8mb4)),(66,CONVERT(X'42' USING utf8mb4)),(67,CONVERT(X'43' USING utf8mb4)),(68,CONVERT(X'44' USING utf8mb4)),(69,CONVERT(X'45' USING utf8mb4)),(70,CONVERT(X'46' USING utf8mb4)),(71,CONVERT(X'47' USING utf8mb4)),(72,CONVERT(X'48' USING utf8mb4)),(73,CONVERT(X'49' USING utf8mb4)),(74,CONVERT(X'4a' USING utf8mb4)),(75,CONVERT(X'4b' USING utf8mb4)),(76,CONVERT(X'4c' USING utf8mb4)),(77,CONVERT(X'4d' USING utf8mb4)),(78,CONVERT(X'4e' USING utf8mb4)),(79,CONVERT(X'4f' USING utf8mb4)),(80,CONVERT(X'50' USING utf8mb4)),(81,CONVERT(X'51' USING utf8mb4)),(82,CONVERT(X'52' USING utf8mb4)),(83,CONVERT(X'53' USING utf8mb4)),(84,CONVERT(X'54' USING utf8mb4)),(85,CONVERT(X'55' USING utf8mb4)),(86,CONVERT(X'56' USING utf8mb4)),(87,CONVERT(X'57' USING utf8mb4)),(88,CONVERT(X'58' USING utf8mb4)),(89,CONVERT(X'59' USING utf8mb4)),(90,CONVERT(X'5a' USING utf8mb4)),(91,CONVERT(X'5b' USING utf8mb4)),(92,CONVERT(X'5c' USING utf8mb4)),(93,CONVERT(X'5d' USING utf8mb4)),(94,CONVERT(X'5e' USING utf8mb4)),(95,CONVERT(X'5f' USING utf8mb4)),(96,CONVERT(X'60' USING utf8mb4)),(97,CONVERT(X'61' USING utf8mb4)),(98,CONVERT(X'62' USING utf8mb4)),(99,CONVERT(X'63' USING utf8mb4)),(100,CONVERT(X'64' USING utf8mb4)),(101,CONVERT(X'65' USING utf8mb4)),(102,CONVERT(X'66' USING utf8mb4)),(103,CONVERT(X'67' USING utf8mb4)),(104,CONVERT(X'68' USING utf8mb4)),(105,CONVERT(X'69' USING utf8mb4)),(106,CONVERT(X'6a' USING utf8mb4)),(107,CONVERT(X'6b' USING utf8mb4)),(108,CONVERT(X'6c' USING utf8mb4)),(109,CONVERT(X'6d' USING utf8mb4)),(110,CONVERT(X'6e' USING utf8mb4)),(111,CONVERT(X'6f' USING utf8mb4)),(112,CONVERT(X'70' USING utf8mb4)),(113,CONVERT(X'71' USING utf8mb4)),(114,CONVERT(X'72' USING utf8mb4)),(115,CONVERT(X'73' USING utf8mb4)),(116,CONVERT(X'74' USING utf8mb4)),(117,CONVERT(X'75' USING utf8mb4)),(118,CONVERT(X'76' USING utf8mb4)),(119,CONVERT(X'77' USING utf8mb4)),(120,CONVERT(X'78' USING utf8mb4)),(121,CONVERT(X'79' USING utf8mb4)),(122,CONVERT(X'7a' USING utf8mb4)),(123,CONVERT(X'7b' USING utf8mb4)),(124,CONVERT(X'7c' USING utf8mb4)),(125,CONVERT(X'7d' USING utf8mb4)),(126,CONVERT(X'7e' USING utf8mb4)),(127,CONVERT(X'7f' USING utf8mb4));
+SELECT COUNT(*) AS n, SUM((a.id+1)*(b.id+3)*STRCMP(a.v,b.v)) AS comparison_checksum FROM ascii_bytes a CROSS JOIN ascii_bytes b;
+SELECT COUNT(*) AS n, SUM((a.id+1)*(b.id+3)*STRCMP(CONCAT('common-prefix-',a.v),CONCAT('common-prefix-',b.v))) AS comparison_checksum FROM ascii_bytes a CROSS JOIN ascii_bytes b;
+SELECT COUNT(*) AS n, SUM((a.id+1)*(b.id+3)*STRCMP(CONCAT(a.v,' 数据库🔍'),CONCAT(b.v,' 数据库🔍'))) AS comparison_checksum FROM ascii_bytes a CROSS JOIN ascii_bytes b;
+SELECT COUNT(*) AS n, SUM((a.id+1)*(b.id+3)*STRCMP(CONCAT(a.v,' '),b.v)) AS comparison_checksum FROM ascii_bytes a CROSS JOIN ascii_bytes b;
+SELECT GROUP_CONCAT(id ORDER BY v,id SEPARATOR ',') AS ascii_order FROM ascii_bytes;
+DROP DATABASE ascii_collation_loop;
