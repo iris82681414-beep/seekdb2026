@@ -1,0 +1,55 @@
+drop database if exists fts_score_predicates;
+create database fts_score_predicates;
+use fts_score_predicates;
+create table docs(id int primary key, content varchar(512));
+insert into docs values
+(1, 'alpha beta'), (2, 'gamma gamma gamma alpha'), (3, 'alpha'),
+(4, 'gamma delta epsilon theta alpha beta'), (5, 'beta delta'),
+(6, 'theta epsilon'), (7, ''), (8, null);
+alter table docs add fulltext index words(content) with parser beng;
+select count(*) from docs where match(content) against('alpha') and id > 1;
+count(*)
+3
+select count(*) from docs where (case when match(content) against('alpha') > 0 then 2 else 0 end) > 1;
+count(*)
+4
+select count(*) from docs where cast(match(content) against('alpha') > 0 as signed) > 0;
+count(*)
+4
+select count(*) from docs where not (match(content) against('alpha') > 0);
+count(*)
+4
+select count(*) from docs where match(content) against('alpha') > 0 or id=5;
+count(*)
+5
+select count(*) from docs where match(content) against('alpha') > null;
+count(*)
+0
+select case when match(content) against('alpha') > 0 then 1 else 0 end as matched, count(*) from docs group by matched order by matched;
+matched	count(*)
+0	4
+1	4
+select id, match(content) against('alpha') > 0 as matched from docs where match(content) against('alpha') order by matched, id;
+id	matched
+1	1
+2	1
+3	1
+4	1
+prepare long_query from 'select count(*) from docs where match(content) against(?)';
+set @query='alpha wordaa wordab wordac wordad wordae wordaf wordag wordah wordai wordaj wordak wordal wordam wordan wordao wordap wordaq wordar wordas wordat wordau wordav wordaw wordax worday wordaz wordba wordbb wordbc wordbd wordbe wordbf wordbg wordbh wordbi wordbj wordbk wordbl wordbm wordbn wordbo wordbp wordbq wordbr wordbs wordbt wordbu wordbv wordbw wordbx wordby wordbz wordca wordcb wordcc wordcd wordce wordcf wordcg wordch wordci wordcj wordck wordcl wordcm wordcn wordco wordcp wordcq wordcr wordcs wordct wordcu wordcv wordcw wordcx wordcy wordcz wordda worddb worddc worddd wordde worddf worddg worddh worddi worddj worddk worddl worddm worddn worddo worddp worddq worddr wordds worddt worddu worddv worddw worddx worddy worddz wordea wordeb wordec worded wordee wordef wordeg wordeh wordei wordej wordek wordel wordem worden wordeo wordep wordeq worder wordes wordet wordeu wordev wordew wordex wordey wordez wordfa wordfb wordfc wordfd wordfe wordff wordfg wordfh wordfi wordfj wordfk wordfl wordfm wordfn wordfo wordfp wordfq wordfr wordfs wordft wordfu wordfv wordfw wordfx wordfy wordfz wordga wordgb wordgc wordgd wordge wordgf wordgg wordgh wordgi wordgj wordgk wordgl wordgm wordgn wordgo wordgp wordgq wordgr wordgs wordgt wordgu wordgv wordgw wordgx wordgy wordgz wordha wordhb wordhc wordhd wordhe wordhf wordhg wordhh wordhi wordhj wordhk wordhl wordhm wordhn wordho wordhp wordhq wordhr wordhs wordht wordhu wordhv wordhw wordhx wordhy wordhz wordia wordib wordic wordid wordie wordif wordig wordih wordii wordij wordik wordil wordim wordin wordio wordip wordiq wordir wordis wordit wordiu wordiv wordiw wordix wordiy wordiz wordja wordjb wordjc wordjd wordje wordjf wordjg wordjh wordji wordjj wordjk wordjl wordjm wordjn wordjo wordjp wordjq wordjr wordjs wordjt wordju wordjv wordjw wordjx wordjy wordjz wordka wordkb wordkc wordkd wordke wordkf wordkg wordkh wordki wordkj wordkk wordkl wordkm wordkn wordko wordkp wordkq wordkr wordks wordkt wordku wordkv wordkw wordkx wordky wordkz wordla wordlb wordlc wordld wordle wordlf wordlg wordlh wordli wordlj wordlk wordll wordlm wordln';
+select json_length(tokenize(@query, 'beng'));
+json_length(tokenize(@query, 'beng'))
+301
+execute long_query using @query;
+count(*)
+4
+set @query='alpha';
+execute long_query using @query;
+count(*)
+4
+set @query='';
+execute long_query using @query;
+count(*)
+0
+deallocate prepare long_query;
+drop database fts_score_predicates;
