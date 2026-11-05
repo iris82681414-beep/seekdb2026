@@ -1,0 +1,42 @@
+--echo # Post-built FTS sort keys preserve Unicode, LOB, and update semantics.
+--disable_warnings
+DROP DATABASE IF EXISTS fts_post_build_sort;
+--enable_warnings
+CREATE DATABASE fts_post_build_sort;
+USE fts_post_build_sort;
+SET NAMES utf8mb4;
+CREATE TABLE digits (n INT PRIMARY KEY);
+INSERT INTO digits VALUES (0),(1),(2),(3),(4),(5),(6),(7),(8),(9);
+CREATE TABLE populated (id INT PRIMARY KEY, body TEXT) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+INSERT INTO populated SELECT 1+a.n+10*b.n+100*c.n,
+ CASE MOD(a.n+10*b.n+100*c.n,5)
+ WHEN 0 THEN 'Alpha ALPHA àlpha café CAFÉ 全文索引 数据库'
+ WHEN 1 THEN 'beta performance audit 索引 中文'
+ WHEN 2 THEN 'gamma Σ σ ς ß ss Straße emoji😀'
+ WHEN 3 THEN '' ELSE NULL END
+ FROM digits a CROSS JOIN digits b CROSS JOIN digits c;
+INSERT INTO populated VALUES (1001, CONCAT(REPEAT('alpha 中文 ',800),' tailword'));
+CREATE TABLE maintained LIKE populated;
+ALTER TABLE maintained ADD FULLTEXT INDEX fi(body) WITH PARSER ik;
+INSERT INTO maintained SELECT * FROM populated;
+ALTER TABLE populated ADD FULLTEXT INDEX fi(body) WITH PARSER ik;
+SELECT COUNT(*) AS same_rows FROM populated a JOIN maintained b USING(id)
+ WHERE a.body <=> b.body;
+SELECT COUNT(*) AS same_alpha_scores FROM populated a JOIN maintained b USING(id)
+ WHERE ROUND(MATCH(a.body) AGAINST('alpha'),6) <=> ROUND(MATCH(b.body) AGAINST('alpha'),6);
+SELECT COUNT(*) AS same_unicode_scores FROM populated a JOIN maintained b USING(id)
+ WHERE ROUND(MATCH(a.body) AGAINST('全文索引 中文'),6) <=> ROUND(MATCH(b.body) AGAINST('全文索引 中文'),6);
+SELECT id FROM populated WHERE MATCH(body) AGAINST('tailword') ORDER BY id;
+UPDATE populated SET body='replacement alpha 中文' WHERE id BETWEEN 1 AND 20;
+UPDATE maintained SET body='replacement alpha 中文' WHERE id BETWEEN 1 AND 20;
+DELETE FROM populated WHERE id BETWEEN 21 AND 40;
+DELETE FROM maintained WHERE id BETWEEN 21 AND 40;
+SELECT COUNT(*) AS same_updated_scores FROM populated a JOIN maintained b USING(id)
+ WHERE ROUND(MATCH(a.body) AGAINST('replacement alpha'),6) <=> ROUND(MATCH(b.body) AGAINST('replacement alpha'),6);
+CREATE TABLE binary_words (id VARCHAR(32) PRIMARY KEY, body TEXT) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
+INSERT INTO binary_words SELECT CONCAT('key-',id),body FROM populated;
+ALTER TABLE binary_words ADD FULLTEXT INDEX fi(body) WITH PARSER beng;
+SELECT COUNT(*) AS binary_hits FROM binary_words WHERE MATCH(body) AGAINST('replacement');
+SELECT id FROM binary_words WHERE MATCH(body) AGAINST('tailword') ORDER BY id;
+DROP DATABASE fts_post_build_sort;
+USE test;

@@ -6945,6 +6945,7 @@ int ObOptimizerUtil::check_can_encode_sortkey(const common::ObIArray<OrderItem> 
   ObSEArray<ObRawExpr *, 4> sort_keys;
   double avg_len = 0;
   bool has_hint = false;
+  bool is_fts_build = false;
   can_sort_opt = true;
   bool old_can_opt = false;
   const ObOptParamHint opt_params = plan.get_optimizer_context().get_global_hint().opt_params_;
@@ -6955,10 +6956,29 @@ int ObOptimizerUtil::check_can_encode_sortkey(const common::ObIArray<OrderItem> 
   } else {
     can_sort_opt &= config::_enable_newsort();
 
+    ObOptimizerContext &opt_ctx = plan.get_optimizer_context();
+    if (can_sort_opt && opt_ctx.is_insert_stmt_in_online_ddl()) {
+      const ObDMLStmt *stmt = opt_ctx.get_root_stmt();
+      const TableItem *target = nullptr;
+      const ObTableSchema *schema = nullptr;
+      ObSqlSchemaGuard *guard = opt_ctx.get_sql_schema_guard();
+      if (OB_ISNULL(stmt) || OB_ISNULL(target = stmt->get_table_item(0)) || OB_ISNULL(guard)) {
+        ret = OB_ERR_UNEXPECTED;
+      } else if (OB_FAIL(guard->get_table_schema(target->ddl_table_id_, schema))) {
+      } else if (OB_ISNULL(schema)) {
+        ret = OB_ERR_UNEXPECTED;
+      } else {
+        is_fts_build = schema->is_fts_index_aux() || schema->is_fts_doc_word_aux();
+      }
+    }
+
     for (int64_t i = 0; OB_SUCC(ret) && can_sort_opt && i < order_keys.count(); i++) {
       if (!ObOrderPerservingEncoder::can_encode_sortkey(
                             order_keys.at(i).expr_->get_data_type(),
-                            order_keys.at(i).expr_->get_collation_type())) {
+                            order_keys.at(i).expr_->get_collation_type()) &&
+          !(is_fts_build && order_keys.at(i).expr_->get_data_type() == ObVarcharType &&
+            ObOrderPerservingEncoder::can_encode_sortkey(
+                ObCharType, order_keys.at(i).expr_->get_collation_type()))) {
         can_sort_opt = false;
       } else if (OB_FAIL(sort_keys.push_back(order_keys.at(i).expr_))) {
       } else { /* do nothing */ }
@@ -6970,6 +6990,9 @@ int ObOptimizerUtil::check_can_encode_sortkey(const common::ObIArray<OrderItem> 
       // do nothing
     } else if (!can_sort_opt) {
       // do nothing
+    } else if (is_fts_build) {
+      // The scan estimates documents and the source text width, but emits one
+      // row per distinct token. Those estimates do not describe this sort.
     } else if (OB_FAIL(ObOptEstCost::estimate_width_for_exprs(plan.get_basic_table_metas(),
                                                               plan.get_selectivity_ctx(),
                                                               sort_keys,
