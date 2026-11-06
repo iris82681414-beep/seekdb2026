@@ -563,6 +563,17 @@ int ObTextRetrievalDaaTTokenIter::get_next_doc_id_batch(const ObDocIdExt *&ids, 
   return ret;
 }
 
+int ObTextRetrievalDaaTTokenIter::put_back_doc_ids(const int64_t count)
+{
+  int ret = OB_SUCCESS;
+  if (OB_UNLIKELY(count < 0 || count > cur_idx_ + 1 || cur_idx_ >= count_)) {
+    ret = OB_INVALID_ARGUMENT;
+  } else {
+    cur_idx_ -= count;
+  }
+  return ret;
+}
+
 int ObTextRetrievalDaaTTokenIter::advance_to(const ObDatum &id_datum)
 {
   int ret = OB_SUCCESS;

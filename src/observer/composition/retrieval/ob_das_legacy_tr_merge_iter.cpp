@@ -982,6 +982,7 @@ int ObDASLegacyTRMergeIter::try_bitmap_count(int64_t &count, bool &used)
   const bool integer_id = ObUInt64Type == id_meta.type_;
   const bool binary_id = ObVarcharType == id_meta.type_ && CS_TYPE_BINARY == id_meta.cs_type_;
   if (!daat_mode_ || topk_mode_ || function_lookup_mode_
+      || !ir_rtdef_->eval_ctx_->is_vectorized()
       || ir_ctdef_->need_calc_relevance()
       || NATURAL_LANGUAGE_MODE != ir_ctdef_->mode_flag_
       || ir_rtdef_->minimum_should_match_ > 1 || (!integer_id && !binary_id)) {
@@ -992,11 +993,28 @@ int ObDASLegacyTRMergeIter::try_bitmap_count(int64_t &count, bool &used)
         scratch.alloc(storage::DenseIdCounter::WORD_COUNT * sizeof(uint64_t)));
     if (nullptr != words) {
       storage::DenseIdCounter counter(words);
+      const auto decode_id = [integer_id](const ObDatum &datum, uint64_t &scope, uint64_t &id) {
+        bool valid = !datum.is_null();
+        scope = 0;
+        id = 0;
+        if (valid && integer_id) {
+          valid = datum.len_ == sizeof(uint64_t);
+          if (valid) { id = datum.get_uint(); }
+        } else if (valid) {
+          common::ObDocId doc_id;
+          valid = datum.len_ == sizeof(common::ObDocId)
+              && OB_SUCCESS == doc_id.from_string(datum.get_string()) && doc_id.is_valid();
+          if (valid) {
+            scope = doc_id.tablet_id_;
+            id = doc_id.seq_id_;
+          }
+        }
+        return valid;
+      };
       bool supported = true;
-      bool touched = false;
       int64_t postings = 0;
       int64_t batches = 0;
-      // Bound speculative work as well as memory before replaying a sparse set.
+      // Bound the bitmap prefix, then merge only the unconsumed stream suffix.
       static constexpr int64_t MAX_POSTINGS = 1LL << 16;
       for (int64_t i = 0; OB_SUCC(ret) && supported && i < dim_iters_.count(); ++i) {
         ObTextRetrievalDaaTTokenIter *iter =
@@ -1007,7 +1025,6 @@ int ObDASLegacyTRMergeIter::try_bitmap_count(int64_t &count, bool &used)
           int64_t size = 0;
           if ((batches++ & 0x3F) == 0 && OB_FAIL(THIS_WORKER.check_status())) {
           } else {
-            touched = true;
             ret = iter->get_next_doc_id_batch(ids, size);
             if (OB_ITER_END == ret) {
               end = true;
@@ -1018,42 +1035,57 @@ int ObDASLegacyTRMergeIter::try_bitmap_count(int64_t &count, bool &used)
             }
           }
           for (int64_t j = 0; OB_SUCC(ret) && supported && j < size; ++j) {
-            const ObDatum &datum = ids[j].get_datum();
             uint64_t scope = 0;
             uint64_t id = 0;
-            if (++postings > MAX_POSTINGS || datum.is_null()) {
+            if (++postings > MAX_POSTINGS || !decode_id(ids[j].get_datum(), scope, id)
+                || !counter.can_add(scope, id)) {
+              // Keep the failing ID and the rest of this batch unread. All
+              // earlier IDs are represented exactly by the prefix bitmap.
               supported = false;
-            } else if (integer_id && datum.len_ != sizeof(uint64_t)) {
-              supported = false;
-            } else if (integer_id) {
-              id = datum.get_uint();
-            } else if (datum.len_ != sizeof(common::ObDocId)) {
-              supported = false;
-            } else {
-              common::ObDocId doc_id;
-              if (OB_FAIL(doc_id.from_string(datum.get_string()))) {
-              } else if (!doc_id.is_valid()) {
-                supported = false;
-              } else {
-                scope = doc_id.tablet_id_;
-                id = doc_id.seq_id_;
+              if (OB_FAIL(iter->put_back_doc_ids(size - j))) {
               }
-            }
-            if (OB_SUCC(ret) && supported && !counter.add(scope, id)) {
-              supported = false;
+            } else if (OB_UNLIKELY(!counter.add(scope, id))) {
+              ret = OB_ERR_UNEXPECTED;
             }
           }
         }
       }
-      if (OB_SUCC(ret) && supported) {
-        used = counter.get_count(count);
-      } else if (OB_SUCC(ret) && touched) {
-        // No aggregate row has escaped. Rewind every term under the same read
-        // snapshot before using the general collector; never use a partial set.
-        if (OB_FAIL(inner_reuse())) {
-        } else if (OB_FAIL(rescan())) {
+      if (OB_SUCC(ret) && OB_UNLIKELY(!counter.get_count(count))) {
+        ret = OB_ERR_UNEXPECTED;
+      } else if (OB_SUCC(ret) && !supported) {
+        // The general merge deduplicates the unread suffix. Exclude IDs already
+        // in the exact prefix set, without rescanning any consumed postings.
+        const bool saved_count_only = sr_iter_param_.count_only_;
+        sr_iter_param_.count_only_ = false;
+        ObEvalCtx &ctx = *ir_rtdef_->eval_ctx_;
+        ObEvalCtx::BatchInfoScopeGuard guard(ctx);
+        bool done = false;
+        while (OB_SUCC(ret) && !done) {
+          int64_t rows = 0;
+          if ((batches++ & 0x3F) == 0 && OB_FAIL(THIS_WORKER.check_status())) {
+          } else if (OB_FAIL(sparse_retrieval_iter_->get_next_rows(sr_iter_param_.max_batch_size_, rows))) {
+            if (OB_ITER_END == ret) {
+              done = true;
+              ret = OB_SUCCESS;
+            }
+          }
+          for (int64_t j = 0; OB_SUCC(ret) && j < rows; ++j) {
+            guard.set_batch_idx(j);
+            const ObDatum &datum = sr_iter_param_.id_proj_expr_->locate_expr_datum(ctx);
+            uint64_t scope = 0;
+            uint64_t id = 0;
+            if (!decode_id(datum, scope, id) || !counter.contains(scope, id)) {
+              if (OB_UNLIKELY(INT64_MAX == count)) {
+                ret = OB_OPERATE_OVERFLOW;
+              } else {
+                ++count;
+              }
+            }
+          }
         }
+        sr_iter_param_.count_only_ = saved_count_only;
       }
+      if (OB_SUCC(ret)) { used = true; }
     }
   }
   return ret;

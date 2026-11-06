@@ -47,6 +47,19 @@ public:
     }
   }
 
+  bool can_add(const uint64_t scope, const uint64_t id) const
+  {
+    return supported_ && (!initialized_
+        || (scope == scope_ && id >= base_ && id - base_ < BIT_COUNT));
+  }
+
+  bool contains(const uint64_t scope, const uint64_t id) const
+  {
+    return supported_ && initialized_ && scope == scope_
+        && id >= base_ && id - base_ < BIT_COUNT
+        && (words_[(id - base_) >> 6] & (1ULL << ((id - base_) & 63))) != 0;
+  }
+
   bool add(const uint64_t scope, const uint64_t id)
   {
     if (supported_ && !initialized_) {

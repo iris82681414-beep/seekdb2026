@@ -134,6 +134,7 @@ public:
   virtual int get_curr_id(const ObDatum *&id_datum) const override;
   // Consume the remaining buffered IDs, with no pointer retained across refills.
   int get_next_doc_id_batch(const ObDocIdExt *&ids, int64_t &count);
+  int put_back_doc_ids(const int64_t count);
 public:
   int get_token_doc_cnt(int64_t &token_doc_cnt) const { return token_iter_->get_token_doc_cnt(token_doc_cnt); }
   virtual int get_dim_max_score(double &score) override {
