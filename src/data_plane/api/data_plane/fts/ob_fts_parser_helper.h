@@ -112,6 +112,7 @@ public:
   static int  init_global();
   static void deinit_global();
   static ObFTParseData &instance();
+  static uint64_t cache_epoch();
 
   int init();
   void destroy();
@@ -129,6 +130,7 @@ private:
   ObFTDictHub *           dict_hub_          = nullptr;
   common::ObFIFOAllocator handler_allocator_;
   bool                    is_inited_         = false;
+  uint64_t                cache_epoch_       = 0;
 };
 
 class ObFTParseHelper final

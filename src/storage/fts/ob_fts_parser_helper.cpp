@@ -142,6 +142,7 @@ int ObFTParser::get_desc(const ObIFTParserDesc *&parser_desc) const
 // ObFTParseData
 
 static ObFTParseData *g_ftparse_data = nullptr;
+static uint64_t g_ftparse_cache_epoch = 0;
 static constexpr const char *FTPARSE_DATA_MEMORY_LABEL = "FtParse";
 
 int ObFTParseData::init_global()
@@ -169,6 +170,12 @@ ObFTParseData &ObFTParseData::instance()
   return *g_ftparse_data;
 }
 
+uint64_t ObFTParseData::cache_epoch()
+{
+  return nullptr != g_ftparse_data && g_ftparse_data->is_inited_
+      ? g_ftparse_data->cache_epoch_ : 0;
+}
+
 ObFTParseData::~ObFTParseData()
 {
   destroy();
@@ -186,6 +193,7 @@ int ObFTParseData::init()
   } else if (OB_FAIL(init_and_set_stopword_list())) {
   } else if (OB_FAIL(init_dict_hub())) {
   } else {
+    cache_epoch_ = ATOMIC_AAF(&g_ftparse_cache_epoch, 1);
     is_inited_ = true;
     FLOG_INFO("succeeded to initialize fulltext parser data", KP(this));
   }

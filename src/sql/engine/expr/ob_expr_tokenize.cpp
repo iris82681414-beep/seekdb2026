@@ -51,6 +51,76 @@ ObExprTokenize::ObExprTokenize(common::ObIAllocator &alloc)
 
 ObExprTokenize::~ObExprTokenize() {}
 
+// One bounded entry per worker. Store binary JSON bytes rather than a datum or
+// LOB locator, so every evaluation still constructs its own result.
+struct ObExprTokenize::ResultMemo
+{
+  static constexpr int64_t KEY_CAPACITY = 4 * 1024;
+  static constexpr int64_t VALUE_CAPACITY = 16 * 1024;
+
+  ResultMemo()
+      : valid_(false), epoch_(0), meta_(), size_estimate_(0),
+        mode_(TokenizeParam::DEFAULT), lengths_{0, 0, 0}, value_length_(0)
+  {}
+
+  bool find(const TokenizeParam &param, const uint64_t epoch, ObString &value)
+  {
+    bool found = valid_ && epoch != 0 && epoch_ == epoch && meta_ == param.meta_
+        && meta_.get_scale() == param.meta_.get_scale()
+        && size_estimate_ == param.fulltext_size_estimate_ && mode_ == param.output_mode_;
+    const ObString parts[] = {param.fulltext_, param.parser_name_, param.properties_};
+    int64_t offset = 0;
+    for (int64_t i = 0; found && i < 3; ++i) {
+      found = lengths_[i] == parts[i].length();
+      if (found && lengths_[i] > 0) {
+        found = 0 == MEMCMP(key_ + offset, parts[i].ptr(), lengths_[i]);
+      }
+      offset += lengths_[i];
+    }
+    if (found) {
+      value.assign_ptr(value_, value_length_);
+    }
+    return found;
+  }
+
+  void store(const TokenizeParam &param, const uint64_t epoch, const ObString &value)
+  {
+    const ObString parts[] = {param.fulltext_, param.parser_name_, param.properties_};
+    const int64_t key_length = static_cast<int64_t>(parts[0].length())
+        + parts[1].length() + parts[2].length();
+    if (epoch != 0 && parts[0].length() >= 0 && parts[1].length() >= 0
+        && parts[2].length() >= 0 && key_length <= KEY_CAPACITY
+        && value.length() > 0 && value.length() <= VALUE_CAPACITY) {
+      valid_ = false;
+      int64_t offset = 0;
+      for (int64_t i = 0; i < 3; ++i) {
+        lengths_[i] = parts[i].length();
+        if (lengths_[i] > 0) {
+          MEMCPY(key_ + offset, parts[i].ptr(), lengths_[i]);
+        }
+        offset += lengths_[i];
+      }
+      MEMCPY(value_, value.ptr(), value.length());
+      value_length_ = value.length();
+      epoch_ = epoch;
+      meta_ = param.meta_;
+      size_estimate_ = param.fulltext_size_estimate_;
+      mode_ = param.output_mode_;
+      valid_ = true;
+    }
+  }
+
+  bool valid_;
+  uint64_t epoch_;
+  ObObjMeta meta_;
+  int64_t size_estimate_;
+  TokenizeParam::OUTPUT_MODE mode_;
+  int32_t lengths_[3];
+  int32_t value_length_;
+  char key_[KEY_CAPACITY];
+  char value_[VALUE_CAPACITY];
+};
+
 int ObExprTokenize::eval_tokenize(const ObExpr &expr, ObEvalCtx &ctx, ObDatum &expr_datum)
 {
   int ret = OB_SUCCESS;
@@ -65,12 +135,22 @@ int ObExprTokenize::eval_tokenize(const ObExpr &expr, ObEvalCtx &ctx, ObDatum &e
   if (OB_UNLIKELY(expr.arg_cnt_ < 1 || expr.arg_cnt_ > 3)) {
     ret = OB_INVALID_ARGUMENT;
   } else if (OB_FAIL(parse_param(expr, ctx, temp_allocator, param))) {
-  } else if (OB_FAIL(tokenize_fulltext(param, param.output_mode_, temp_allocator, json_result))) {
-  } else if (OB_FAIL(ObJsonExprHelper::pack_json_res(expr,
-                                                     ctx,
-                                                     temp_allocator,
-                                                     json_result,
-                                                     expr_datum))) {
+  } else {
+    static thread_local ResultMemo memo;
+    const uint64_t epoch = storage::ObFTParseData::cache_epoch();
+    ObString serialized;
+    // Parameter evaluation, validation and dictionary loading happen on hits
+    // too. Only successful, byte-identical parsed inputs reuse tokenization.
+    if (memo.find(param, epoch, serialized)) {
+      ret = ObJsonExprHelper::pack_json_str_res(expr, ctx, expr_datum, serialized);
+    } else if (OB_FAIL(tokenize_fulltext(param, param.output_mode_, temp_allocator, json_result))) {
+    } else if (OB_ISNULL(json_result)) {
+      expr_datum.set_null();
+    } else if (OB_FAIL(ObJsonWrapper::get_raw_binary(json_result, serialized, &temp_allocator))) {
+    } else if (OB_FAIL(ObJsonExprHelper::pack_json_str_res(expr, ctx, expr_datum, serialized))) {
+    } else {
+      memo.store(param, epoch, serialized);
+    }
   }
 
   return ret;

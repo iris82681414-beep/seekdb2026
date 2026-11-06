@@ -80,6 +80,7 @@ private:
       ALL,
     } output_mode_;
   };
+  struct ResultMemo;
 
 private:
   static int parse_param(const ObExpr &expr,
