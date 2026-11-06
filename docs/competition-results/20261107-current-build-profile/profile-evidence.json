@@ -1,0 +1,408 @@
+{
+  "complete": true,
+  "diagnostic_only": true,
+  "formal_score": null,
+  "source_commit": "004fb92eca2a6c4bdee6bf11f272e753143e30c4",
+  "binary_sha256": "77844c9f038d2cd012e117ccb8182c0609407df7e1e212cdf82da35f12272768",
+  "build_id": "0148f70d4032834a05cc86daf11c03bfebb8c940",
+  "pid": "994487",
+  "resource_limits": {
+    "cpu.max": "400000 100000",
+    "memory.max": "5368709120"
+  },
+  "phases": [
+    {
+      "name": "build_ik_all",
+      "monotonic_begin": 218210.167578018,
+      "monotonic_end": 218213.616417045,
+      "report_headers": [
+        "# Total Lost Samples: 0",
+        "# Samples: 2K of event 'cpu-clock:u' (time slices: 218210.167578,218213.616417)",
+        "# Event count (approx.): 6759396705"
+      ],
+      "selected_functions": {
+        "ObSortOp::process_sort_batch": {
+          "symbol": "oceanbase::sql::ObSortOp::process_sort_batch()",
+          "inclusive_percent": 29.33,
+          "self_percent": 0.04
+        },
+        "ObSortOpImpl::sort_inmem_data": {
+          "symbol": "oceanbase::sql::ObSortOpImpl::sort_inmem_data()",
+          "inclusive_percent": 7.86,
+          "self_percent": 0.0
+        },
+        "ObFTParseHelper::segment(oceanbase::common::ObObjMeta": {
+          "symbol": "oceanbase::storage::ObFTParseHelper::segment(oceanbase::common::ObObjMeta const&, char const*, long, long&, oceanbase::common::hash::ObHashMap<oceanbase::storage::ObFTWord, long, oceanbase::common::hash::NoPthreadDefendMode, oceanbase::common::hash::hash_func<oceanbase::storage::ObFTWord>, oceanbase::common::hash::equal_to<oceanbase::storage::ObFTWord>, oceanbase::common::hash::SimpleAllocer<oceanbase::common::hash::ObHashTableNode<oceanbase::common::hash::HashMapPair<oceanbase::storage::ObFTWord, long> >, 97, oceanbase::common::hash::SpinMutexDefendMode, oceanbase::common::hash::DefaultSimpleAllocerAllocator>, oceanbase::common::hash::NormalPointer, oceanbase::common::ObMalloc, 1l>&) const",
+          "inclusive_percent": 21.51,
+          "self_percent": 0.0
+        },
+        "ObTempBlockStore::write_compressed_block": {
+          "symbol": "oceanbase::sql::ObTempBlockStore::write_compressed_block(oceanbase::sql::ObTempBlockStore::Block*, oceanbase::sql::ObTempBlockStore::BlockIndex*)",
+          "inclusive_percent": 6.93,
+          "self_percent": 0.0
+        },
+        "ObTempBlockStore::decompr_block": {
+          "symbol": "oceanbase::sql::ObTempBlockStore::decompr_block(oceanbase::sql::ObTempBlockStore::BlockReader&, oceanbase::sql::ObTempBlockStore::Block const*&)",
+          "inclusive_percent": 2.82,
+          "self_percent": 0.0
+        },
+        "TCRWLock::wrlock": {
+          "symbol": "oceanbase::common::TCRWLock::wrlock(long)",
+          "inclusive_percent": 0.44,
+          "self_percent": 0.44
+        },
+        "ObMicroBlockCompressor::compress": {
+          "below_report_threshold_percent": 0.3
+        }
+      },
+      "top_self": [
+        {
+          "symbol": "oceanbase::sql::ObOperator::get_next_batch(long, oceanbase::sql::ObBatchRows const*&)",
+          "inclusive_percent": null,
+          "self_percent": 3.78
+        },
+        {
+          "symbol": "oceanbase::common::ObIArrayWrap<oceanbase::common::ObAIFuncModel::call_rerank(oceanbase::common::ObString&, oceanbase::common::ObJsonArray*, oceanbase::common::ObJsonArray*&)::RankedResult>::at(long)",
+          "inclusive_percent": null,
+          "self_percent": 3.67
+        },
+        {
+          "symbol": "ZSTD_compressBlock_fast",
+          "inclusive_percent": null,
+          "self_percent": 3.37
+        },
+        {
+          "symbol": "oceanbase::sql::ObSortOpImpl::ObAdaptiveQS::inplace_radixsort_more_bucket(long, long, long, long, long, long, bool)",
+          "inclusive_percent": null,
+          "self_percent": 2.45
+        },
+        {
+          "symbol": "oceanbase::common::crc64_sse42(unsigned long, char const*, long)",
+          "inclusive_percent": null,
+          "self_percent": 2.08
+        },
+        {
+          "symbol": "oceanbase::common::ObIArrayWrap<int (*)(oceanbase::common::ObDatum const&, oceanbase::common::ObDatum const&, int&, oceanbase::common::ObDatumAccessContext const*)>::at(long) const",
+          "inclusive_percent": null,
+          "self_percent": 2.0
+        },
+        {
+          "symbol": "oceanbase::common::ObCharset::get_charset(oceanbase::common::ObCollationType)",
+          "inclusive_percent": null,
+          "self_percent": 1.97
+        },
+        {
+          "symbol": "oceanbase::common::ObIArrayWrap<oceanbase::sql::ObOptParamHint::OptParamType>::at(long) const",
+          "inclusive_percent": null,
+          "self_percent": 1.97
+        },
+        {
+          "symbol": "oceanbase::share::ObOrderPerservingEncoder::encode_from_string_varlen(oceanbase::common::ObString, unsigned char*, long, long&, oceanbase::share::ObEncParam&)",
+          "inclusive_percent": null,
+          "self_percent": 1.97
+        },
+        {
+          "symbol": "ZSTD_decompressSequences_bmi2",
+          "inclusive_percent": null,
+          "self_percent": 1.89
+        },
+        {
+          "symbol": "oceanbase::sql::ObOperator::get_next_row()",
+          "inclusive_percent": null,
+          "self_percent": 1.74
+        },
+        {
+          "symbol": "oceanbase::sql::ObCompactBlockWriter::ensure_write(oceanbase::sql::ObChunkDatumStore::StoredRow const&)",
+          "inclusive_percent": null,
+          "self_percent": 1.59
+        },
+        {
+          "symbol": "ZSTD_encodeSequences_bmi2",
+          "inclusive_percent": null,
+          "self_percent": 1.56
+        },
+        {
+          "symbol": "ob_hash_sort_utf8mb4(ObCharsetInfo const*, unsigned char const*, unsigned long, unsigned long*, unsigned long*, bool, unsigned long (*)(void const*, unsigned long, unsigned long))",
+          "inclusive_percent": null,
+          "self_percent": 1.45
+        },
+        {
+          "symbol": "oceanbase::common::ObCharset::strcmp(oceanbase::common::ObCollationType, oceanbase::common::ObString const&, oceanbase::common::ObString const&)",
+          "inclusive_percent": null,
+          "self_percent": 1.3
+        }
+      ]
+    },
+    {
+      "name": "build_ik_content",
+      "monotonic_begin": 218213.616417045,
+      "monotonic_end": 218216.241123935,
+      "report_headers": [
+        "# Total Lost Samples: 0",
+        "# Samples: 2K of event 'cpu-clock:u' (time slices: 218213.616417,218216.241124)",
+        "# Event count (approx.): 5463657700"
+      ],
+      "selected_functions": {
+        "ObSortOp::process_sort_batch": {
+          "symbol": "oceanbase::sql::ObSortOp::process_sort_batch()",
+          "inclusive_percent": 31.06,
+          "self_percent": 0.0
+        },
+        "ObSortOpImpl::sort_inmem_data": {
+          "symbol": "oceanbase::sql::ObSortOpImpl::sort_inmem_data()",
+          "inclusive_percent": 8.12,
+          "self_percent": 0.0
+        },
+        "ObFTParseHelper::segment(oceanbase::common::ObObjMeta": {
+          "symbol": "oceanbase::storage::ObFTParseHelper::segment(oceanbase::common::ObObjMeta const&, char const*, long, long&, oceanbase::common::hash::ObHashMap<oceanbase::storage::ObFTWord, long, oceanbase::common::hash::NoPthreadDefendMode, oceanbase::common::hash::hash_func<oceanbase::storage::ObFTWord>, oceanbase::common::hash::equal_to<oceanbase::storage::ObFTWord>, oceanbase::common::hash::SimpleAllocer<oceanbase::common::hash::ObHashTableNode<oceanbase::common::hash::HashMapPair<oceanbase::storage::ObFTWord, long> >, 97, oceanbase::common::hash::SpinMutexDefendMode, oceanbase::common::hash::DefaultSimpleAllocerAllocator>, oceanbase::common::hash::NormalPointer, oceanbase::common::ObMalloc, 1l>&) const",
+          "inclusive_percent": 21.93,
+          "self_percent": 0.05
+        },
+        "ObTempBlockStore::write_compressed_block": {
+          "symbol": "oceanbase::sql::ObTempBlockStore::write_compressed_block(oceanbase::sql::ObTempBlockStore::Block*, oceanbase::sql::ObTempBlockStore::BlockIndex*)",
+          "inclusive_percent": 6.42,
+          "self_percent": 0.0
+        },
+        "ObTempBlockStore::decompr_block": {
+          "symbol": "oceanbase::sql::ObTempBlockStore::decompr_block(oceanbase::sql::ObTempBlockStore::BlockReader&, oceanbase::sql::ObTempBlockStore::Block const*&)",
+          "inclusive_percent": 3.21,
+          "self_percent": 0.05
+        },
+        "TCRWLock::wrlock": {
+          "symbol": "oceanbase::common::TCRWLock::wrlock(long)",
+          "inclusive_percent": 0.37,
+          "self_percent": 0.32
+        },
+        "ObMicroBlockCompressor::compress": {
+          "below_report_threshold_percent": 0.3
+        }
+      },
+      "top_self": [
+        {
+          "symbol": "oceanbase::sql::ObOperator::get_next_batch(long, oceanbase::sql::ObBatchRows const*&)",
+          "inclusive_percent": null,
+          "self_percent": 3.3
+        },
+        {
+          "symbol": "oceanbase::sql::ObSortOpImpl::ObAdaptiveQS::inplace_radixsort_more_bucket(long, long, long, long, long, long, bool)",
+          "inclusive_percent": null,
+          "self_percent": 3.17
+        },
+        {
+          "symbol": "ZSTD_compressBlock_fast",
+          "inclusive_percent": null,
+          "self_percent": 2.71
+        },
+        {
+          "symbol": "oceanbase::common::ObIArrayWrap<oceanbase::common::ObAIFuncModel::call_rerank(oceanbase::common::ObString&, oceanbase::common::ObJsonArray*, oceanbase::common::ObJsonArray*&)::RankedResult>::at(long)",
+          "inclusive_percent": null,
+          "self_percent": 2.71
+        },
+        {
+          "symbol": "oceanbase::common::ObIArrayWrap<oceanbase::sql::ObOptParamHint::OptParamType>::at(long) const",
+          "inclusive_percent": null,
+          "self_percent": 2.34
+        },
+        {
+          "symbol": "oceanbase::common::ObCharset::get_charset(oceanbase::common::ObCollationType)",
+          "inclusive_percent": null,
+          "self_percent": 2.29
+        },
+        {
+          "symbol": "oceanbase::share::ObOrderPerservingEncoder::encode_from_string_varlen(oceanbase::common::ObString, unsigned char*, long, long&, oceanbase::share::ObEncParam&)",
+          "inclusive_percent": null,
+          "self_percent": 2.25
+        },
+        {
+          "symbol": "ZSTD_decompressSequences_bmi2",
+          "inclusive_percent": null,
+          "self_percent": 2.06
+        },
+        {
+          "symbol": "oceanbase::common::ObIArrayWrap<int (*)(oceanbase::common::ObDatum const&, oceanbase::common::ObDatum const&, int&, oceanbase::common::ObDatumAccessContext const*)>::at(long) const",
+          "inclusive_percent": null,
+          "self_percent": 2.06
+        },
+        {
+          "symbol": "oceanbase::common::crc64_sse42(unsigned long, char const*, long)",
+          "inclusive_percent": null,
+          "self_percent": 1.97
+        },
+        {
+          "symbol": "oceanbase::sql::ObCompactBlockWriter::ensure_write(oceanbase::sql::ObChunkDatumStore::StoredRow const&)",
+          "inclusive_percent": null,
+          "self_percent": 1.93
+        },
+        {
+          "symbol": "oceanbase::common::ObCharset::is_argument_valid(oceanbase::common::ObCollationType const&, char const*, long, char const*, long)",
+          "inclusive_percent": null,
+          "self_percent": 1.42
+        },
+        {
+          "symbol": "oceanbase::sql::ObOperator::get_next_row()",
+          "inclusive_percent": null,
+          "self_percent": 1.42
+        },
+        {
+          "symbol": "oceanbase::common::ObCharset::strcmp(oceanbase::common::ObCollationType, oceanbase::common::ObString const&, oceanbase::common::ObString const&)",
+          "inclusive_percent": null,
+          "self_percent": 1.38
+        },
+        {
+          "symbol": "ZSTD_encodeSequences_bmi2",
+          "inclusive_percent": null,
+          "self_percent": 1.28
+        }
+      ]
+    },
+    {
+      "name": "build_beng_en",
+      "monotonic_begin": 218216.241123935,
+      "monotonic_end": 218217.665339213,
+      "report_headers": [
+        "# Total Lost Samples: 0",
+        "# Samples: 1K of event 'cpu-clock:u' (time slices: 218216.241124,218217.665339)",
+        "# Event count (approx.): 2636590780"
+      ],
+      "selected_functions": {
+        "ObSortOp::process_sort_batch": {
+          "symbol": "oceanbase::sql::ObSortOp::process_sort_batch()",
+          "inclusive_percent": 30.32,
+          "self_percent": 0.0
+        },
+        "ObSortOpImpl::sort_inmem_data": {
+          "symbol": "oceanbase::sql::ObSortOpImpl::sort_inmem_data()",
+          "inclusive_percent": 9.32,
+          "self_percent": 0.0
+        },
+        "ObFTParseHelper::segment(oceanbase::common::ObObjMeta": {
+          "symbol": "oceanbase::storage::ObFTParseHelper::segment(oceanbase::common::ObObjMeta const&, char const*, long, long&, oceanbase::common::hash::ObHashMap<oceanbase::storage::ObFTWord, long, oceanbase::common::hash::NoPthreadDefendMode, oceanbase::common::hash::hash_func<oceanbase::storage::ObFTWord>, oceanbase::common::hash::equal_to<oceanbase::storage::ObFTWord>, oceanbase::common::hash::SimpleAllocer<oceanbase::common::hash::ObHashTableNode<oceanbase::common::hash::HashMapPair<oceanbase::storage::ObFTWord, long> >, 97, oceanbase::common::hash::SpinMutexDefendMode, oceanbase::common::hash::DefaultSimpleAllocerAllocator>, oceanbase::common::hash::NormalPointer, oceanbase::common::ObMalloc, 1l>&) const",
+          "inclusive_percent": 10.74,
+          "self_percent": 0.0
+        },
+        "ObTempBlockStore::write_compressed_block": {
+          "symbol": "oceanbase::sql::ObTempBlockStore::write_compressed_block(oceanbase::sql::ObTempBlockStore::Block*, oceanbase::sql::ObTempBlockStore::BlockIndex*)",
+          "inclusive_percent": 6.37,
+          "self_percent": 0.0
+        },
+        "ObTempBlockStore::decompr_block": {
+          "symbol": "oceanbase::sql::ObTempBlockStore::decompr_block(oceanbase::sql::ObTempBlockStore::BlockReader&, oceanbase::sql::ObTempBlockStore::Block const*&)",
+          "inclusive_percent": 3.42,
+          "self_percent": 0.0
+        },
+        "TCRWLock::wrlock": {
+          "below_report_threshold_percent": 0.3
+        },
+        "ObMicroBlockCompressor::compress": {
+          "symbol": "oceanbase::blocksstable::ObMicroBlockCompressor::compress(char const*, long, char const*&, long&)",
+          "inclusive_percent": 0.38,
+          "self_percent": 0.0
+        }
+      },
+      "top_self": [
+        {
+          "symbol": "oceanbase::sql::ObOperator::get_next_batch(long, oceanbase::sql::ObBatchRows const*&)",
+          "inclusive_percent": null,
+          "self_percent": 5.32
+        },
+        {
+          "symbol": "oceanbase::sql::ObSortOpImpl::ObAdaptiveQS::inplace_radixsort_more_bucket(long, long, long, long, long, long, bool)",
+          "inclusive_percent": null,
+          "self_percent": 4.18
+        },
+        {
+          "symbol": "ob_hash_sort_utf8mb4(ObCharsetInfo const*, unsigned char const*, unsigned long, unsigned long*, unsigned long*, bool, unsigned long (*)(void const*, unsigned long, unsigned long))",
+          "inclusive_percent": null,
+          "self_percent": 3.14
+        },
+        {
+          "symbol": "ZSTD_compressBlock_fast",
+          "inclusive_percent": null,
+          "self_percent": 2.95
+        },
+        {
+          "symbol": "oceanbase::common::ObIArrayWrap<oceanbase::common::ObAIFuncModel::call_rerank(oceanbase::common::ObString&, oceanbase::common::ObJsonArray*, oceanbase::common::ObJsonArray*&)::RankedResult>::at(long)",
+          "inclusive_percent": null,
+          "self_percent": 2.95
+        },
+        {
+          "symbol": "oceanbase::common::crc64_sse42(unsigned long, char const*, long)",
+          "inclusive_percent": null,
+          "self_percent": 2.57
+        },
+        {
+          "symbol": "ZSTD_decompressSequences_bmi2",
+          "inclusive_percent": null,
+          "self_percent": 2.38
+        },
+        {
+          "symbol": "oceanbase::common::ObIArrayWrap<int (*)(oceanbase::common::ObDatum const&, oceanbase::common::ObDatum const&, int&, oceanbase::common::ObDatumAccessContext const*)>::at(long) const",
+          "inclusive_percent": null,
+          "self_percent": 2.38
+        },
+        {
+          "symbol": "oceanbase::sql::ObCompactBlockWriter::ensure_write(oceanbase::sql::ObChunkDatumStore::StoredRow const&)",
+          "inclusive_percent": null,
+          "self_percent": 1.9
+        },
+        {
+          "symbol": "oceanbase::sql::ObOperator::get_next_row()",
+          "inclusive_percent": null,
+          "self_percent": 1.81
+        },
+        {
+          "symbol": "oceanbase::common::ObIArrayWrap<oceanbase::sql::ObOptParamHint::OptParamType>::at(long) const",
+          "inclusive_percent": null,
+          "self_percent": 1.52
+        },
+        {
+          "symbol": "ob_strnncollsp_utf8mb4(ObCharsetInfo const*, unsigned char const*, unsigned long, unsigned char const*, unsigned long, bool)",
+          "inclusive_percent": null,
+          "self_percent": 1.33
+        },
+        {
+          "symbol": "oceanbase::share::ObTextWhitespaceTokenizer::get_next(oceanbase::common::ObDatum&, long&)",
+          "inclusive_percent": null,
+          "self_percent": 1.33
+        },
+        {
+          "symbol": "int oceanbase::sql::ObCompactBlockReader::get_stored_row<unsigned short>(oceanbase::sql::ObChunkDatumStore::StoredRow*&)",
+          "inclusive_percent": null,
+          "self_percent": 1.24
+        },
+        {
+          "symbol": "oceanbase::common::ObIArrayWrap<oceanbase::common::hash::ObHashSet<unsigned long, oceanbase::common::hash::NoPthreadDefendMode, oceanbase::common::hash::hash_func<unsigned long>, oceanbase::common::hash::equal_to<unsigned long>, oceanbase::common::hash::SimpleAllocer<oceanbase::common::hash::ObHashTableNode<oceanbase::common::hash::HashMapPair<unsigned long, oceanbase::common::hash::HashNullObj> >, 108, oceanbase::common::hash::SpinMutexDefendMode, oceanbase::common::hash::DefaultSimpleAllocerAllocator>, oceanbase::common::hash::NormalPointer, oceanbase::common::ObMalloc, 1l>*>::at(long)",
+          "inclusive_percent": null,
+          "self_percent": 1.24
+        }
+      ]
+    }
+  ],
+  "memory_budget_startup": [
+    4294967296
+  ],
+  "last_memory_budget_reload": {
+    "time": "2026-11-07 04:46:29.655122",
+    "memory_budget": 4294967296,
+    "configured_memory_budget": 4294967296
+  },
+  "source_files_changed": false,
+  "candidate_replaced": false,
+  "notes": [
+    "Inclusive CPU sample shares include child calls and must not be added together.",
+    "Generic template symbols may be folded to unrelated display names; no AI/model execution is inferred from them.",
+    "Sampled wall times do not constitute an A/B performance comparison."
+  ],
+  "stopped_runtime_logs_retained_remote": {
+    "complete": true,
+    "primary_updated": false,
+    "source_logs_removed": false,
+    "files": [
+      {
+        "source": "/root/oceanbase2026/instances/fts-build-fresh-nov6-r3/log/seekdb.log",
+        "archive": "/root/oceanbase2026/archives/comparison-logs/20261107-044715/seekdb.log.gz",
+        "sha256": "4051f030ed3cb5393e65d0183ddb8605395b29ac273165899fc88ec30883d71e"
+      }
+    ]
+  }
+}

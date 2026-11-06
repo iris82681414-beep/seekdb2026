@@ -1,0 +1,161 @@
+{
+  "complete": true,
+  "phase": "complete",
+  "diagnostic_only": true,
+  "formal_score": null,
+  "primary_updated": false,
+  "source_commit": "004fb92eca2a6c4bdee6bf11f272e753143e30c4",
+  "source_checkpoint": "640d667fc8fc9e20328f7a4085ec0ce6ad146be4",
+  "controller_pid": 994471,
+  "started_at_unix": 1793997983.9471252,
+  "events": [
+    {
+      "line": "[3/5] build fulltext indexes ...",
+      "monotonic": 218210.167578018,
+      "unix": 1793998022.1472106
+    },
+    {
+      "line": "build_ik_all: 3.446s",
+      "monotonic": 218213.616417045,
+      "unix": 1793998025.5960515
+    },
+    {
+      "line": "build_ik_content: 2.623s",
+      "monotonic": 218216.241123935,
+      "unix": 1793998028.2207582
+    },
+    {
+      "line": "build_beng_en: 1.422s",
+      "monotonic": 218217.665339213,
+      "unix": 1793998029.6449735
+    },
+    {
+      "line": "[4/5] TOKENIZE hot-path ...",
+      "monotonic": 218217.666835562,
+      "unix": 1793998029.6464686
+    },
+    {
+      "line": "[5/5] MATCH query ...",
+      "monotonic": 218218.369307581,
+      "unix": 1793998030.3489404
+    }
+  ],
+  "reports": [
+    {
+      "phase": "build_ik_all",
+      "mode": "flat",
+      "path": "/root/oceanbase2026/results/fts-current-build-profile-nov7-r1/build_ik_all-flat.txt",
+      "sha256": "8cb8649148e4b3d05a9485bc14ce24ad27f8e489d225be7d7e2526fd2ef9154c"
+    },
+    {
+      "phase": "build_ik_all",
+      "mode": "inclusive",
+      "path": "/root/oceanbase2026/results/fts-current-build-profile-nov7-r1/build_ik_all-inclusive.txt",
+      "sha256": "2c6f7dd9246612d7a075cb351e8a168a80e4b3fb8ab5ab3374d150b20a468319"
+    },
+    {
+      "phase": "build_ik_content",
+      "mode": "flat",
+      "path": "/root/oceanbase2026/results/fts-current-build-profile-nov7-r1/build_ik_content-flat.txt",
+      "sha256": "42e427e6abc68ce0fd56a65774a72acc3440b224bd1b846e200dc8d0b1557bd6"
+    },
+    {
+      "phase": "build_ik_content",
+      "mode": "inclusive",
+      "path": "/root/oceanbase2026/results/fts-current-build-profile-nov7-r1/build_ik_content-inclusive.txt",
+      "sha256": "6e5bd96934603b41f1e1d3090400ab0a88b8799466204ef9337ae87043b93e5d"
+    },
+    {
+      "phase": "build_beng_en",
+      "mode": "flat",
+      "path": "/root/oceanbase2026/results/fts-current-build-profile-nov7-r1/build_beng_en-flat.txt",
+      "sha256": "66e82eb0d00892f4930a6b876af3d96a05ea6f2f53f676edae40d34b8c70f7be"
+    },
+    {
+      "phase": "build_beng_en",
+      "mode": "inclusive",
+      "path": "/root/oceanbase2026/results/fts-current-build-profile-nov7-r1/build_beng_en-inclusive.txt",
+      "sha256": "4db73e176faa79ccd6c10ee48e53a3c3df1b53f77ad5dc2047edc17dd6589802"
+    }
+  ],
+  "binary_sha256": "77844c9f038d2cd012e117ccb8182c0609407df7e1e212cdf82da35f12272768",
+  "build_id": "0148f70d4032834a05cc86daf11c03bfebb8c940",
+  "workload_sha256": {
+    "tools/benchmark/fts_large_bench.sh": "596ea5d1c0038e666b78aa94bef22d2dfb87ffc9e84dbc7e2a1da1f746424462",
+    "tools/benchmark/fts_large_bench_gen.py": "b0c816dd8211ac0471f60b72a37a3fb5c62580357a5b6d7ac95f5a8c2e3f143d",
+    "tools/benchmark/fts_large_bench_setup.sql": "311826751df7f51ac45156fb4284aeca9bd9197370aceb88f4fb92832b458108",
+    "tools/benchmark/fts_large_bench_baseline.json": "f4e97eddb2e49c982b967fc8047f7cf37177eebe53d648f6746d85aacda91f0c",
+    "tools/benchmark/fts_large_bench_score.py": "bea52eb1c68d05693bb3ac5b910ab0e2fa0e70e01582f40466898ee1e2e3ef55"
+  },
+  "primary_pid": "3892",
+  "comparison_pid": "994487",
+  "capture_cgroup": "system.slice/ob2026-fts-current-build-profile-nov7-r1.service",
+  "resource_limits": {
+    "cpu.max": "400000 100000",
+    "memory.max": "5368709120"
+  },
+  "workload_exit": 0,
+  "perf_wrapper_exit": -2,
+  "perf_data_sha256": "98ddad3f86837bbd9e6629c94579b87dd91d1fb1c3335954c15e0da49307ed02",
+  "perf_data_bytes": 113573290,
+  "diagnostic_metrics": {
+    "table rows": 20000.0,
+    "git_dirty": 1.0,
+    "rows": 20000.0,
+    "batch": 500.0,
+    "rounds": 3000.0,
+    "query_rounds": 200.0,
+    "samples": 3.0,
+    "warmup": 30.0,
+    "skip_load": 0.0,
+    "select1_avg_ms": 0.0232,
+    "select1_stdev_ms": 0.0007,
+    "raw_load_sec": 0.205,
+    "raw_load_rows_per_sec": 97561.0,
+    "build_ik_all_sec": 3.446,
+    "build_ik_content_sec": 2.623,
+    "build_beng_en_sec": 1.422,
+    "build_total_sec": 7.498,
+    "tokenize_ik_avg_ms": 0.0308,
+    "tokenize_ik_median_ms": 0.0314,
+    "tokenize_ik_stdev_ms": 0.0013,
+    "tokenize_beng_avg_ms": 0.0272,
+    "tokenize_beng_median_ms": 0.0277,
+    "tokenize_beng_stdev_ms": 0.0009,
+    "query_cn_hits": 8001.0,
+    "query_cn_avg_ms": 0.4837,
+    "query_cn_stdev_ms": 0.0062,
+    "query_beng_hits": 11000.0,
+    "query_beng_avg_ms": 0.6318,
+    "query_beng_stdev_ms": 0.0056,
+    "query_mixed_hits": 7332.0,
+    "query_mixed_avg_ms": 0.5148,
+    "query_mixed_stdev_ms": 0.0002,
+    "query_limit_hits": 20.0,
+    "query_limit_avg_ms": 0.1322,
+    "query_limit_stdev_ms": 0.0053
+  },
+  "build_phase_ranges": [
+    [
+      "build_ik_all",
+      218210.167578018,
+      218213.616417045
+    ],
+    [
+      "build_ik_content",
+      218213.616417045,
+      218216.241123935
+    ],
+    [
+      "build_beng_en",
+      218216.241123935,
+      218217.665339213
+    ]
+  ],
+  "owned_symbol_link_removed": true,
+  "finished_at_unix": 1793998035.3617263,
+  "comparison_stopped": true,
+  "managed_link_restored_to_original": true,
+  "log_archive_exit": 0,
+  "log_archive_result": "{\n  \"complete\": true,\n  \"primary_updated\": false,\n  \"source_logs_removed\": false,\n  \"files\": [\n    {\n      \"source\": \"/root/oceanbase2026/instances/fts-build-fresh-nov6-r3/log/seekdb.log\",\n      \"archive\": \"/root/oceanbase2026/archives/comparison-logs/20261107-044715/seekdb.log.gz\",\n      \"sha256\": \"4051f030ed3cb5393e65d0183ddb8605395b29ac273165899fc88ec30883d71e\"\n    }\n  ]\n}"
+}
