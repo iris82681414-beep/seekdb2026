@@ -649,8 +649,7 @@ bool ObLogTableScan::can_pushdown_text_count(
     const ObIArray<ObRawExpr *> &group_exprs) const
 {
   const ObTextRetrievalInfo &info = get_text_retrieval_info();
-  return lib::is_mysql_mode()
-      && is_text_retrieval_scan() && !has_es_match() && !is_vec_idx_scan()
+  return is_text_retrieval_scan() && !has_es_match() && !is_vec_idx_scan()
       && !has_func_lookup() && !use_index_merge() && !get_index_back() && !use_batch()
       && get_filter_exprs().empty() && group_exprs.empty()
       && !info.need_calc_relevance_ && !info.need_sort()
@@ -661,7 +660,9 @@ bool ObLogTableScan::can_pushdown_text_count(
       && 1 == aggr_exprs.count() && nullptr != aggr_exprs.at(0)
       && T_FUN_COUNT == aggr_exprs.at(0)->get_expr_type()
       && !aggr_exprs.at(0)->is_param_distinct()
-      && aggr_exprs.at(0)->get_real_param_exprs().empty();
+      && aggr_exprs.at(0)->get_real_param_exprs().empty()
+      && (ObIntType == aggr_exprs.at(0)->get_result_type().get_type()
+          || ObUInt64Type == aggr_exprs.at(0)->get_result_type().get_type());
 }
 
 int ObLogTableScan::has_nonpushdown_filter(bool &has_npd_filter)
