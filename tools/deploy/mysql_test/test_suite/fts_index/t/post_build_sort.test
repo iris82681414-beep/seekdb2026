@@ -40,3 +40,43 @@ SELECT COUNT(*) AS binary_hits FROM binary_words WHERE MATCH(body) AGAINST('repl
 SELECT id FROM binary_words WHERE MATCH(body) AGAINST('tailword') ORDER BY id;
 DROP DATABASE fts_post_build_sort;
 USE test;
+
+--echo # Limited workarea keeps the DDL prescan fallback and FTS maintenance correct.
+--disable_warnings
+DROP DATABASE IF EXISTS fts_prescan_budget;
+--enable_warnings
+CREATE DATABASE fts_prescan_budget;
+USE fts_prescan_budget;
+--disable_query_log
+SET @saved_workarea_percentage = @@GLOBAL.ob_sql_work_area_percentage;
+SET GLOBAL ob_sql_work_area_percentage = 1;
+--enable_query_log
+CREATE TABLE digits (n INT PRIMARY KEY);
+INSERT INTO digits VALUES (0),(1),(2),(3),(4),(5),(6),(7),(8),(9);
+CREATE TABLE docs (id INT PRIMARY KEY, body TEXT) DEFAULT CHARSET=utf8mb4;
+INSERT INTO docs
+ SELECT a.n+10*b.n+100*c.n+1000*d.n+10000*e.n,
+ CASE WHEN MOD(a.n+10*b.n+100*c.n+1000*d.n+10000*e.n,11)=0 THEN NULL
+ ELSE 'alpha beta tokenaazz tokenabzz tokenaczz tokenadzz tokenaezz tokenafzz tokenagzz tokenahzz tokenaizz tokenajzz tokenakzz tokenalzz tokenamzz tokenanzz tokenaozz tokenapzz tokenaqzz tokenarzz tokenaszz tokenatzz tokenauzz tokenavzz tokenawzz tokenaxzz tokenayzz tokenazzz tokenbazz tokenbbzz tokenbczz tokenbdzz tokenbezz tokenbfzz tokenbgzz tokenbhzz tokenbizz tokenbjzz tokenbkzz tokenblzz tokenbmzz tokenbnzz tokenbozz tokenbpzz tokenbqzz tokenbrzz tokenbszz tokenbtzz tokenbuzz tokenbvzz tokenbwzz tokenbxzz tokenbyzz tokenbzzz tokencazz tokencbzz tokencczz tokencdzz tokencezz tokencfzz tokencgzz tokenchzz tokencizz tokencjzz tokenckzz tokenclzz' END
+ FROM digits a CROSS JOIN digits b CROSS JOIN digits c CROSS JOIN digits d CROSS JOIN digits e
+ WHERE a.n+10*b.n+100*c.n+1000*d.n+10000*e.n < 32768;
+ALTER TABLE docs ADD FULLTEXT INDEX fi(body) WITH PARSER beng;
+SELECT COUNT(*) AS indexed_docs FROM docs WHERE MATCH(body) AGAINST('alpha');
+SELECT (SELECT COUNT(*) FROM docs WHERE MATCH(body) AGAINST('alpha beta'))
+ = (SELECT COUNT(*) FROM docs WHERE body LIKE '%alpha%') AS same_membership;
+UPDATE docs SET body='changed beta' WHERE id < 128;
+DELETE FROM docs WHERE id >= 128 AND id < 256;
+SELECT (SELECT COUNT(*) FROM docs WHERE MATCH(body) AGAINST('alpha'))
+ = (SELECT COUNT(*) FROM docs WHERE body LIKE '%alpha%') AS same_after_update;
+START TRANSACTION;
+UPDATE docs SET body='temporary alpha' WHERE id >= 256 AND id < 384;
+SELECT COUNT(*) AS temporary_docs FROM docs WHERE MATCH(body) AGAINST('temporary');
+ROLLBACK;
+SELECT COUNT(*) AS rolled_back_docs FROM docs WHERE MATCH(body) AGAINST('temporary');
+SELECT (SELECT COUNT(*) FROM docs WHERE MATCH(body) AGAINST('beta'))
+ = (SELECT COUNT(*) FROM docs WHERE body LIKE '%beta%') AS same_after_rollback;
+--disable_query_log
+SET GLOBAL ob_sql_work_area_percentage = @saved_workarea_percentage;
+--enable_query_log
+DROP DATABASE fts_prescan_budget;
+USE test;
