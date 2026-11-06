@@ -157,6 +157,14 @@ PowerContext [正式记录](https://open.oceanbase.com/train/TestRecord?question
 
 旧的 6 份实验二进制转存已经完成，逐份核验压缩和解压摘要后移除远端重复压缩包，释放约 2.32 GB。R3 二进制另存压缩快照并核验原始摘要后回收未执行的原始文件；原版、当前主实例以及独立测试基线均保留。
 
+## 2026-11-06 21 点后构建等待定位
+
+正式计数版本未加分后，后续工作已转向构建阶段。四轮诊断均使用已核验的 `ed2dc65d…`、原独立实例及冻结完整负载，仅采集本实例的资源、线程和请求头；这些带观测的耗时不能当作性能对照。首轮再次出现约 26 秒的慢构建，三阶段物理读约 726 MiB、写约 291 MiB，多次采到不可中断等待；进程组配额为四个 CPU，未出现配额限流。第二轮按线程归集，读取主要集中于 TimerWK 和 TxLoopWorker，写入主要由 OB_PLOG 完成，构建阶段未出现代码页主缺页或文件页 refault 计数增加。
+
+异步请求头和实际调用栈进一步确认两类 4 KiB 读取都落在 `store/sstable/block_file`：定时回收任务经 `get_unpersist_tablet_ids` 加载 tablet 元数据；事务维护线程经 MDS 读取 tablet binding 数据，并触发索引微块读取。[请求及调用链](competition-results/20261106-build-waits/captured-io-paths.json)、[线程 I/O 与内存诊断](competition-results/20261106-build-waits/fts-count-build-io-nov6-r2.json)。捕获的是两个具体调用路径，尚不能把所有 I/O 或正式平台的耗时都归因于它们，也尚未证明缓存失效的代码根因。
+
+四轮输入、原始采样、调用栈与报告已归档，摘要 `d9ce23e9…` 的 22 个文件逐项核验。所有诊断进程已结束，比较实例停止且原运行链接恢复，主实例未改变；归档转存已恢复。下一步在本地隔离分支 `codex/competition-fts-build-metadata` 核查元数据加载、回收扫描和缓存生命周期；该分支当前从已验证的 `912bedc6…` 建立，尚无新的产品改动。620 分目标仍未完成。
+
 ## 实现与验收
 
 | 序号 | 项目 | 题面分值 | 私有证据及剩余事项 |

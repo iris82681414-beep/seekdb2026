@@ -1,0 +1,695 @@
+{
+  "complete": true,
+  "phase": "complete",
+  "primary_updated": false,
+  "diagnostic_only": true,
+  "performance_score": null,
+  "source_commit": "912bedc6806b7a777ce7cad3b7028d8c8ea9ad76",
+  "started_at_unix": 1793969414.962976,
+  "events": [
+    {
+      "line": "[3/5] build fulltext indexes ...",
+      "monotonic": 189659.382061818,
+      "unix": 1793969471.3616955
+    },
+    {
+      "line": "build_ik_all: 10.079s",
+      "monotonic": 189669.466293605,
+      "unix": 1793969481.4459274
+    },
+    {
+      "line": "build_ik_content: 9.968s",
+      "monotonic": 189679.436668113,
+      "unix": 1793969491.4163015
+    },
+    {
+      "line": "build_beng_en: 5.945s",
+      "monotonic": 189685.384499139,
+      "unix": 1793969497.3641324
+    },
+    {
+      "line": "[4/5] TOKENIZE hot-path ...",
+      "monotonic": 189685.386770169,
+      "unix": 1793969497.366403
+    },
+    {
+      "line": "[5/5] MATCH query ...",
+      "monotonic": 189686.784592543,
+      "unix": 1793969498.764226
+    }
+  ],
+  "observation": "Process CPU, storage, memory and runnable thread sampling; this instrumented run is not a speed comparison.",
+  "primary_pid": "3892",
+  "workload_sha256": {
+    "tools/benchmark/fts_large_bench.sh": "596ea5d1c0038e666b78aa94bef22d2dfb87ffc9e84dbc7e2a1da1f746424462",
+    "tools/benchmark/fts_large_bench_gen.py": "b0c816dd8211ac0471f60b72a37a3fb5c62580357a5b6d7ac95f5a8c2e3f143d",
+    "tools/benchmark/fts_large_bench_setup.sql": "311826751df7f51ac45156fb4284aeca9bd9197370aceb88f4fb92832b458108",
+    "tools/benchmark/fts_large_bench_baseline.json": "f4e97eddb2e49c982b967fc8047f7cf37177eebe53d648f6746d85aacda91f0c",
+    "tools/benchmark/fts_large_bench_score.py": "bea52eb1c68d05693bb3ac5b910ab0e2fa0e70e01582f40466898ee1e2e3ef55"
+  },
+  "comparison_pid": "839793",
+  "comparison_cgroup": "/sys/fs/cgroup/system.slice/ob2026-fts-count-build-waits-nov6.service",
+  "comparison_cpu_max": "400000 100000",
+  "scheduler_stats_enabled": "0",
+  "workload_exit": 0,
+  "build_resources": [
+    {
+      "phase": "build_ik_all",
+      "sample_elapsed_seconds": 10.062374774977798,
+      "process_cpu_seconds": 13.149999999999999,
+      "average_busy_cpu_cores": 1.306848561504609,
+      "storage_io_delta": {
+        "read_bytes": 319524864,
+        "write_bytes": 163135488
+      },
+      "max_rss_kb": 1290496,
+      "max_swap_kb": 0,
+      "samples_with_uninterruptible_threads": 37,
+      "sample_count": 43,
+      "cgroup_cpu_stat_delta": {
+        "usage_usec": 13418720,
+        "user_usec": 11880775,
+        "system_usec": 1537946,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 101,
+        "nr_throttled": 0,
+        "throttled_usec": 0,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "top_threads_by_cpu": [
+        {
+          "tid": "839885",
+          "name": "seekdb-fts-scor",
+          "cpu_seconds": 0.518267908,
+          "runqueue_wait_seconds": 0.004481401
+        },
+        {
+          "tid": "839969",
+          "name": "TX_TABLE_MERGE",
+          "cpu_seconds": 0.467774701,
+          "runqueue_wait_seconds": 0.396341236
+        },
+        {
+          "tid": "839992",
+          "name": "TimerWK1",
+          "cpu_seconds": 0.31606915,
+          "runqueue_wait_seconds": 0.363015338
+        },
+        {
+          "tid": "839860",
+          "name": "TimerWK0",
+          "cpu_seconds": 0.315132245,
+          "runqueue_wait_seconds": 0.364270457
+        },
+        {
+          "tid": "839839",
+          "name": "TxLoopWorker",
+          "cpu_seconds": 0.309787573,
+          "runqueue_wait_seconds": 0.367889588
+        },
+        {
+          "tid": "839861",
+          "name": "TimerWK1",
+          "cpu_seconds": 0.308647931,
+          "runqueue_wait_seconds": 0.383381729
+        },
+        {
+          "tid": "839813",
+          "name": "TxLoopWorker",
+          "cpu_seconds": 0.27975361,
+          "runqueue_wait_seconds": 0.366224608
+        },
+        {
+          "tid": "839812",
+          "name": "TimerWK0",
+          "cpu_seconds": 0.259812844,
+          "runqueue_wait_seconds": 0.355643086
+        },
+        {
+          "tid": "839814",
+          "name": "IO_GETEVENT0",
+          "cpu_seconds": 0.255341075,
+          "runqueue_wait_seconds": 0.972992888
+        },
+        {
+          "tid": "839805",
+          "name": "OB_PLOG",
+          "cpu_seconds": 0.251186334,
+          "runqueue_wait_seconds": 0.846481315
+        },
+        {
+          "tid": "839965",
+          "name": "DAG",
+          "cpu_seconds": 0.224557175,
+          "runqueue_wait_seconds": 0.207633421
+        },
+        {
+          "tid": "840012",
+          "name": "TxLoopWorker",
+          "cpu_seconds": 0.210133621,
+          "runqueue_wait_seconds": 0.26971905
+        },
+        {
+          "tid": "839975",
+          "name": "DDLTaskExecutor",
+          "cpu_seconds": 0.186645694,
+          "runqueue_wait_seconds": 0.103229071
+        },
+        {
+          "tid": "839974",
+          "name": "DDLTaskExecutor",
+          "cpu_seconds": 0.148858358,
+          "runqueue_wait_seconds": 0.089988933
+        },
+        {
+          "tid": "839822",
+          "name": "DiskCB0",
+          "cpu_seconds": 0.065273027,
+          "runqueue_wait_seconds": 0.268944613
+        }
+      ],
+      "top_threads_by_runqueue_wait": [
+        {
+          "tid": "839814",
+          "name": "IO_GETEVENT0",
+          "cpu_seconds": 0.255341075,
+          "runqueue_wait_seconds": 0.972992888
+        },
+        {
+          "tid": "839805",
+          "name": "OB_PLOG",
+          "cpu_seconds": 0.251186334,
+          "runqueue_wait_seconds": 0.846481315
+        },
+        {
+          "tid": "839969",
+          "name": "TX_TABLE_MERGE",
+          "cpu_seconds": 0.467774701,
+          "runqueue_wait_seconds": 0.396341236
+        },
+        {
+          "tid": "839861",
+          "name": "TimerWK1",
+          "cpu_seconds": 0.308647931,
+          "runqueue_wait_seconds": 0.383381729
+        },
+        {
+          "tid": "839839",
+          "name": "TxLoopWorker",
+          "cpu_seconds": 0.309787573,
+          "runqueue_wait_seconds": 0.367889588
+        },
+        {
+          "tid": "839813",
+          "name": "TxLoopWorker",
+          "cpu_seconds": 0.27975361,
+          "runqueue_wait_seconds": 0.366224608
+        },
+        {
+          "tid": "839860",
+          "name": "TimerWK0",
+          "cpu_seconds": 0.315132245,
+          "runqueue_wait_seconds": 0.364270457
+        },
+        {
+          "tid": "839992",
+          "name": "TimerWK1",
+          "cpu_seconds": 0.31606915,
+          "runqueue_wait_seconds": 0.363015338
+        },
+        {
+          "tid": "839812",
+          "name": "TimerWK0",
+          "cpu_seconds": 0.259812844,
+          "runqueue_wait_seconds": 0.355643086
+        },
+        {
+          "tid": "839823",
+          "name": "DiskCB0",
+          "cpu_seconds": 0.065232992,
+          "runqueue_wait_seconds": 0.301612281
+        },
+        {
+          "tid": "839918",
+          "name": "DiskCB1",
+          "cpu_seconds": 0.06457906,
+          "runqueue_wait_seconds": 0.299550688
+        },
+        {
+          "tid": "839917",
+          "name": "DiskCB2",
+          "cpu_seconds": 0.064909374,
+          "runqueue_wait_seconds": 0.287070443
+        },
+        {
+          "tid": "839919",
+          "name": "DiskCB0",
+          "cpu_seconds": 0.063891683,
+          "runqueue_wait_seconds": 0.285391963
+        },
+        {
+          "tid": "839916",
+          "name": "DiskCB0",
+          "cpu_seconds": 0.065017311,
+          "runqueue_wait_seconds": 0.272293607
+        },
+        {
+          "tid": "840012",
+          "name": "TxLoopWorker",
+          "cpu_seconds": 0.210133621,
+          "runqueue_wait_seconds": 0.26971905
+        }
+      ],
+      "summed_runqueue_wait_seconds": 7.469891929,
+      "retained_thread_delta_count": 80
+    },
+    {
+      "phase": "build_ik_content",
+      "sample_elapsed_seconds": 9.872598682006355,
+      "process_cpu_seconds": 9.000000000000007,
+      "average_busy_cpu_cores": 0.9116140835749018,
+      "storage_io_delta": {
+        "read_bytes": 257863680,
+        "write_bytes": 87023616
+      },
+      "max_rss_kb": 1063416,
+      "max_swap_kb": 0,
+      "samples_with_uninterruptible_threads": 38,
+      "sample_count": 45,
+      "cgroup_cpu_stat_delta": {
+        "usage_usec": 9224060,
+        "user_usec": 8167159,
+        "system_usec": 1056901,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 99,
+        "nr_throttled": 0,
+        "throttled_usec": 0,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "top_threads_by_cpu": [
+        {
+          "tid": "840180",
+          "name": "PX_G0",
+          "cpu_seconds": 2.941053426,
+          "runqueue_wait_seconds": 0.11687018
+        },
+        {
+          "tid": "840181",
+          "name": "PX_G0",
+          "cpu_seconds": 1.773433004,
+          "runqueue_wait_seconds": 0.036880202
+        },
+        {
+          "tid": "840012",
+          "name": "TxLoopWorker",
+          "cpu_seconds": 0.282482814,
+          "runqueue_wait_seconds": 0.193225371
+        },
+        {
+          "tid": "839969",
+          "name": "TX_TABLE_MERGE",
+          "cpu_seconds": 0.277586461,
+          "runqueue_wait_seconds": 0.192554746
+        },
+        {
+          "tid": "840209",
+          "name": "TimerWK2",
+          "cpu_seconds": 0.271382616,
+          "runqueue_wait_seconds": 0.145962039
+        },
+        {
+          "tid": "839992",
+          "name": "TimerWK1",
+          "cpu_seconds": 0.241515194,
+          "runqueue_wait_seconds": 0.187950274
+        },
+        {
+          "tid": "839860",
+          "name": "TimerWK0",
+          "cpu_seconds": 0.237740632,
+          "runqueue_wait_seconds": 0.171855098
+        },
+        {
+          "tid": "839861",
+          "name": "TimerWK1",
+          "cpu_seconds": 0.233937945,
+          "runqueue_wait_seconds": 0.178688168
+        },
+        {
+          "tid": "839839",
+          "name": "TxLoopWorker",
+          "cpu_seconds": 0.233548221,
+          "runqueue_wait_seconds": 0.177335387
+        },
+        {
+          "tid": "839813",
+          "name": "TxLoopWorker",
+          "cpu_seconds": 0.211695362,
+          "runqueue_wait_seconds": 0.170934372
+        },
+        {
+          "tid": "839885",
+          "name": "seekdb-fts-scor",
+          "cpu_seconds": 0.209937717,
+          "runqueue_wait_seconds": 0.001434413
+        },
+        {
+          "tid": "839814",
+          "name": "IO_GETEVENT0",
+          "cpu_seconds": 0.209333197,
+          "runqueue_wait_seconds": 0.435143756
+        },
+        {
+          "tid": "839812",
+          "name": "TimerWK0",
+          "cpu_seconds": 0.175759212,
+          "runqueue_wait_seconds": 0.168915974
+        },
+        {
+          "tid": "839805",
+          "name": "OB_PLOG",
+          "cpu_seconds": 0.160421299,
+          "runqueue_wait_seconds": 0.415960008
+        },
+        {
+          "tid": "840205",
+          "name": "DAG",
+          "cpu_seconds": 0.156961729,
+          "runqueue_wait_seconds": 0.068991879
+        }
+      ],
+      "top_threads_by_runqueue_wait": [
+        {
+          "tid": "839814",
+          "name": "IO_GETEVENT0",
+          "cpu_seconds": 0.209333197,
+          "runqueue_wait_seconds": 0.435143756
+        },
+        {
+          "tid": "839805",
+          "name": "OB_PLOG",
+          "cpu_seconds": 0.160421299,
+          "runqueue_wait_seconds": 0.415960008
+        },
+        {
+          "tid": "840012",
+          "name": "TxLoopWorker",
+          "cpu_seconds": 0.282482814,
+          "runqueue_wait_seconds": 0.193225371
+        },
+        {
+          "tid": "839969",
+          "name": "TX_TABLE_MERGE",
+          "cpu_seconds": 0.277586461,
+          "runqueue_wait_seconds": 0.192554746
+        },
+        {
+          "tid": "839992",
+          "name": "TimerWK1",
+          "cpu_seconds": 0.241515194,
+          "runqueue_wait_seconds": 0.187950274
+        },
+        {
+          "tid": "839861",
+          "name": "TimerWK1",
+          "cpu_seconds": 0.233937945,
+          "runqueue_wait_seconds": 0.178688168
+        },
+        {
+          "tid": "839839",
+          "name": "TxLoopWorker",
+          "cpu_seconds": 0.233548221,
+          "runqueue_wait_seconds": 0.177335387
+        },
+        {
+          "tid": "839860",
+          "name": "TimerWK0",
+          "cpu_seconds": 0.237740632,
+          "runqueue_wait_seconds": 0.171855098
+        },
+        {
+          "tid": "839813",
+          "name": "TxLoopWorker",
+          "cpu_seconds": 0.211695362,
+          "runqueue_wait_seconds": 0.170934372
+        },
+        {
+          "tid": "839812",
+          "name": "TimerWK0",
+          "cpu_seconds": 0.175759212,
+          "runqueue_wait_seconds": 0.168915974
+        },
+        {
+          "tid": "840209",
+          "name": "TimerWK2",
+          "cpu_seconds": 0.271382616,
+          "runqueue_wait_seconds": 0.145962039
+        },
+        {
+          "tid": "840224",
+          "name": "DiskCB3",
+          "cpu_seconds": 0.033216035,
+          "runqueue_wait_seconds": 0.136364485
+        },
+        {
+          "tid": "839965",
+          "name": "DAG",
+          "cpu_seconds": 0.094322567,
+          "runqueue_wait_seconds": 0.134463835
+        },
+        {
+          "tid": "840222",
+          "name": "DiskCB1",
+          "cpu_seconds": 0.032763881,
+          "runqueue_wait_seconds": 0.126324693
+        },
+        {
+          "tid": "839916",
+          "name": "DiskCB0",
+          "cpu_seconds": 0.032440544,
+          "runqueue_wait_seconds": 0.122116536
+        }
+      ],
+      "summed_runqueue_wait_seconds": 4.8380372320000005,
+      "retained_thread_delta_count": 99
+    },
+    {
+      "phase": "build_beng_en",
+      "sample_elapsed_seconds": 5.9704806090157945,
+      "process_cpu_seconds": 5.019999999999996,
+      "average_busy_cpu_cores": 0.8408033337248405,
+      "storage_io_delta": {
+        "read_bytes": 183828480,
+        "write_bytes": 55246848
+      },
+      "max_rss_kb": 886460,
+      "max_swap_kb": 0,
+      "samples_with_uninterruptible_threads": 25,
+      "sample_count": 29,
+      "cgroup_cpu_stat_delta": {
+        "usage_usec": 5189037,
+        "user_usec": 4462517,
+        "system_usec": 726519,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 59,
+        "nr_throttled": 0,
+        "throttled_usec": 0,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "top_threads_by_cpu": [
+        {
+          "tid": "840180",
+          "name": "PX_G0",
+          "cpu_seconds": 1.665013418,
+          "runqueue_wait_seconds": 0.007319202
+        },
+        {
+          "tid": "840181",
+          "name": "PX_G0",
+          "cpu_seconds": 0.599843734,
+          "runqueue_wait_seconds": 0.005488438
+        },
+        {
+          "tid": "839885",
+          "name": "seekdb-fts-scor",
+          "cpu_seconds": 0.374135587,
+          "runqueue_wait_seconds": 0.004589253
+        },
+        {
+          "tid": "840012",
+          "name": "TxLoopWorker",
+          "cpu_seconds": 0.201652571,
+          "runqueue_wait_seconds": 0.087469863
+        },
+        {
+          "tid": "840209",
+          "name": "TimerWK2",
+          "cpu_seconds": 0.195102083,
+          "runqueue_wait_seconds": 0.070695725
+        },
+        {
+          "tid": "839969",
+          "name": "TX_TABLE_MERGE",
+          "cpu_seconds": 0.193241873,
+          "runqueue_wait_seconds": 0.089480268
+        },
+        {
+          "tid": "839992",
+          "name": "TimerWK1",
+          "cpu_seconds": 0.170676657,
+          "runqueue_wait_seconds": 0.096086144
+        },
+        {
+          "tid": "839860",
+          "name": "TimerWK0",
+          "cpu_seconds": 0.168373696,
+          "runqueue_wait_seconds": 0.097167799
+        },
+        {
+          "tid": "839839",
+          "name": "TxLoopWorker",
+          "cpu_seconds": 0.164937927,
+          "runqueue_wait_seconds": 0.096335973
+        },
+        {
+          "tid": "839861",
+          "name": "TimerWK1",
+          "cpu_seconds": 0.163907324,
+          "runqueue_wait_seconds": 0.100448973
+        },
+        {
+          "tid": "839813",
+          "name": "TxLoopWorker",
+          "cpu_seconds": 0.15005103,
+          "runqueue_wait_seconds": 0.088119859
+        },
+        {
+          "tid": "839814",
+          "name": "IO_GETEVENT0",
+          "cpu_seconds": 0.149196466,
+          "runqueue_wait_seconds": 0.233059305
+        },
+        {
+          "tid": "839812",
+          "name": "TimerWK0",
+          "cpu_seconds": 0.117357109,
+          "runqueue_wait_seconds": 0.084201397
+        },
+        {
+          "tid": "839805",
+          "name": "OB_PLOG",
+          "cpu_seconds": 0.10958477,
+          "runqueue_wait_seconds": 0.245237479
+        },
+        {
+          "tid": "839974",
+          "name": "DDLTaskExecutor",
+          "cpu_seconds": 0.082116677,
+          "runqueue_wait_seconds": 0.01303391
+        }
+      ],
+      "top_threads_by_runqueue_wait": [
+        {
+          "tid": "839805",
+          "name": "OB_PLOG",
+          "cpu_seconds": 0.10958477,
+          "runqueue_wait_seconds": 0.245237479
+        },
+        {
+          "tid": "839814",
+          "name": "IO_GETEVENT0",
+          "cpu_seconds": 0.149196466,
+          "runqueue_wait_seconds": 0.233059305
+        },
+        {
+          "tid": "839861",
+          "name": "TimerWK1",
+          "cpu_seconds": 0.163907324,
+          "runqueue_wait_seconds": 0.100448973
+        },
+        {
+          "tid": "839860",
+          "name": "TimerWK0",
+          "cpu_seconds": 0.168373696,
+          "runqueue_wait_seconds": 0.097167799
+        },
+        {
+          "tid": "839839",
+          "name": "TxLoopWorker",
+          "cpu_seconds": 0.164937927,
+          "runqueue_wait_seconds": 0.096335973
+        },
+        {
+          "tid": "839992",
+          "name": "TimerWK1",
+          "cpu_seconds": 0.170676657,
+          "runqueue_wait_seconds": 0.096086144
+        },
+        {
+          "tid": "839969",
+          "name": "TX_TABLE_MERGE",
+          "cpu_seconds": 0.193241873,
+          "runqueue_wait_seconds": 0.089480268
+        },
+        {
+          "tid": "839813",
+          "name": "TxLoopWorker",
+          "cpu_seconds": 0.15005103,
+          "runqueue_wait_seconds": 0.088119859
+        },
+        {
+          "tid": "840012",
+          "name": "TxLoopWorker",
+          "cpu_seconds": 0.201652571,
+          "runqueue_wait_seconds": 0.087469863
+        },
+        {
+          "tid": "839812",
+          "name": "TimerWK0",
+          "cpu_seconds": 0.117357109,
+          "runqueue_wait_seconds": 0.084201397
+        },
+        {
+          "tid": "840209",
+          "name": "TimerWK2",
+          "cpu_seconds": 0.195102083,
+          "runqueue_wait_seconds": 0.070695725
+        },
+        {
+          "tid": "839918",
+          "name": "DiskCB1",
+          "cpu_seconds": 0.022586934,
+          "runqueue_wait_seconds": 0.064921611
+        },
+        {
+          "tid": "840224",
+          "name": "DiskCB3",
+          "cpu_seconds": 0.023058615,
+          "runqueue_wait_seconds": 0.063494637
+        },
+        {
+          "tid": "840221",
+          "name": "DiskCB0",
+          "cpu_seconds": 0.023342403,
+          "runqueue_wait_seconds": 0.063488308
+        },
+        {
+          "tid": "840226",
+          "name": "DiskCB4",
+          "cpu_seconds": 0.023069559,
+          "runqueue_wait_seconds": 0.062402737
+        }
+      ],
+      "summed_runqueue_wait_seconds": 2.179957717,
+      "retained_thread_delta_count": 97
+    }
+  ],
+  "finished_at_unix": 1793969503.5618002,
+  "comparison_stopped": true,
+  "validation_link_restored_to_original": true,
+  "log_archive_exit": 0,
+  "log_archive_result": "{\n  \"complete\": true,\n  \"primary_updated\": false,\n  \"source_logs_removed\": false,\n  \"files\": [\n    {\n      \"source\": \"/root/oceanbase2026/instances/fts-score-usage-nov5-r2/log/seekdb.log\",\n      \"archive\": \"/root/oceanbase2026/archives/comparison-logs/20261106-205144/seekdb.log.gz\",\n      \"sha256\": \"29119d9abb0ff200be895c960ca9ae8f0d47810d8f70c0aeb3ed077091b7de4f\"\n    },\n    {\n      \"source\": \"/root/oceanbase2026/instances/fts-score-usage-nov5-r2/log/seekdb.log.20261106205121519\",\n      \"archive\": \"/root/oceanbase2026/archives/comparison-logs/20261106-205144/seekdb.log.20261106205121519.gz\",\n      \"sha256\": \"0bbe12cb79b7b5711a8ddd2e583a01b6585470af5d974a23c799830467083266\"\n    }\n  ]\n}"
+}

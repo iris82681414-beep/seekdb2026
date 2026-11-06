@@ -1,0 +1,1545 @@
+{
+  "complete": true,
+  "phase": "complete",
+  "primary_updated": false,
+  "diagnostic_only": true,
+  "performance_score": null,
+  "source_commit": "912bedc6806b7a777ce7cad3b7028d8c8ea9ad76",
+  "started_at_unix": 1793970331.4114885,
+  "events": [
+    {
+      "line": "[3/5] build fulltext indexes ...",
+      "monotonic": 190573.369417393,
+      "unix": 1793970385.349051
+    },
+    {
+      "line": "build_ik_all: 9.279s",
+      "monotonic": 190582.651709275,
+      "unix": 1793970394.631343
+    },
+    {
+      "line": "build_ik_content: 6.947s",
+      "monotonic": 190589.601507605,
+      "unix": 1793970401.581141
+    },
+    {
+      "line": "build_beng_en: 5.043s",
+      "monotonic": 190594.646799539,
+      "unix": 1793970406.6264367
+    },
+    {
+      "line": "[4/5] TOKENIZE hot-path ...",
+      "monotonic": 190594.648972115,
+      "unix": 1793970406.6286051
+    },
+    {
+      "line": "[5/5] MATCH query ...",
+      "monotonic": 190596.017498744,
+      "unix": 1793970407.997132
+    }
+  ],
+  "observation": "Process CPU, storage, memory and runnable thread sampling; this instrumented run is not a speed comparison.",
+  "primary_pid": "3892",
+  "workload_sha256": {
+    "tools/benchmark/fts_large_bench.sh": "596ea5d1c0038e666b78aa94bef22d2dfb87ffc9e84dbc7e2a1da1f746424462",
+    "tools/benchmark/fts_large_bench_gen.py": "b0c816dd8211ac0471f60b72a37a3fb5c62580357a5b6d7ac95f5a8c2e3f143d",
+    "tools/benchmark/fts_large_bench_setup.sql": "311826751df7f51ac45156fb4284aeca9bd9197370aceb88f4fb92832b458108",
+    "tools/benchmark/fts_large_bench_baseline.json": "f4e97eddb2e49c982b967fc8047f7cf37177eebe53d648f6746d85aacda91f0c",
+    "tools/benchmark/fts_large_bench_score.py": "bea52eb1c68d05693bb3ac5b910ab0e2fa0e70e01582f40466898ee1e2e3ef55"
+  },
+  "comparison_pid": "844662",
+  "comparison_cgroup": "/sys/fs/cgroup/system.slice/ob2026-fts-count-build-files-nov6-r3.service",
+  "comparison_cpu_max": "400000 100000",
+  "scheduler_stats_enabled": "0",
+  "traced_owned_threads": {
+    "TxLoopWorker": "844683",
+    "TimerWK0": "844684"
+  },
+  "strace_pid": 845080,
+  "trace_contains_payloads": false,
+  "strace_exit": -2,
+  "workload_exit": 0,
+  "build_resources": [
+    {
+      "phase": "build_ik_all",
+      "sample_elapsed_seconds": 9.31984701397596,
+      "process_cpu_seconds": 11.649999999999999,
+      "average_busy_cpu_cores": 1.2500205188486209,
+      "storage_io_delta": {
+        "read_bytes": 320368640,
+        "write_bytes": 84013056
+      },
+      "max_rss_kb": 922200,
+      "max_swap_kb": 0,
+      "samples_with_uninterruptible_threads": 31,
+      "sample_count": 45,
+      "cgroup_cpu_stat_delta": {
+        "usage_usec": 12401100,
+        "user_usec": 10663732,
+        "system_usec": 1737368,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 93,
+        "nr_throttled": 0,
+        "throttled_usec": 0,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "top_threads_by_cpu": [
+        {
+          "tid": "844684",
+          "name": "TimerWK0",
+          "cpu_seconds": 0.64540576,
+          "runqueue_wait_seconds": 0.374751827,
+          "major_faults": 0,
+          "read_bytes": 41463808,
+          "write_bytes": 0
+        },
+        {
+          "tid": "844709",
+          "name": "TimerWK0",
+          "cpu_seconds": 0.51177901,
+          "runqueue_wait_seconds": 0.189670662,
+          "major_faults": 0,
+          "read_bytes": 49496064,
+          "write_bytes": 0
+        },
+        {
+          "tid": "844723",
+          "name": "TimerWK0",
+          "cpu_seconds": 0.495575889,
+          "runqueue_wait_seconds": 0.187718664,
+          "major_faults": 0,
+          "read_bytes": 49848320,
+          "write_bytes": 24576
+        },
+        {
+          "tid": "844732",
+          "name": "TxLoopWorker",
+          "cpu_seconds": 0.493473907,
+          "runqueue_wait_seconds": 0.18760982,
+          "major_faults": 0,
+          "read_bytes": 49983488,
+          "write_bytes": 0
+        },
+        {
+          "tid": "844886",
+          "name": "TxLoopWorker",
+          "cpu_seconds": 0.459747383,
+          "runqueue_wait_seconds": 0.133910668,
+          "major_faults": 0,
+          "read_bytes": 58716160,
+          "write_bytes": 0
+        },
+        {
+          "tid": "844731",
+          "name": "TimerWK0",
+          "cpu_seconds": 0.441369166,
+          "runqueue_wait_seconds": 0.160240248,
+          "major_faults": 0,
+          "read_bytes": 50798592,
+          "write_bytes": 0
+        },
+        {
+          "tid": "844754",
+          "name": "seekdb-fts-scor",
+          "cpu_seconds": 0.433886509,
+          "runqueue_wait_seconds": 0.011792653,
+          "major_faults": 0,
+          "read_bytes": 0,
+          "write_bytes": 0
+        },
+        {
+          "tid": "844685",
+          "name": "IO_GETEVENT0",
+          "cpu_seconds": 0.26281224,
+          "runqueue_wait_seconds": 0.324899654,
+          "major_faults": 0,
+          "read_bytes": 0,
+          "write_bytes": 0
+        },
+        {
+          "tid": "844675",
+          "name": "OB_PLOG",
+          "cpu_seconds": 0.192758518,
+          "runqueue_wait_seconds": 0.422751378,
+          "major_faults": 0,
+          "read_bytes": 0,
+          "write_bytes": 70062080
+        },
+        {
+          "tid": "844844",
+          "name": "DDLTaskExecutor",
+          "cpu_seconds": 0.182087818,
+          "runqueue_wait_seconds": 0.027057207,
+          "major_faults": 0,
+          "read_bytes": 614400,
+          "write_bytes": 0
+        },
+        {
+          "tid": "844843",
+          "name": "DDLTaskExecutor",
+          "cpu_seconds": 0.159907124,
+          "runqueue_wait_seconds": 0.022925835,
+          "major_faults": 0,
+          "read_bytes": 286720,
+          "write_bytes": 0
+        },
+        {
+          "tid": "844730",
+          "name": "TxLoopWorker",
+          "cpu_seconds": 0.143881658,
+          "runqueue_wait_seconds": 0.02239974,
+          "major_faults": 0,
+          "read_bytes": 6512640,
+          "write_bytes": 3678208
+        },
+        {
+          "tid": "845087",
+          "name": "ReqWorker",
+          "cpu_seconds": 0.084169525,
+          "runqueue_wait_seconds": 0.003677673,
+          "major_faults": 0,
+          "read_bytes": 212992,
+          "write_bytes": 0
+        },
+        {
+          "tid": "844693",
+          "name": "DiskCB0",
+          "cpu_seconds": 0.053490241,
+          "runqueue_wait_seconds": 0.112868446,
+          "major_faults": 0,
+          "read_bytes": 0,
+          "write_bytes": 0
+        },
+        {
+          "tid": "844786",
+          "name": "DiskCB1",
+          "cpu_seconds": 0.05325766,
+          "runqueue_wait_seconds": 0.110522434,
+          "major_faults": 0,
+          "read_bytes": 0,
+          "write_bytes": 0
+        }
+      ],
+      "top_threads_by_runqueue_wait": [
+        {
+          "tid": "844675",
+          "name": "OB_PLOG",
+          "cpu_seconds": 0.192758518,
+          "runqueue_wait_seconds": 0.422751378,
+          "major_faults": 0,
+          "read_bytes": 0,
+          "write_bytes": 70062080
+        },
+        {
+          "tid": "844684",
+          "name": "TimerWK0",
+          "cpu_seconds": 0.64540576,
+          "runqueue_wait_seconds": 0.374751827,
+          "major_faults": 0,
+          "read_bytes": 41463808,
+          "write_bytes": 0
+        },
+        {
+          "tid": "844685",
+          "name": "IO_GETEVENT0",
+          "cpu_seconds": 0.26281224,
+          "runqueue_wait_seconds": 0.324899654,
+          "major_faults": 0,
+          "read_bytes": 0,
+          "write_bytes": 0
+        },
+        {
+          "tid": "844709",
+          "name": "TimerWK0",
+          "cpu_seconds": 0.51177901,
+          "runqueue_wait_seconds": 0.189670662,
+          "major_faults": 0,
+          "read_bytes": 49496064,
+          "write_bytes": 0
+        },
+        {
+          "tid": "844723",
+          "name": "TimerWK0",
+          "cpu_seconds": 0.495575889,
+          "runqueue_wait_seconds": 0.187718664,
+          "major_faults": 0,
+          "read_bytes": 49848320,
+          "write_bytes": 24576
+        },
+        {
+          "tid": "844732",
+          "name": "TxLoopWorker",
+          "cpu_seconds": 0.493473907,
+          "runqueue_wait_seconds": 0.18760982,
+          "major_faults": 0,
+          "read_bytes": 49983488,
+          "write_bytes": 0
+        },
+        {
+          "tid": "844731",
+          "name": "TimerWK0",
+          "cpu_seconds": 0.441369166,
+          "runqueue_wait_seconds": 0.160240248,
+          "major_faults": 0,
+          "read_bytes": 50798592,
+          "write_bytes": 0
+        },
+        {
+          "tid": "844886",
+          "name": "TxLoopWorker",
+          "cpu_seconds": 0.459747383,
+          "runqueue_wait_seconds": 0.133910668,
+          "major_faults": 0,
+          "read_bytes": 58716160,
+          "write_bytes": 0
+        },
+        {
+          "tid": "844836",
+          "name": "DiskCB4",
+          "cpu_seconds": 0.052117976,
+          "runqueue_wait_seconds": 0.11692964,
+          "major_faults": 0,
+          "read_bytes": 0,
+          "write_bytes": 0
+        },
+        {
+          "tid": "844788",
+          "name": "DiskCB0",
+          "cpu_seconds": 0.051158386,
+          "runqueue_wait_seconds": 0.11689977,
+          "major_faults": 0,
+          "read_bytes": 0,
+          "write_bytes": 0
+        },
+        {
+          "tid": "844693",
+          "name": "DiskCB0",
+          "cpu_seconds": 0.053490241,
+          "runqueue_wait_seconds": 0.112868446,
+          "major_faults": 0,
+          "read_bytes": 0,
+          "write_bytes": 0
+        },
+        {
+          "tid": "844834",
+          "name": "DiskCB3",
+          "cpu_seconds": 0.051500561,
+          "runqueue_wait_seconds": 0.112490697,
+          "major_faults": 0,
+          "read_bytes": 0,
+          "write_bytes": 0
+        },
+        {
+          "tid": "844835",
+          "name": "DiskCB2",
+          "cpu_seconds": 0.052980533,
+          "runqueue_wait_seconds": 0.111791533,
+          "major_faults": 0,
+          "read_bytes": 0,
+          "write_bytes": 0
+        },
+        {
+          "tid": "844785",
+          "name": "DiskCB0",
+          "cpu_seconds": 0.05270214,
+          "runqueue_wait_seconds": 0.111626659,
+          "major_faults": 0,
+          "read_bytes": 0,
+          "write_bytes": 0
+        },
+        {
+          "tid": "844787",
+          "name": "DiskCB2",
+          "cpu_seconds": 0.053056083,
+          "runqueue_wait_seconds": 0.111621008,
+          "major_faults": 0,
+          "read_bytes": 0,
+          "write_bytes": 0
+        }
+      ],
+      "summed_runqueue_wait_seconds": 3.318964369,
+      "retained_thread_delta_count": 83,
+      "top_threads_by_io": [
+        {
+          "tid": "844675",
+          "name": "OB_PLOG",
+          "cpu_seconds": 0.192758518,
+          "runqueue_wait_seconds": 0.422751378,
+          "major_faults": 0,
+          "read_bytes": 0,
+          "write_bytes": 70062080
+        },
+        {
+          "tid": "844886",
+          "name": "TxLoopWorker",
+          "cpu_seconds": 0.459747383,
+          "runqueue_wait_seconds": 0.133910668,
+          "major_faults": 0,
+          "read_bytes": 58716160,
+          "write_bytes": 0
+        },
+        {
+          "tid": "844731",
+          "name": "TimerWK0",
+          "cpu_seconds": 0.441369166,
+          "runqueue_wait_seconds": 0.160240248,
+          "major_faults": 0,
+          "read_bytes": 50798592,
+          "write_bytes": 0
+        },
+        {
+          "tid": "844732",
+          "name": "TxLoopWorker",
+          "cpu_seconds": 0.493473907,
+          "runqueue_wait_seconds": 0.18760982,
+          "major_faults": 0,
+          "read_bytes": 49983488,
+          "write_bytes": 0
+        },
+        {
+          "tid": "844723",
+          "name": "TimerWK0",
+          "cpu_seconds": 0.495575889,
+          "runqueue_wait_seconds": 0.187718664,
+          "major_faults": 0,
+          "read_bytes": 49848320,
+          "write_bytes": 24576
+        },
+        {
+          "tid": "844709",
+          "name": "TimerWK0",
+          "cpu_seconds": 0.51177901,
+          "runqueue_wait_seconds": 0.189670662,
+          "major_faults": 0,
+          "read_bytes": 49496064,
+          "write_bytes": 0
+        },
+        {
+          "tid": "844684",
+          "name": "TimerWK0",
+          "cpu_seconds": 0.64540576,
+          "runqueue_wait_seconds": 0.374751827,
+          "major_faults": 0,
+          "read_bytes": 41463808,
+          "write_bytes": 0
+        },
+        {
+          "tid": "844730",
+          "name": "TxLoopWorker",
+          "cpu_seconds": 0.143881658,
+          "runqueue_wait_seconds": 0.02239974,
+          "major_faults": 0,
+          "read_bytes": 6512640,
+          "write_bytes": 3678208
+        },
+        {
+          "tid": "845076",
+          "name": "IO_SYNC_CH0",
+          "cpu_seconds": 0.005425357,
+          "runqueue_wait_seconds": 0.008725382,
+          "major_faults": 0,
+          "read_bytes": 0,
+          "write_bytes": 2523136
+        },
+        {
+          "tid": "844837",
+          "name": "DAG",
+          "cpu_seconds": 0.004372618,
+          "runqueue_wait_seconds": 0.002892814,
+          "major_faults": 0,
+          "read_bytes": 2109440,
+          "write_bytes": 90112
+        },
+        {
+          "tid": "844838",
+          "name": "DAG",
+          "cpu_seconds": 0.002347102,
+          "runqueue_wait_seconds": 0.005158013,
+          "major_faults": 0,
+          "read_bytes": 2097152,
+          "write_bytes": 73728
+        },
+        {
+          "tid": "845075",
+          "name": "IO_SYNC_CH0",
+          "cpu_seconds": 0.005299096,
+          "runqueue_wait_seconds": 0.015516347,
+          "major_faults": 0,
+          "read_bytes": 0,
+          "write_bytes": 1855488
+        },
+        {
+          "tid": "845115",
+          "name": "IO_SYNC_CH0",
+          "cpu_seconds": 0.005284492,
+          "runqueue_wait_seconds": 0.011232621,
+          "major_faults": 0,
+          "read_bytes": 0,
+          "write_bytes": 1654784
+        },
+        {
+          "tid": "844844",
+          "name": "DDLTaskExecutor",
+          "cpu_seconds": 0.182087818,
+          "runqueue_wait_seconds": 0.027057207,
+          "major_faults": 0,
+          "read_bytes": 614400,
+          "write_bytes": 0
+        },
+        {
+          "tid": "844843",
+          "name": "DDLTaskExecutor",
+          "cpu_seconds": 0.159907124,
+          "runqueue_wait_seconds": 0.022925835,
+          "major_faults": 0,
+          "read_bytes": 286720,
+          "write_bytes": 0
+        },
+        {
+          "tid": "844695",
+          "name": "TbltMetaUp0",
+          "cpu_seconds": 0.00468118,
+          "runqueue_wait_seconds": 0.004201182,
+          "major_faults": 0,
+          "read_bytes": 0,
+          "write_bytes": 233472
+        },
+        {
+          "tid": "845087",
+          "name": "ReqWorker",
+          "cpu_seconds": 0.084169525,
+          "runqueue_wait_seconds": 0.003677673,
+          "major_faults": 0,
+          "read_bytes": 212992,
+          "write_bytes": 0
+        },
+        {
+          "tid": "844771",
+          "name": "CSFetcher",
+          "cpu_seconds": 0.044895961,
+          "runqueue_wait_seconds": 0.003780753,
+          "major_faults": 0,
+          "read_bytes": 163840,
+          "write_bytes": 0
+        },
+        {
+          "tid": "844683",
+          "name": "TxLoopWorker",
+          "cpu_seconds": 0.045600243,
+          "runqueue_wait_seconds": 0.004116901,
+          "major_faults": 0,
+          "read_bytes": 0,
+          "write_bytes": 139264
+        },
+        {
+          "tid": "844692",
+          "name": "OB_SLOG",
+          "cpu_seconds": 0.000436281,
+          "runqueue_wait_seconds": 0.000304178,
+          "major_faults": 0,
+          "read_bytes": 0,
+          "write_bytes": 45056
+        }
+      ],
+      "cgroup_memory_stat_delta": {
+        "pgmajfault": 1,
+        "workingset_refault_file": 0,
+        "pgscan": 0,
+        "pgsteal": 0,
+        "pgfault": 132743
+      },
+      "max_cgroup_memory_current": 1200201728,
+      "max_cgroup_file_dirty": 101388288
+    },
+    {
+      "phase": "build_ik_content",
+      "sample_elapsed_seconds": 6.9249645009986125,
+      "process_cpu_seconds": 8.89,
+      "average_busy_cpu_cores": 1.2837610934638035,
+      "storage_io_delta": {
+        "read_bytes": 206725120,
+        "write_bytes": 65466368
+      },
+      "max_rss_kb": 952512,
+      "max_swap_kb": 0,
+      "samples_with_uninterruptible_threads": 20,
+      "sample_count": 28,
+      "cgroup_cpu_stat_delta": {
+        "usage_usec": 9432543,
+        "user_usec": 8234227,
+        "system_usec": 1198316,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 69,
+        "nr_throttled": 0,
+        "throttled_usec": 0,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "top_threads_by_cpu": [
+        {
+          "tid": "845132",
+          "name": "PX_G0",
+          "cpu_seconds": 3.199215128,
+          "runqueue_wait_seconds": 0.031165688,
+          "major_faults": 0,
+          "read_bytes": 1957888,
+          "write_bytes": 2441216
+        },
+        {
+          "tid": "845133",
+          "name": "PX_G0",
+          "cpu_seconds": 1.86391322,
+          "runqueue_wait_seconds": 0.011107811,
+          "major_faults": 0,
+          "read_bytes": 0,
+          "write_bytes": 0
+        },
+        {
+          "tid": "844684",
+          "name": "TimerWK0",
+          "cpu_seconds": 0.499316559,
+          "runqueue_wait_seconds": 0.286370889,
+          "major_faults": 0,
+          "read_bytes": 31334400,
+          "write_bytes": 0
+        },
+        {
+          "tid": "844730",
+          "name": "TxLoopWorker",
+          "cpu_seconds": 0.436185198,
+          "runqueue_wait_seconds": 0.084684756,
+          "major_faults": 0,
+          "read_bytes": 20221952,
+          "write_bytes": 11567104
+        },
+        {
+          "tid": "844709",
+          "name": "TimerWK0",
+          "cpu_seconds": 0.390008747,
+          "runqueue_wait_seconds": 0.144205004,
+          "major_faults": 0,
+          "read_bytes": 37523456,
+          "write_bytes": 0
+        },
+        {
+          "tid": "844723",
+          "name": "TimerWK0",
+          "cpu_seconds": 0.376715709,
+          "runqueue_wait_seconds": 0.145041923,
+          "major_faults": 0,
+          "read_bytes": 37683200,
+          "write_bytes": 12288
+        },
+        {
+          "tid": "844732",
+          "name": "TxLoopWorker",
+          "cpu_seconds": 0.376671317,
+          "runqueue_wait_seconds": 0.14177645,
+          "major_faults": 0,
+          "read_bytes": 37810176,
+          "write_bytes": 0
+        },
+        {
+          "tid": "844731",
+          "name": "TimerWK0",
+          "cpu_seconds": 0.338832614,
+          "runqueue_wait_seconds": 0.121550017,
+          "major_faults": 0,
+          "read_bytes": 38461440,
+          "write_bytes": 0
+        },
+        {
+          "tid": "844754",
+          "name": "seekdb-fts-scor",
+          "cpu_seconds": 0.256340619,
+          "runqueue_wait_seconds": 0.001094606,
+          "major_faults": 0,
+          "read_bytes": 0,
+          "write_bytes": 0
+        },
+        {
+          "tid": "844685",
+          "name": "IO_GETEVENT0",
+          "cpu_seconds": 0.186752541,
+          "runqueue_wait_seconds": 0.228736644,
+          "major_faults": 0,
+          "read_bytes": 0,
+          "write_bytes": 0
+        },
+        {
+          "tid": "844844",
+          "name": "DDLTaskExecutor",
+          "cpu_seconds": 0.143213112,
+          "runqueue_wait_seconds": 0.011467408,
+          "major_faults": 0,
+          "read_bytes": 0,
+          "write_bytes": 0
+        },
+        {
+          "tid": "844675",
+          "name": "OB_PLOG",
+          "cpu_seconds": 0.129742887,
+          "runqueue_wait_seconds": 0.300001047,
+          "major_faults": 0,
+          "read_bytes": 0,
+          "write_bytes": 46755840
+        },
+        {
+          "tid": "844843",
+          "name": "DDLTaskExecutor",
+          "cpu_seconds": 0.092574529,
+          "runqueue_wait_seconds": 0.01351779,
+          "major_faults": 0,
+          "read_bytes": 0,
+          "write_bytes": 0
+        },
+        {
+          "tid": "844836",
+          "name": "DiskCB4",
+          "cpu_seconds": 0.038121582,
+          "runqueue_wait_seconds": 0.072003908,
+          "major_faults": 0,
+          "read_bytes": 0,
+          "write_bytes": 0
+        },
+        {
+          "tid": "844787",
+          "name": "DiskCB2",
+          "cpu_seconds": 0.038068001,
+          "runqueue_wait_seconds": 0.074451286,
+          "major_faults": 0,
+          "read_bytes": 0,
+          "write_bytes": 0
+        }
+      ],
+      "top_threads_by_runqueue_wait": [
+        {
+          "tid": "844675",
+          "name": "OB_PLOG",
+          "cpu_seconds": 0.129742887,
+          "runqueue_wait_seconds": 0.300001047,
+          "major_faults": 0,
+          "read_bytes": 0,
+          "write_bytes": 46755840
+        },
+        {
+          "tid": "844684",
+          "name": "TimerWK0",
+          "cpu_seconds": 0.499316559,
+          "runqueue_wait_seconds": 0.286370889,
+          "major_faults": 0,
+          "read_bytes": 31334400,
+          "write_bytes": 0
+        },
+        {
+          "tid": "844685",
+          "name": "IO_GETEVENT0",
+          "cpu_seconds": 0.186752541,
+          "runqueue_wait_seconds": 0.228736644,
+          "major_faults": 0,
+          "read_bytes": 0,
+          "write_bytes": 0
+        },
+        {
+          "tid": "844723",
+          "name": "TimerWK0",
+          "cpu_seconds": 0.376715709,
+          "runqueue_wait_seconds": 0.145041923,
+          "major_faults": 0,
+          "read_bytes": 37683200,
+          "write_bytes": 12288
+        },
+        {
+          "tid": "844709",
+          "name": "TimerWK0",
+          "cpu_seconds": 0.390008747,
+          "runqueue_wait_seconds": 0.144205004,
+          "major_faults": 0,
+          "read_bytes": 37523456,
+          "write_bytes": 0
+        },
+        {
+          "tid": "844732",
+          "name": "TxLoopWorker",
+          "cpu_seconds": 0.376671317,
+          "runqueue_wait_seconds": 0.14177645,
+          "major_faults": 0,
+          "read_bytes": 37810176,
+          "write_bytes": 0
+        },
+        {
+          "tid": "844731",
+          "name": "TimerWK0",
+          "cpu_seconds": 0.338832614,
+          "runqueue_wait_seconds": 0.121550017,
+          "major_faults": 0,
+          "read_bytes": 38461440,
+          "write_bytes": 0
+        },
+        {
+          "tid": "844730",
+          "name": "TxLoopWorker",
+          "cpu_seconds": 0.436185198,
+          "runqueue_wait_seconds": 0.084684756,
+          "major_faults": 0,
+          "read_bytes": 20221952,
+          "write_bytes": 11567104
+        },
+        {
+          "tid": "844787",
+          "name": "DiskCB2",
+          "cpu_seconds": 0.038068001,
+          "runqueue_wait_seconds": 0.074451286,
+          "major_faults": 0,
+          "read_bytes": 0,
+          "write_bytes": 0
+        },
+        {
+          "tid": "844693",
+          "name": "DiskCB0",
+          "cpu_seconds": 0.037775742,
+          "runqueue_wait_seconds": 0.074138489,
+          "major_faults": 0,
+          "read_bytes": 0,
+          "write_bytes": 0
+        },
+        {
+          "tid": "844834",
+          "name": "DiskCB3",
+          "cpu_seconds": 0.037046344,
+          "runqueue_wait_seconds": 0.072901089,
+          "major_faults": 0,
+          "read_bytes": 0,
+          "write_bytes": 0
+        },
+        {
+          "tid": "844694",
+          "name": "DiskCB0",
+          "cpu_seconds": 0.037304431,
+          "runqueue_wait_seconds": 0.072854372,
+          "major_faults": 0,
+          "read_bytes": 0,
+          "write_bytes": 0
+        },
+        {
+          "tid": "844786",
+          "name": "DiskCB1",
+          "cpu_seconds": 0.037891879,
+          "runqueue_wait_seconds": 0.072516341,
+          "major_faults": 0,
+          "read_bytes": 0,
+          "write_bytes": 0
+        },
+        {
+          "tid": "844836",
+          "name": "DiskCB4",
+          "cpu_seconds": 0.038121582,
+          "runqueue_wait_seconds": 0.072003908,
+          "major_faults": 0,
+          "read_bytes": 0,
+          "write_bytes": 0
+        },
+        {
+          "tid": "844835",
+          "name": "DiskCB2",
+          "cpu_seconds": 0.037356879,
+          "runqueue_wait_seconds": 0.071958269,
+          "major_faults": 0,
+          "read_bytes": 0,
+          "write_bytes": 0
+        }
+      ],
+      "summed_runqueue_wait_seconds": 2.317984668,
+      "retained_thread_delta_count": 86,
+      "top_threads_by_io": [
+        {
+          "tid": "844675",
+          "name": "OB_PLOG",
+          "cpu_seconds": 0.129742887,
+          "runqueue_wait_seconds": 0.300001047,
+          "major_faults": 0,
+          "read_bytes": 0,
+          "write_bytes": 46755840
+        },
+        {
+          "tid": "844731",
+          "name": "TimerWK0",
+          "cpu_seconds": 0.338832614,
+          "runqueue_wait_seconds": 0.121550017,
+          "major_faults": 0,
+          "read_bytes": 38461440,
+          "write_bytes": 0
+        },
+        {
+          "tid": "844732",
+          "name": "TxLoopWorker",
+          "cpu_seconds": 0.376671317,
+          "runqueue_wait_seconds": 0.14177645,
+          "major_faults": 0,
+          "read_bytes": 37810176,
+          "write_bytes": 0
+        },
+        {
+          "tid": "844723",
+          "name": "TimerWK0",
+          "cpu_seconds": 0.376715709,
+          "runqueue_wait_seconds": 0.145041923,
+          "major_faults": 0,
+          "read_bytes": 37683200,
+          "write_bytes": 12288
+        },
+        {
+          "tid": "844709",
+          "name": "TimerWK0",
+          "cpu_seconds": 0.390008747,
+          "runqueue_wait_seconds": 0.144205004,
+          "major_faults": 0,
+          "read_bytes": 37523456,
+          "write_bytes": 0
+        },
+        {
+          "tid": "844730",
+          "name": "TxLoopWorker",
+          "cpu_seconds": 0.436185198,
+          "runqueue_wait_seconds": 0.084684756,
+          "major_faults": 0,
+          "read_bytes": 20221952,
+          "write_bytes": 11567104
+        },
+        {
+          "tid": "844684",
+          "name": "TimerWK0",
+          "cpu_seconds": 0.499316559,
+          "runqueue_wait_seconds": 0.286370889,
+          "major_faults": 0,
+          "read_bytes": 31334400,
+          "write_bytes": 0
+        },
+        {
+          "tid": "845132",
+          "name": "PX_G0",
+          "cpu_seconds": 3.199215128,
+          "runqueue_wait_seconds": 0.031165688,
+          "major_faults": 0,
+          "read_bytes": 1957888,
+          "write_bytes": 2441216
+        },
+        {
+          "tid": "845076",
+          "name": "IO_SYNC_CH0",
+          "cpu_seconds": 0.004185901,
+          "runqueue_wait_seconds": 0.007320457,
+          "major_faults": 0,
+          "read_bytes": 0,
+          "write_bytes": 2367488
+        },
+        {
+          "tid": "844837",
+          "name": "DAG",
+          "cpu_seconds": 0.002129497,
+          "runqueue_wait_seconds": 0.000557761,
+          "major_faults": 0,
+          "read_bytes": 1462272,
+          "write_bytes": 0
+        },
+        {
+          "tid": "845075",
+          "name": "IO_SYNC_CH0",
+          "cpu_seconds": 0.004142842,
+          "runqueue_wait_seconds": 0.006161055,
+          "major_faults": 0,
+          "read_bytes": 0,
+          "write_bytes": 1265664
+        },
+        {
+          "tid": "845115",
+          "name": "IO_SYNC_CH0",
+          "cpu_seconds": 0.004009894,
+          "runqueue_wait_seconds": 0.007030134,
+          "major_faults": 0,
+          "read_bytes": 0,
+          "write_bytes": 901120
+        },
+        {
+          "tid": "845087",
+          "name": "ReqWorker",
+          "cpu_seconds": 0.034240224,
+          "runqueue_wait_seconds": 0.000948568,
+          "major_faults": 0,
+          "read_bytes": 204800,
+          "write_bytes": 0
+        },
+        {
+          "tid": "844695",
+          "name": "TbltMetaUp0",
+          "cpu_seconds": 0.002067532,
+          "runqueue_wait_seconds": 0.002167154,
+          "major_faults": 0,
+          "read_bytes": 0,
+          "write_bytes": 102400
+        },
+        {
+          "tid": "844692",
+          "name": "OB_SLOG",
+          "cpu_seconds": 0.000210591,
+          "runqueue_wait_seconds": 6.0051e-05,
+          "major_faults": 0,
+          "read_bytes": 0,
+          "write_bytes": 20480
+        },
+        {
+          "tid": "844771",
+          "name": "CSFetcher",
+          "cpu_seconds": 0.020994066,
+          "runqueue_wait_seconds": 0.000858988,
+          "major_faults": 0,
+          "read_bytes": 20480,
+          "write_bytes": 0
+        },
+        {
+          "tid": "844662",
+          "name": "seekdb-fts-scor",
+          "cpu_seconds": 1.1339e-05,
+          "runqueue_wait_seconds": 0.0,
+          "major_faults": 0,
+          "read_bytes": 0,
+          "write_bytes": 0
+        },
+        {
+          "tid": "844663",
+          "name": "jemalloc_bg_thd",
+          "cpu_seconds": 0.002664773,
+          "runqueue_wait_seconds": 3.0141e-05,
+          "major_faults": 0,
+          "read_bytes": 0,
+          "write_bytes": 0
+        },
+        {
+          "tid": "844676",
+          "name": "jemalloc_bg_thd",
+          "cpu_seconds": 0.015224223,
+          "runqueue_wait_seconds": 0.0006363,
+          "major_faults": 0,
+          "read_bytes": 0,
+          "write_bytes": 0
+        },
+        {
+          "tid": "844679",
+          "name": "TimerSvr",
+          "cpu_seconds": 0.004526836,
+          "runqueue_wait_seconds": 0.006753497,
+          "major_faults": 0,
+          "read_bytes": 0,
+          "write_bytes": 0
+        }
+      ],
+      "cgroup_memory_stat_delta": {
+        "pgmajfault": 0,
+        "workingset_refault_file": 0,
+        "pgscan": 0,
+        "pgsteal": 0,
+        "pgfault": 76856
+      },
+      "max_cgroup_memory_current": 1059835904,
+      "max_cgroup_file_dirty": 149622784
+    },
+    {
+      "phase": "build_beng_en",
+      "sample_elapsed_seconds": 5.106009898008779,
+      "process_cpu_seconds": 5.779999999999994,
+      "average_busy_cpu_cores": 1.1319993723972324,
+      "storage_io_delta": {
+        "read_bytes": 160313344,
+        "write_bytes": 51560448
+      },
+      "max_rss_kb": 945680,
+      "max_swap_kb": 0,
+      "samples_with_uninterruptible_threads": 15,
+      "sample_count": 22,
+      "cgroup_cpu_stat_delta": {
+        "usage_usec": 6182817,
+        "user_usec": 5193196,
+        "system_usec": 989621,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 51,
+        "nr_throttled": 0,
+        "throttled_usec": 0,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "top_threads_by_cpu": [
+        {
+          "tid": "845132",
+          "name": "PX_G0",
+          "cpu_seconds": 1.905254664,
+          "runqueue_wait_seconds": 0.017737817,
+          "major_faults": 0,
+          "read_bytes": 864256,
+          "write_bytes": 2093056
+        },
+        {
+          "tid": "845133",
+          "name": "PX_G0",
+          "cpu_seconds": 0.703132392,
+          "runqueue_wait_seconds": 0.004309179,
+          "major_faults": 0,
+          "read_bytes": 0,
+          "write_bytes": 0
+        },
+        {
+          "tid": "844684",
+          "name": "TimerWK0",
+          "cpu_seconds": 0.384265366,
+          "runqueue_wait_seconds": 0.218277507,
+          "major_faults": 0,
+          "read_bytes": 24469504,
+          "write_bytes": 0
+        },
+        {
+          "tid": "844730",
+          "name": "TxLoopWorker",
+          "cpu_seconds": 0.338765684,
+          "runqueue_wait_seconds": 0.079152056,
+          "major_faults": 0,
+          "read_bytes": 15523840,
+          "write_bytes": 8826880
+        },
+        {
+          "tid": "844709",
+          "name": "TimerWK0",
+          "cpu_seconds": 0.307026508,
+          "runqueue_wait_seconds": 0.11077959,
+          "major_faults": 0,
+          "read_bytes": 29409280,
+          "write_bytes": 0
+        },
+        {
+          "tid": "844732",
+          "name": "TxLoopWorker",
+          "cpu_seconds": 0.297978725,
+          "runqueue_wait_seconds": 0.103755244,
+          "major_faults": 0,
+          "read_bytes": 29696000,
+          "write_bytes": 0
+        },
+        {
+          "tid": "844723",
+          "name": "TimerWK0",
+          "cpu_seconds": 0.297466213,
+          "runqueue_wait_seconds": 0.104829592,
+          "major_faults": 0,
+          "read_bytes": 29757440,
+          "write_bytes": 0
+        },
+        {
+          "tid": "844754",
+          "name": "seekdb-fts-scor",
+          "cpu_seconds": 0.290758193,
+          "runqueue_wait_seconds": 0.002280722,
+          "major_faults": 0,
+          "read_bytes": 0,
+          "write_bytes": 0
+        },
+        {
+          "tid": "844731",
+          "name": "TimerWK0",
+          "cpu_seconds": 0.269912063,
+          "runqueue_wait_seconds": 0.096230056,
+          "major_faults": 0,
+          "read_bytes": 30158848,
+          "write_bytes": 0
+        },
+        {
+          "tid": "844685",
+          "name": "IO_GETEVENT0",
+          "cpu_seconds": 0.14731103,
+          "runqueue_wait_seconds": 0.162737332,
+          "major_faults": 0,
+          "read_bytes": 0,
+          "write_bytes": 0
+        },
+        {
+          "tid": "844843",
+          "name": "DDLTaskExecutor",
+          "cpu_seconds": 0.12747076,
+          "runqueue_wait_seconds": 0.010119466,
+          "major_faults": 0,
+          "read_bytes": 0,
+          "write_bytes": 0
+        },
+        {
+          "tid": "844675",
+          "name": "OB_PLOG",
+          "cpu_seconds": 0.103200019,
+          "runqueue_wait_seconds": 0.226539897,
+          "major_faults": 0,
+          "read_bytes": 0,
+          "write_bytes": 36790272
+        },
+        {
+          "tid": "844844",
+          "name": "DDLTaskExecutor",
+          "cpu_seconds": 0.08227299,
+          "runqueue_wait_seconds": 0.010039905,
+          "major_faults": 0,
+          "read_bytes": 0,
+          "write_bytes": 0
+        },
+        {
+          "tid": "845074",
+          "name": "TxLoopWorker",
+          "cpu_seconds": 0.034192026,
+          "runqueue_wait_seconds": 0.002467531,
+          "major_faults": 0,
+          "read_bytes": 0,
+          "write_bytes": 0
+        },
+        {
+          "tid": "845087",
+          "name": "ReqWorker",
+          "cpu_seconds": 0.030283603,
+          "runqueue_wait_seconds": 0.001019618,
+          "major_faults": 0,
+          "read_bytes": 0,
+          "write_bytes": 0
+        }
+      ],
+      "top_threads_by_runqueue_wait": [
+        {
+          "tid": "844675",
+          "name": "OB_PLOG",
+          "cpu_seconds": 0.103200019,
+          "runqueue_wait_seconds": 0.226539897,
+          "major_faults": 0,
+          "read_bytes": 0,
+          "write_bytes": 36790272
+        },
+        {
+          "tid": "844684",
+          "name": "TimerWK0",
+          "cpu_seconds": 0.384265366,
+          "runqueue_wait_seconds": 0.218277507,
+          "major_faults": 0,
+          "read_bytes": 24469504,
+          "write_bytes": 0
+        },
+        {
+          "tid": "844685",
+          "name": "IO_GETEVENT0",
+          "cpu_seconds": 0.14731103,
+          "runqueue_wait_seconds": 0.162737332,
+          "major_faults": 0,
+          "read_bytes": 0,
+          "write_bytes": 0
+        },
+        {
+          "tid": "844709",
+          "name": "TimerWK0",
+          "cpu_seconds": 0.307026508,
+          "runqueue_wait_seconds": 0.11077959,
+          "major_faults": 0,
+          "read_bytes": 29409280,
+          "write_bytes": 0
+        },
+        {
+          "tid": "844723",
+          "name": "TimerWK0",
+          "cpu_seconds": 0.297466213,
+          "runqueue_wait_seconds": 0.104829592,
+          "major_faults": 0,
+          "read_bytes": 29757440,
+          "write_bytes": 0
+        },
+        {
+          "tid": "844732",
+          "name": "TxLoopWorker",
+          "cpu_seconds": 0.297978725,
+          "runqueue_wait_seconds": 0.103755244,
+          "major_faults": 0,
+          "read_bytes": 29696000,
+          "write_bytes": 0
+        },
+        {
+          "tid": "844731",
+          "name": "TimerWK0",
+          "cpu_seconds": 0.269912063,
+          "runqueue_wait_seconds": 0.096230056,
+          "major_faults": 0,
+          "read_bytes": 30158848,
+          "write_bytes": 0
+        },
+        {
+          "tid": "844730",
+          "name": "TxLoopWorker",
+          "cpu_seconds": 0.338765684,
+          "runqueue_wait_seconds": 0.079152056,
+          "major_faults": 0,
+          "read_bytes": 15523840,
+          "write_bytes": 8826880
+        },
+        {
+          "tid": "844835",
+          "name": "DiskCB2",
+          "cpu_seconds": 0.029374254,
+          "runqueue_wait_seconds": 0.070136111,
+          "major_faults": 0,
+          "read_bytes": 0,
+          "write_bytes": 0
+        },
+        {
+          "tid": "844694",
+          "name": "DiskCB0",
+          "cpu_seconds": 0.028838149,
+          "runqueue_wait_seconds": 0.06887926,
+          "major_faults": 0,
+          "read_bytes": 0,
+          "write_bytes": 0
+        },
+        {
+          "tid": "844786",
+          "name": "DiskCB1",
+          "cpu_seconds": 0.029833861,
+          "runqueue_wait_seconds": 0.068621688,
+          "major_faults": 0,
+          "read_bytes": 0,
+          "write_bytes": 0
+        },
+        {
+          "tid": "844785",
+          "name": "DiskCB0",
+          "cpu_seconds": 0.029397051,
+          "runqueue_wait_seconds": 0.068431244,
+          "major_faults": 0,
+          "read_bytes": 0,
+          "write_bytes": 0
+        },
+        {
+          "tid": "844788",
+          "name": "DiskCB0",
+          "cpu_seconds": 0.028769707,
+          "runqueue_wait_seconds": 0.066860146,
+          "major_faults": 0,
+          "read_bytes": 0,
+          "write_bytes": 0
+        },
+        {
+          "tid": "844834",
+          "name": "DiskCB3",
+          "cpu_seconds": 0.029458435,
+          "runqueue_wait_seconds": 0.058546049,
+          "major_faults": 0,
+          "read_bytes": 0,
+          "write_bytes": 0
+        },
+        {
+          "tid": "844693",
+          "name": "DiskCB0",
+          "cpu_seconds": 0.030036275,
+          "runqueue_wait_seconds": 0.056981296,
+          "major_faults": 0,
+          "read_bytes": 0,
+          "write_bytes": 0
+        }
+      ],
+      "summed_runqueue_wait_seconds": 1.842193135,
+      "retained_thread_delta_count": 85,
+      "top_threads_by_io": [
+        {
+          "tid": "844675",
+          "name": "OB_PLOG",
+          "cpu_seconds": 0.103200019,
+          "runqueue_wait_seconds": 0.226539897,
+          "major_faults": 0,
+          "read_bytes": 0,
+          "write_bytes": 36790272
+        },
+        {
+          "tid": "844731",
+          "name": "TimerWK0",
+          "cpu_seconds": 0.269912063,
+          "runqueue_wait_seconds": 0.096230056,
+          "major_faults": 0,
+          "read_bytes": 30158848,
+          "write_bytes": 0
+        },
+        {
+          "tid": "844723",
+          "name": "TimerWK0",
+          "cpu_seconds": 0.297466213,
+          "runqueue_wait_seconds": 0.104829592,
+          "major_faults": 0,
+          "read_bytes": 29757440,
+          "write_bytes": 0
+        },
+        {
+          "tid": "844732",
+          "name": "TxLoopWorker",
+          "cpu_seconds": 0.297978725,
+          "runqueue_wait_seconds": 0.103755244,
+          "major_faults": 0,
+          "read_bytes": 29696000,
+          "write_bytes": 0
+        },
+        {
+          "tid": "844709",
+          "name": "TimerWK0",
+          "cpu_seconds": 0.307026508,
+          "runqueue_wait_seconds": 0.11077959,
+          "major_faults": 0,
+          "read_bytes": 29409280,
+          "write_bytes": 0
+        },
+        {
+          "tid": "844684",
+          "name": "TimerWK0",
+          "cpu_seconds": 0.384265366,
+          "runqueue_wait_seconds": 0.218277507,
+          "major_faults": 0,
+          "read_bytes": 24469504,
+          "write_bytes": 0
+        },
+        {
+          "tid": "844730",
+          "name": "TxLoopWorker",
+          "cpu_seconds": 0.338765684,
+          "runqueue_wait_seconds": 0.079152056,
+          "major_faults": 0,
+          "read_bytes": 15523840,
+          "write_bytes": 8826880
+        },
+        {
+          "tid": "845132",
+          "name": "PX_G0",
+          "cpu_seconds": 1.905254664,
+          "runqueue_wait_seconds": 0.017737817,
+          "major_faults": 0,
+          "read_bytes": 864256,
+          "write_bytes": 2093056
+        },
+        {
+          "tid": "845075",
+          "name": "IO_SYNC_CH0",
+          "cpu_seconds": 0.003464946,
+          "runqueue_wait_seconds": 0.00513869,
+          "major_faults": 0,
+          "read_bytes": 0,
+          "write_bytes": 1589248
+        },
+        {
+          "tid": "845115",
+          "name": "IO_SYNC_CH0",
+          "cpu_seconds": 0.003298439,
+          "runqueue_wait_seconds": 0.010106512,
+          "major_faults": 0,
+          "read_bytes": 4096,
+          "write_bytes": 1060864
+        },
+        {
+          "tid": "845076",
+          "name": "IO_SYNC_CH0",
+          "cpu_seconds": 0.00342002,
+          "runqueue_wait_seconds": 0.0050843,
+          "major_faults": 0,
+          "read_bytes": 4096,
+          "write_bytes": 716800
+        },
+        {
+          "tid": "844695",
+          "name": "TbltMetaUp0",
+          "cpu_seconds": 0.001444733,
+          "runqueue_wait_seconds": 0.00101998,
+          "major_faults": 0,
+          "read_bytes": 0,
+          "write_bytes": 65536
+        },
+        {
+          "tid": "844692",
+          "name": "OB_SLOG",
+          "cpu_seconds": 0.000166608,
+          "runqueue_wait_seconds": 0.000101051,
+          "major_faults": 0,
+          "read_bytes": 0,
+          "write_bytes": 16384
+        },
+        {
+          "tid": "844662",
+          "name": "seekdb-fts-scor",
+          "cpu_seconds": 1.521e-05,
+          "runqueue_wait_seconds": 0.0,
+          "major_faults": 0,
+          "read_bytes": 0,
+          "write_bytes": 0
+        },
+        {
+          "tid": "844663",
+          "name": "jemalloc_bg_thd",
+          "cpu_seconds": 0.003211374,
+          "runqueue_wait_seconds": 0.0,
+          "major_faults": 0,
+          "read_bytes": 0,
+          "write_bytes": 0
+        },
+        {
+          "tid": "844676",
+          "name": "jemalloc_bg_thd",
+          "cpu_seconds": 0.010147789,
+          "runqueue_wait_seconds": 9.653e-05,
+          "major_faults": 0,
+          "read_bytes": 0,
+          "write_bytes": 0
+        },
+        {
+          "tid": "844679",
+          "name": "TimerSvr",
+          "cpu_seconds": 0.003284035,
+          "runqueue_wait_seconds": 0.004372043,
+          "major_faults": 0,
+          "read_bytes": 0,
+          "write_bytes": 0
+        },
+        {
+          "tid": "844680",
+          "name": "jemalloc_bg_thd",
+          "cpu_seconds": 0.002545173,
+          "runqueue_wait_seconds": 0.00030702,
+          "major_faults": 0,
+          "read_bytes": 0,
+          "write_bytes": 0
+        },
+        {
+          "tid": "844681",
+          "name": "qth_mgr",
+          "cpu_seconds": 1.2389e-05,
+          "runqueue_wait_seconds": 0.0,
+          "major_faults": 0,
+          "read_bytes": 0,
+          "write_bytes": 0
+        },
+        {
+          "tid": "844682",
+          "name": "jemalloc_bg_thd",
+          "cpu_seconds": 0.001010332,
+          "runqueue_wait_seconds": 0.0,
+          "major_faults": 0,
+          "read_bytes": 0,
+          "write_bytes": 0
+        }
+      ],
+      "cgroup_memory_stat_delta": {
+        "pgmajfault": 0,
+        "workingset_refault_file": 0,
+        "pgscan": 0,
+        "pgsteal": 0,
+        "pgfault": 53913
+      },
+      "max_cgroup_memory_current": 1088462848,
+      "max_cgroup_file_dirty": 181350400
+    }
+  ],
+  "finished_at_unix": 1793970412.4956856,
+  "comparison_stopped": true,
+  "validation_link_restored_to_original": true,
+  "log_archive_exit": 0,
+  "log_archive_result": "{\n  \"complete\": true,\n  \"primary_updated\": false,\n  \"source_logs_removed\": false,\n  \"files\": [\n    {\n      \"source\": \"/root/oceanbase2026/instances/fts-score-usage-nov5-r2/log/seekdb.log\",\n      \"archive\": \"/root/oceanbase2026/archives/comparison-logs/20261106-210653/seekdb.log.gz\",\n      \"sha256\": \"1d31f61d1f94c1e39ab928c71f52d1cc8ff66d3d1d4ae13b1aff439221ac7554\"\n    }\n  ]\n}"
+}

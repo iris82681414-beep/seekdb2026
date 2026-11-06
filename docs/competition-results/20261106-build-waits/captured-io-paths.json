@@ -1,0 +1,36 @@
+{
+  "source_commit": "912bedc6806b7a777ce7cad3b7028d8c8ea9ad76",
+  "diagnostic_only": true,
+  "io_request_header_bytes": 64,
+  "read_payloads_captured": false,
+  "samples": [
+    {
+      "thread": "TimerWK1",
+      "read_bytes": 4096,
+      "file": "store/sstable/block_file",
+      "offset": 632143872,
+      "caller_chain": [
+        "ObTabletGCService::ObTabletChangeTask::runTimerTask",
+        "ObTabletGCHandler::get_unpersist_tablet_ids",
+        "ObLSTabletIterator::get_next_tablet",
+        "ObTabletPointerMap::load_meta_obj",
+        "ObLocalStorageMetaService::read_from_block"
+      ]
+    },
+    {
+      "thread": "TxLoopWorker",
+      "read_bytes": 4096,
+      "file": "store/sstable/block_file",
+      "offset": 15486976,
+      "caller_chain": [
+        "ObITabletMdsInterface::read_data_from_cache_or_mds_sstable<DummyKey,ObTabletBindingMdsUserData>",
+        "ObITabletMdsInterface::read_raw_data",
+        "ObMdsRowIterator::get_next_mds_kv",
+        "ObSSTable::get",
+        "ObIndexTreePrefetcher::prefetch_block_data",
+        "ObMicroBlockHandleMgr::submit_async_io"
+      ]
+    }
+  ],
+  "causal_attribution_to_formal_platform": false
+}
