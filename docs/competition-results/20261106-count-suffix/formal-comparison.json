@@ -1,0 +1,48 @@
+{
+  "different_formal_runs": true,
+  "causal_attribution_proven": false,
+  "previous_best_commit": "c251fef9334dd42f7ebf2c7aa19692bec46bab53",
+  "new_commit": "912bedc6806b7a777ce7cad3b7028d8c8ea9ad76",
+  "metrics": {
+    "build_ik_all_sec": {
+      "previous_best_run": 6.558,
+      "new_run": 6.25,
+      "reduction_fraction": 0.04696553827386396
+    },
+    "build_ik_content_sec": {
+      "previous_best_run": 7.132,
+      "new_run": 12.568,
+      "reduction_fraction": -0.7621985417835109
+    },
+    "build_beng_en_sec": {
+      "previous_best_run": 2.624,
+      "new_run": 7.222,
+      "reduction_fraction": -1.7522865853658538
+    },
+    "build_total_sec": {
+      "previous_best_run": 16.321,
+      "new_run": 26.046,
+      "reduction_fraction": -0.5958580969303349
+    },
+    "query_cn_avg_ms": {
+      "previous_best_run": 1.0872,
+      "new_run": 0.444,
+      "reduction_fraction": 0.5916114790286975
+    },
+    "query_beng_avg_ms": {
+      "previous_best_run": 1.6423,
+      "new_run": 0.6045,
+      "reduction_fraction": 0.6319186506728369
+    },
+    "query_mixed_avg_ms": {
+      "previous_best_run": 1.2507,
+      "new_run": 0.5059,
+      "reduction_fraction": 0.5955065163508435
+    },
+    "query_limit_avg_ms": {
+      "previous_best_run": 1.8746,
+      "new_run": 1.7503,
+      "reduction_fraction": 0.06630747892883815
+    }
+  }
+}
