@@ -1,0 +1,10 @@
+{
+  "private_evidence_archive": "fts-prescan-nov7-r1-evidence.tar.gz",
+  "sha256": "b18a153e3ed1b7710ac3a8e6c280cd401221537cd264475b215d12753511a6ba",
+  "verified_files": 127,
+  "retained_remote_perf_data": {
+    "/root/oceanbase2026/results/fts-build-fresh-profile-nov6-r4.perf.data": "5e7e3da3c2e6874da63b302a01213f1a69e1c9cad2e2fc87284b4e7c8dd25ad2"
+  },
+  "decision": "Do not submit or adopt the product experiment: 0.194% mean category reduction on the controlled clean comparison; correctness passed.",
+  "path_probe": "New wrapper call observed, but return-state probe did not produce results. No workarea-growth conclusion."
+}

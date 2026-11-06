@@ -1,0 +1,474 @@
+{
+  "diagnostic_only": true,
+  "formal_score": null,
+  "product_commit": "912bedc6806b7a777ce7cad3b7028d8c8ea9ad76",
+  "same_binary": true,
+  "old_instance": {
+    "events": [
+      {
+        "line": "[3/5] build fulltext indexes ...",
+        "monotonic": 192054.388321388,
+        "unix": 1793971866.3679552
+      },
+      {
+        "line": "build_ik_all: 10.082s",
+        "monotonic": 192064.474250995,
+        "unix": 1793971876.4538846
+      },
+      {
+        "line": "build_ik_content: 7.955s",
+        "monotonic": 192072.432591986,
+        "unix": 1793971884.4122255
+      },
+      {
+        "line": "build_beng_en: 6.950s",
+        "monotonic": 192079.385675443,
+        "unix": 1793971891.365309
+      },
+      {
+        "line": "[4/5] TOKENIZE hot-path ...",
+        "monotonic": 192079.395044643,
+        "unix": 1793971891.3746781
+      },
+      {
+        "line": "[5/5] MATCH query ...",
+        "monotonic": 192080.853977687,
+        "unix": 1793971892.8336112
+      }
+    ],
+    "build_resources": [
+      {
+        "phase": "build_ik_all",
+        "sample_elapsed_seconds": 10.124001988006057,
+        "average_busy_cpu_cores": 1.0450412803685898,
+        "storage_io_delta": {
+          "read_bytes": 316805120,
+          "write_bytes": 88956928
+        },
+        "max_rss_kb": 827736
+      },
+      {
+        "phase": "build_ik_content",
+        "sample_elapsed_seconds": 7.804717115999665,
+        "average_busy_cpu_cores": 1.0186147533396823,
+        "storage_io_delta": {
+          "read_bytes": 223080448,
+          "write_bytes": 67354624
+        },
+        "max_rss_kb": 823588
+      },
+      {
+        "phase": "build_beng_en",
+        "sample_elapsed_seconds": 7.082786899001803,
+        "average_busy_cpu_cores": 0.8188867013374929,
+        "storage_io_delta": {
+          "read_bytes": 230240256,
+          "write_bytes": 68583424
+        },
+        "max_rss_kb": 837024
+      }
+    ],
+    "cache_inspections": [
+      {
+        "label": "before_workload",
+        "monotonic": 192052.177923334,
+        "queries": {
+          "kv_cache": {
+            "exit": 0,
+            "stdout": "schema_cache\t63360432\t8121\t8122\t2685\t7474\nindex_block_cache\t2279560\t758\t758\t1410\t3370\nuser_block_cache\t38761064\t2958\t2958\t7623\t7220\nuser_row_cache\t1104728\t345\t345\t0\t390\nbf_cache\t9000\t2\t2\t213\t561\nfuse_row_cache\t30664\t9\t9\t1\t18\nstorage_meta_cache\t62300256\t38268\t62145\t124776\t62147\ntx_data_kv_cache\t0\t0\t0\t0\t14\nopt_table_stat_cache\t224\t1\t1\t1\t1\nopt_system_stat_cache\t80\t1\t2\t2\t1\n",
+            "stderr": ""
+          },
+          "meta_memory": {
+            "exit": 0,
+            "stdout": "MEMTABLE POOL\t76032\t130560\t44\t0\t1664\nDDL KV POOL\t0\t0\t0\t0\t3392\nNORMAL TABLET BUF POOL\t9235200\t9792000\t12187\t0\t3824\nLARGE TABLET BUF POOL\t0\t0\t0\t0\t65480\nKV MGR POOL\t42240\t65280\t60\t0\t640\nTX DATA MEMTABLE POOL\t6576\t65280\t2\t0\t3264\nTX CTX MEMTABLE POOL\t3200\t65280\t1\t0\t3136\nLOCK MEMTABLE POOL\t30016\t65280\t1\t0\t29952\nMSTX TABLET ALLOCATOR\t125040\t126848\t15\t-1\t-1\n",
+            "stderr": ""
+          }
+        }
+      },
+      {
+        "label": "[3/5] build fulltext indexes ...",
+        "monotonic": 192054.388669752,
+        "queries": {
+          "kv_cache": {
+            "exit": 0,
+            "stdout": "schema_cache\t63454880\t8137\t8138\t23668\t7490\nindex_block_cache\t2352160\t818\t818\t1505\t3655\nuser_block_cache\t38830056\t3018\t3018\t7721\t7454\nuser_row_cache\t1104728\t345\t345\t0\t390\nbf_cache\t9000\t2\t2\t213\t577\nfuse_row_cache\t34024\t13\t13\t4\t24\nstorage_meta_cache\t63072736\t38284\t63986\t129238\t63987\ntx_data_kv_cache\t304\t1\t1\t0\t16\nopt_table_stat_cache\t672\t3\t3\t7\t3\nopt_system_stat_cache\t80\t1\t2\t8\t1\n",
+            "stderr": ""
+          },
+          "meta_memory": {
+            "exit": 0,
+            "stdout": "MEMTABLE POOL\t77760\t130560\t45\t0\t1664\nDDL KV POOL\t0\t0\t0\t0\t3392\nNORMAL TABLET BUF POOL\t9235200\t9792000\t12640\t0\t3824\nLARGE TABLET BUF POOL\t0\t0\t0\t0\t65480\nKV MGR POOL\t42240\t65280\t60\t0\t640\nTX DATA MEMTABLE POOL\t6576\t65280\t2\t0\t3264\nTX CTX MEMTABLE POOL\t3200\t65280\t1\t0\t3136\nLOCK MEMTABLE POOL\t30016\t65280\t1\t0\t29952\nMSTX TABLET ALLOCATOR\t150048\t151424\t18\t-1\t-1\n",
+            "stderr": ""
+          }
+        }
+      },
+      {
+        "label": "build_ik_all: 10.082s",
+        "monotonic": 192064.474827978,
+        "queries": {
+          "kv_cache": {
+            "exit": 0,
+            "stdout": "schema_cache\t63574288\t8153\t8154\t77327\t7506\nindex_block_cache\t2556872\t989\t990\t1842\t4549\nuser_block_cache\t38894664\t3185\t3194\t8761\t8205\nuser_row_cache\t1104088\t343\t345\t0\t432\nbf_cache\t9000\t2\t2\t213\t583\nfuse_row_cache\t52288\t21\t21\t410\t34\nstorage_meta_cache\t66276344\t37944\t71820\t147853\t71820\ntx_data_kv_cache\t304\t1\t1\t0\t31\nopt_table_stat_cache\t672\t3\t3\t7\t3\nopt_system_stat_cache\t80\t1\t2\t8\t1\ndict_cache\t26388280\t8\t8\t319992\t0\n",
+            "stderr": ""
+          },
+          "meta_memory": {
+            "exit": 0,
+            "stdout": "MEMTABLE POOL\t77760\t130560\t45\t0\t1664\nDDL KV POOL\t3456\t65280\t0\t1\t3392\nNORMAL TABLET BUF POOL\t9235200\t9792000\t14476\t0\t3824\nLARGE TABLET BUF POOL\t262364\t262364\t4\t0\t65480\nKV MGR POOL\t45056\t65280\t64\t0\t640\nTX DATA MEMTABLE POOL\t6576\t65280\t2\t0\t3264\nTX CTX MEMTABLE POOL\t3200\t65280\t1\t0\t3136\nLOCK MEMTABLE POOL\t30016\t65280\t1\t0\t29952\nMSTX TABLET ALLOCATOR\t150048\t151424\t18\t-1\t-1\n",
+            "stderr": ""
+          }
+        }
+      },
+      {
+        "label": "build_ik_content: 7.955s",
+        "monotonic": 192072.433149048,
+        "queries": {
+          "kv_cache": {
+            "exit": 0,
+            "stdout": "schema_cache\t63654224\t8161\t8162\t108551\t7514\nindex_block_cache\t2674088\t1108\t1110\t2078\t5186\nuser_block_cache\t38136368\t3253\t3314\t9704\t8725\nuser_row_cache\t1103768\t342\t345\t0\t454\nbf_cache\t9000\t2\t2\t213\t587\nfuse_row_cache\t68552\t26\t26\t716\t41\nstorage_meta_cache\t69208072\t37747\t77463\t163208\t77463\ntx_data_kv_cache\t304\t1\t1\t0\t40\nopt_table_stat_cache\t672\t3\t3\t7\t3\nopt_system_stat_cache\t80\t1\t2\t8\t1\ndict_cache\t26388280\t8\t8\t639992\t0\n",
+            "stderr": ""
+          },
+          "meta_memory": {
+            "exit": 0,
+            "stdout": "MEMTABLE POOL\t77760\t130560\t45\t0\t1664\nDDL KV POOL\t3456\t65280\t0\t1\t3392\nNORMAL TABLET BUF POOL\t9235200\t9792000\t15701\t0\t3824\nLARGE TABLET BUF POOL\t459137\t459137\t6\t1\t65480\nKV MGR POOL\t46464\t65280\t66\t0\t640\nTX DATA MEMTABLE POOL\t6576\t65280\t2\t0\t3264\nTX CTX MEMTABLE POOL\t3200\t65280\t1\t0\t3136\nLOCK MEMTABLE POOL\t30016\t65280\t1\t0\t29952\nMSTX TABLET ALLOCATOR\t150048\t151424\t18\t-1\t-1\n",
+            "stderr": ""
+          }
+        }
+      },
+      {
+        "label": "build_beng_en: 6.950s",
+        "monotonic": 192079.38610125,
+        "queries": {
+          "kv_cache": {
+            "exit": 0,
+            "stdout": "schema_cache\t63747184\t8169\t8170\t147713\t7522\nindex_block_cache\t2759104\t1224\t1232\t2318\t5817\nuser_block_cache\t36402984\t3254\t3436\t10637\t9255\nuser_row_cache\t1090136\t338\t345\t0\t476\nbf_cache\t9000\t2\t2\t213\t589\nfuse_row_cache\t83920\t31\t31\t998\t47\nstorage_meta_cache\t70946512\t36446\t82724\t177913\t82724\ntx_data_kv_cache\t304\t1\t1\t0\t51\nopt_table_stat_cache\t672\t3\t3\t7\t3\nopt_system_stat_cache\t80\t1\t2\t8\t1\ndict_cache\t26388280\t8\t8\t639992\t0\n",
+            "stderr": ""
+          },
+          "meta_memory": {
+            "exit": 0,
+            "stdout": "MEMTABLE POOL\t77760\t130560\t45\t0\t1664\nDDL KV POOL\t3456\t65280\t0\t1\t3392\nNORMAL TABLET BUF POOL\t9235200\t9792000\t16915\t0\t3824\nLARGE TABLET BUF POOL\t524728\t524728\t8\t0\t65480\nKV MGR POOL\t47872\t65280\t68\t0\t640\nTX DATA MEMTABLE POOL\t6576\t65280\t2\t0\t3264\nTX CTX MEMTABLE POOL\t3200\t65280\t1\t0\t3136\nLOCK MEMTABLE POOL\t30016\t65280\t1\t0\t29952\nMSTX TABLET ALLOCATOR\t150048\t155392\t18\t-1\t-1\n",
+            "stderr": ""
+          }
+        }
+      },
+      {
+        "label": "[4/5] TOKENIZE hot-path ...",
+        "monotonic": 192079.39549733,
+        "queries": {
+          "kv_cache": {
+            "exit": 0,
+            "stdout": "schema_cache\t63747184\t8169\t8170\t147740\t7522\nindex_block_cache\t2759104\t1224\t1232\t2318\t5817\nuser_block_cache\t36402984\t3254\t3436\t10637\t9255\nuser_row_cache\t1090136\t338\t345\t0\t476\nbf_cache\t9000\t2\t2\t213\t589\nfuse_row_cache\t83920\t31\t31\t998\t47\nstorage_meta_cache\t70971160\t36456\t82748\t177971\t82748\ntx_data_kv_cache\t304\t1\t1\t0\t51\nopt_table_stat_cache\t672\t3\t3\t7\t3\nopt_system_stat_cache\t80\t1\t2\t9\t1\ndict_cache\t26388280\t8\t8\t640168\t0\n",
+            "stderr": ""
+          },
+          "meta_memory": {
+            "exit": 0,
+            "stdout": "MEMTABLE POOL\t77760\t130560\t45\t0\t1664\nDDL KV POOL\t3456\t65280\t0\t1\t3392\nNORMAL TABLET BUF POOL\t9235200\t9792000\t16924\t0\t3824\nLARGE TABLET BUF POOL\t524728\t524728\t8\t0\t65480\nKV MGR POOL\t47872\t65280\t68\t0\t640\nTX DATA MEMTABLE POOL\t6576\t65280\t2\t0\t3264\nTX CTX MEMTABLE POOL\t3200\t65280\t1\t0\t3136\nLOCK MEMTABLE POOL\t30016\t65280\t1\t0\t29952\nMSTX TABLET ALLOCATOR\t150048\t155392\t18\t-1\t-1\n",
+            "stderr": ""
+          }
+        }
+      },
+      {
+        "label": "[5/5] MATCH query ...",
+        "monotonic": 192080.854402374,
+        "queries": {
+          "kv_cache": {
+            "exit": 0,
+            "stdout": "schema_cache\t63747184\t8169\t8170\t147837\t7522\nindex_block_cache\t2804400\t1262\t1274\t2398\t6038\nuser_block_cache\t35964976\t3260\t3478\t10718\t9425\nuser_row_cache\t1090136\t338\t345\t0\t476\nbf_cache\t9000\t2\t2\t213\t589\nfuse_row_cache\t83920\t31\t31\t998\t47\nstorage_meta_cache\t71702520\t36186\t84542\t181796\t84542\ntx_data_kv_cache\t304\t1\t1\t0\t51\nopt_table_stat_cache\t672\t3\t3\t7\t3\nopt_system_stat_cache\t80\t1\t2\t9\t1\ndict_cache\t26388280\t8\t8\t712232\t0\n",
+            "stderr": ""
+          },
+          "meta_memory": {
+            "exit": 0,
+            "stdout": "MEMTABLE POOL\t77760\t130560\t45\t0\t1664\nDDL KV POOL\t3456\t65280\t0\t1\t3392\nNORMAL TABLET BUF POOL\t9235200\t9792000\t17291\t0\t3824\nLARGE TABLET BUF POOL\t590319\t590319\t9\t0\t65480\nKV MGR POOL\t47872\t65280\t68\t0\t640\nTX DATA MEMTABLE POOL\t6576\t65280\t2\t0\t3264\nTX CTX MEMTABLE POOL\t3200\t65280\t1\t0\t3136\nLOCK MEMTABLE POOL\t30016\t65280\t1\t0\t29952\nMSTX TABLET ALLOCATOR\t150048\t155392\t18\t-1\t-1\n",
+            "stderr": ""
+          }
+        }
+      }
+    ]
+  },
+  "fresh_instance": {
+    "events": [
+      {
+        "line": "[3/5] build fulltext indexes ...",
+        "monotonic": 192645.14498431,
+        "unix": 1793972457.1246183
+      },
+      {
+        "line": "build_ik_all: 5.750s",
+        "monotonic": 192650.896992885,
+        "unix": 1793972462.876626
+      },
+      {
+        "line": "build_ik_content: 4.426s",
+        "monotonic": 192655.325145492,
+        "unix": 1793972467.304779
+      },
+      {
+        "line": "build_beng_en: 2.224s",
+        "monotonic": 192657.551089278,
+        "unix": 1793972469.5307226
+      },
+      {
+        "line": "[4/5] TOKENIZE hot-path ...",
+        "monotonic": 192657.567074258,
+        "unix": 1793972469.5467074
+      },
+      {
+        "line": "[5/5] MATCH query ...",
+        "monotonic": 192658.752863023,
+        "unix": 1793972470.7324965
+      }
+    ],
+    "build_resources": [
+      {
+        "phase": "build_ik_all",
+        "sample_elapsed_seconds": 5.566125685989391,
+        "average_busy_cpu_cores": 1.0959148866067534,
+        "storage_io_delta": {
+          "read_bytes": 3207168,
+          "write_bytes": 15073280
+        },
+        "max_rss_kb": 414356
+      },
+      {
+        "phase": "build_ik_content",
+        "sample_elapsed_seconds": 4.537680384994019,
+        "average_busy_cpu_cores": 1.1084958774606664,
+        "storage_io_delta": {
+          "read_bytes": 2220032,
+          "write_bytes": 11964416
+        },
+        "max_rss_kb": 370712
+      },
+      {
+        "phase": "build_beng_en",
+        "sample_elapsed_seconds": 2.2689355720067397,
+        "average_busy_cpu_cores": 0.9872470719910537,
+        "storage_io_delta": {
+          "read_bytes": 2088960,
+          "write_bytes": 8630272
+        },
+        "max_rss_kb": 362516
+      }
+    ],
+    "cache_inspections": [
+      {
+        "label": "before_workload",
+        "monotonic": 192644.591225611,
+        "queries": {
+          "tablets": {
+            "exit": 0,
+            "stdout": "1\t1\t0\t364\n",
+            "stderr": ""
+          },
+          "recyclebin": {
+            "exit": 0,
+            "stdout": "0\n",
+            "stderr": ""
+          },
+          "kv_cache": {
+            "exit": 0,
+            "stdout": "schema_cache\t5778840\t754\t1405\t8347\t107\nindex_block_cache\t430312\t361\t361\t23\t1083\nuser_block_cache\t144920\t361\t361\t23\t722\nbf_cache\t0\t0\t0\t0\t389\nstorage_meta_cache\t863512\t361\t361\t1127\t361\ntx_data_kv_cache\t0\t0\t0\t0\t36\nopt_table_stat_cache\t672\t3\t3\t4\t3\nopt_system_stat_cache\t80\t1\t2\t4\t1\n",
+            "stderr": ""
+          },
+          "meta_memory": {
+            "exit": 0,
+            "stdout": "MEMTABLE POOL\t82944\t130560\t48\t0\t1664\nDDL KV POOL\t0\t0\t0\t0\t3392\nNORMAL TABLET BUF POOL\t1400672\t1501440\t364\t0\t3824\nLARGE TABLET BUF POOL\t0\t0\t0\t0\t65480\nKV MGR POOL\t0\t0\t0\t0\t640\nTX DATA MEMTABLE POOL\t3288\t65280\t1\t0\t3264\nTX CTX MEMTABLE POOL\t3200\t65280\t1\t0\t3136\nLOCK MEMTABLE POOL\t30016\t65280\t1\t0\t29952\nMSTX TABLET ALLOCATOR\t0\t3968\t0\t-1\t-1\n",
+            "stderr": ""
+          }
+        }
+      },
+      {
+        "label": "[3/5] build fulltext indexes ...",
+        "monotonic": 192645.145301912,
+        "queries": {
+          "tablets": {
+            "exit": 0,
+            "stdout": "1\t1\t0\t367\n",
+            "stderr": ""
+          },
+          "recyclebin": {
+            "exit": 0,
+            "stdout": "0\n",
+            "stderr": ""
+          },
+          "kv_cache": {
+            "exit": 0,
+            "stdout": "schema_cache\t5797704\t758\t1409\t9313\t111\nindex_block_cache\t430312\t361\t361\t36\t1083\nuser_block_cache\t144920\t361\t361\t36\t722\nbf_cache\t0\t0\t0\t0\t402\nstorage_meta_cache\t863512\t361\t361\t1150\t361\ntx_data_kv_cache\t304\t1\t1\t0\t39\nopt_table_stat_cache\t1120\t5\t5\t10\t5\nopt_system_stat_cache\t80\t1\t2\t10\t1\n",
+            "stderr": ""
+          },
+          "meta_memory": {
+            "exit": 0,
+            "stdout": "MEMTABLE POOL\t93312\t130560\t54\t0\t1664\nDDL KV POOL\t0\t0\t0\t0\t3392\nNORMAL TABLET BUF POOL\t1400672\t1501440\t364\t0\t3824\nLARGE TABLET BUF POOL\t0\t0\t0\t0\t65480\nKV MGR POOL\t0\t0\t0\t0\t640\nTX DATA MEMTABLE POOL\t3288\t65280\t1\t0\t3264\nTX CTX MEMTABLE POOL\t3200\t65280\t1\t0\t3136\nLOCK MEMTABLE POOL\t30016\t65280\t1\t0\t29952\nMSTX TABLET ALLOCATOR\t25008\t28544\t3\t-1\t-1\n",
+            "stderr": ""
+          }
+        }
+      },
+      {
+        "label": "build_ik_all: 5.750s",
+        "monotonic": 192650.897280217,
+        "queries": {
+          "tablets": {
+            "exit": 0,
+            "stdout": "1\t1\t0\t371\n",
+            "stderr": ""
+          },
+          "recyclebin": {
+            "exit": 0,
+            "stdout": "0\n",
+            "stderr": ""
+          },
+          "kv_cache": {
+            "exit": 0,
+            "stdout": "schema_cache\t5917112\t774\t1425\t16065\t127\nindex_block_cache\t444304\t372\t372\t54\t1116\nuser_block_cache\t230664\t376\t376\t56\t752\nbf_cache\t0\t0\t0\t0\t419\nstorage_meta_cache\t897000\t375\t375\t1209\t375\ntx_data_kv_cache\t304\t1\t1\t0\t62\nopt_table_stat_cache\t1120\t5\t5\t10\t5\nopt_system_stat_cache\t80\t1\t2\t10\t1\ndict_cache\t26388280\t8\t8\t319992\t0\n",
+            "stderr": ""
+          },
+          "meta_memory": {
+            "exit": 0,
+            "stdout": "MEMTABLE POOL\t107136\t130560\t62\t0\t1664\nDDL KV POOL\t6912\t65280\t1\t1\t3392\nNORMAL TABLET BUF POOL\t1443000\t1566720\t368\t7\t3824\nLARGE TABLET BUF POOL\t393546\t393546\t4\t2\t65480\nKV MGR POOL\t2816\t65280\t4\t0\t640\nTX DATA MEMTABLE POOL\t3288\t65280\t1\t0\t3264\nTX CTX MEMTABLE POOL\t3200\t65280\t1\t0\t3136\nLOCK MEMTABLE POOL\t30016\t65280\t1\t0\t29952\nMSTX TABLET ALLOCATOR\t8336\t12160\t1\t-1\t-1\n",
+            "stderr": ""
+          }
+        }
+      },
+      {
+        "label": "build_ik_content: 4.426s",
+        "monotonic": 192655.325674653,
+        "queries": {
+          "tablets": {
+            "exit": 0,
+            "stdout": "1\t1\t0\t373\n",
+            "stderr": ""
+          },
+          "recyclebin": {
+            "exit": 0,
+            "stdout": "0\n",
+            "stderr": ""
+          },
+          "kv_cache": {
+            "exit": 0,
+            "stdout": "schema_cache\t5997048\t782\t1433\t20042\t135\nindex_block_cache\t452648\t379\t379\t71\t1137\nuser_block_cache\t235184\t383\t383\t75\t766\nbf_cache\t0\t0\t0\t0\t431\nstorage_meta_cache\t908960\t380\t380\t1233\t380\ntx_data_kv_cache\t304\t1\t1\t0\t66\nopt_table_stat_cache\t1120\t5\t5\t10\t5\nopt_system_stat_cache\t80\t1\t2\t10\t1\ndict_cache\t26388280\t8\t8\t639992\t0\n",
+            "stderr": ""
+          },
+          "meta_memory": {
+            "exit": 0,
+            "stdout": "MEMTABLE POOL\t107136\t130560\t62\t0\t1664\nDDL KV POOL\t6912\t65280\t1\t1\t3392\nNORMAL TABLET BUF POOL\t1443000\t1566720\t369\t6\t3824\nLARGE TABLET BUF POOL\t655910\t655910\t6\t4\t65480\nKV MGR POOL\t4224\t65280\t6\t0\t640\nTX DATA MEMTABLE POOL\t3288\t65280\t1\t0\t3264\nTX CTX MEMTABLE POOL\t3200\t65280\t1\t0\t3136\nLOCK MEMTABLE POOL\t30016\t65280\t1\t0\t29952\nMSTX TABLET ALLOCATOR\t8336\t12160\t1\t-1\t-1\n",
+            "stderr": ""
+          }
+        }
+      },
+      {
+        "label": "build_beng_en: 2.224s",
+        "monotonic": 192657.551421801,
+        "queries": {
+          "tablets": {
+            "exit": 0,
+            "stdout": "1\t1\t0\t375\n",
+            "stderr": ""
+          },
+          "recyclebin": {
+            "exit": 0,
+            "stdout": "0\n",
+            "stderr": ""
+          },
+          "kv_cache": {
+            "exit": 0,
+            "stdout": "schema_cache\t6090008\t790\t1441\t23082\t143\nindex_block_cache\t452648\t379\t379\t71\t1137\nuser_block_cache\t235184\t383\t383\t75\t766\nbf_cache\t0\t0\t0\t0\t431\nstorage_meta_cache\t908960\t380\t380\t1233\t380\ntx_data_kv_cache\t304\t1\t1\t0\t67\nopt_table_stat_cache\t1120\t5\t5\t10\t5\nopt_system_stat_cache\t80\t1\t2\t11\t1\ndict_cache\t26388280\t8\t8\t640232\t0\n",
+            "stderr": ""
+          },
+          "meta_memory": {
+            "exit": 0,
+            "stdout": "MEMTABLE POOL\t107136\t130560\t62\t0\t1664\nDDL KV POOL\t6912\t65280\t1\t1\t3392\nNORMAL TABLET BUF POOL\t1443000\t1566720\t368\t7\t3824\nLARGE TABLET BUF POOL\t655910\t655910\t8\t2\t65480\nKV MGR POOL\t5632\t65280\t8\t0\t640\nTX DATA MEMTABLE POOL\t3288\t65280\t1\t0\t3264\nTX CTX MEMTABLE POOL\t3200\t65280\t1\t0\t3136\nLOCK MEMTABLE POOL\t30016\t65280\t1\t0\t29952\nMSTX TABLET ALLOCATOR\t8336\t12160\t1\t-1\t-1\n",
+            "stderr": ""
+          }
+        }
+      },
+      {
+        "label": "[4/5] TOKENIZE hot-path ...",
+        "monotonic": 192657.567603789,
+        "queries": {
+          "tablets": {
+            "exit": 0,
+            "stdout": "1\t1\t0\t375\n",
+            "stderr": ""
+          },
+          "recyclebin": {
+            "exit": 0,
+            "stdout": "0\n",
+            "stderr": ""
+          },
+          "kv_cache": {
+            "exit": 0,
+            "stdout": "schema_cache\t6090008\t790\t1441\t23114\t143\nindex_block_cache\t452648\t379\t379\t71\t1137\nuser_block_cache\t235184\t383\t383\t75\t766\nbf_cache\t0\t0\t0\t0\t431\nstorage_meta_cache\t908960\t380\t380\t1233\t380\ntx_data_kv_cache\t304\t1\t1\t0\t67\nopt_table_stat_cache\t1120\t5\t5\t10\t5\nopt_system_stat_cache\t80\t1\t2\t11\t1\ndict_cache\t26388280\t8\t8\t640232\t0\n",
+            "stderr": ""
+          },
+          "meta_memory": {
+            "exit": 0,
+            "stdout": "MEMTABLE POOL\t107136\t130560\t62\t0\t1664\nDDL KV POOL\t6912\t65280\t1\t1\t3392\nNORMAL TABLET BUF POOL\t1443000\t1566720\t368\t7\t3824\nLARGE TABLET BUF POOL\t655910\t655910\t8\t2\t65480\nKV MGR POOL\t5632\t65280\t8\t0\t640\nTX DATA MEMTABLE POOL\t3288\t65280\t1\t0\t3264\nTX CTX MEMTABLE POOL\t3200\t65280\t1\t0\t3136\nLOCK MEMTABLE POOL\t30016\t65280\t1\t0\t29952\nMSTX TABLET ALLOCATOR\t8336\t12160\t1\t-1\t-1\n",
+            "stderr": ""
+          }
+        }
+      },
+      {
+        "label": "[5/5] MATCH query ...",
+        "monotonic": 192658.753224927,
+        "queries": {
+          "tablets": {
+            "exit": 0,
+            "stdout": "1\t1\t0\t375\n",
+            "stderr": ""
+          },
+          "recyclebin": {
+            "exit": 0,
+            "stdout": "0\n",
+            "stderr": ""
+          },
+          "kv_cache": {
+            "exit": 0,
+            "stdout": "schema_cache\t6090008\t790\t1441\t23256\t143\nindex_block_cache\t535504\t380\t380\t80\t1140\nuser_block_cache\t312008\t387\t387\t84\t774\nbf_cache\t0\t0\t0\t0\t432\nstorage_meta_cache\t908960\t380\t380\t1233\t380\ntx_data_kv_cache\t304\t1\t1\t0\t67\nopt_table_stat_cache\t1344\t6\t6\t15\t6\nopt_system_stat_cache\t80\t1\t2\t12\t1\ndict_cache\t26388280\t8\t8\t712248\t0\n",
+            "stderr": ""
+          },
+          "meta_memory": {
+            "exit": 0,
+            "stdout": "MEMTABLE POOL\t107136\t130560\t62\t0\t1664\nDDL KV POOL\t6912\t65280\t0\t2\t3392\nNORMAL TABLET BUF POOL\t1443000\t1566720\t367\t8\t3824\nLARGE TABLET BUF POOL\t655910\t655910\t8\t2\t65480\nKV MGR POOL\t5632\t65280\t8\t0\t640\nTX DATA MEMTABLE POOL\t3288\t65280\t1\t0\t3264\nTX CTX MEMTABLE POOL\t3200\t65280\t1\t0\t3136\nLOCK MEMTABLE POOL\t30016\t65280\t1\t0\t29952\nMSTX TABLET ALLOCATOR\t0\t3968\t0\t-1\t-1\n",
+            "stderr": ""
+          }
+        }
+      }
+    ]
+  },
+  "old_inventory_queries": [
+    {
+      "sql": "SELECT table_schema,COUNT(*) AS table_count FROM information_schema.tables GROUP BY table_schema ORDER BY table_count DESC;",
+      "exit": 0,
+      "stdout": "table_schema\ttable_count\noceanbase\t310\ninformation_schema\t66\nmysql\t10\nfts_score_plan_r7\t1\nfts_score_plan_r7b\t1\nfts_score_plan_r7c\t1\nidentical_sort_control\t1\nascii_sort_control_nov5\t1\nascii_sort_control_nov5_r2\t1\nfts_large_bench\t1\n",
+      "stderr": ""
+    },
+    {
+      "sql": "SELECT tablet_status,is_committed,is_empty_shell,COUNT(*) AS tablet_count FROM oceanbase.__all_virtual_tablet_info GROUP BY tablet_status,is_committed,is_empty_shell;",
+      "exit": 1,
+      "stdout": "",
+      "stderr": "ERROR 4012 (HY000) at line 1: Timeout, query has reached the maximum query timeout: 10000000(us), maybe you can adjust the session variable ob_query_timeout or query_timeout hint, and try again.\n"
+    },
+    {
+      "sql": "SELECT COUNT(*) AS recyclebin_objects FROM oceanbase.__all_recyclebin;",
+      "exit": 0,
+      "stdout": "recyclebin_objects\n5405\n",
+      "stderr": ""
+    },
+    {
+      "sql": "SHOW PARAMETERS LIKE '_storage_meta_memory_limit_percentage';",
+      "exit": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "sql": "SELECT name,used_size,total_size,used_obj_cnt,free_obj_cnt,each_obj_size FROM oceanbase.__all_virtual_storage_meta_memory_status;",
+      "exit": 0,
+      "stdout": "name\tused_size\ttotal_size\tused_obj_cnt\tfree_obj_cnt\teach_obj_size\nMEMTABLE POOL\t81216\t130560\t47\t0\t1664\nDDL KV POOL\t0\t0\t0\t0\t3392\nNORMAL TABLET BUF POOL\t9235200\t9792000\t12998\t0\t3824\nLARGE TABLET BUF POOL\t65591\t65591\t1\t0\t65480\nKV MGR POOL\t47872\t65280\t68\t0\t640\nTX DATA MEMTABLE POOL\t3288\t65280\t1\t0\t3264\nTX CTX MEMTABLE POOL\t3200\t65280\t1\t0\t3136\nLOCK MEMTABLE POOL\t30016\t65280\t1\t0\t29952\nMSTX TABLET ALLOCATOR\t150048\t151424\t18\t-1\t-1\n",
+      "stderr": ""
+    }
+  ],
+  "differences": [
+    "Fresh database created separately; original data directory retained.",
+    "Fresh instance datafile_size=512M, datafile_maxsize=1G; both memory_limit=4G and log_disk_size=4G.",
+    "Runs occurred at different times; introspection adds overhead."
+  ],
+  "conclusion": "The old comparison instance has 5405 recyclebin objects and heavy metadata I/O. A fresh instance avoids most of that I/O. This identifies a local measurement confounder; it does not prove the formal platform cause or a product speedup."
+}
