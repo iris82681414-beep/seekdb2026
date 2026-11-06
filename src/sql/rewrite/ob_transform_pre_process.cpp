@@ -3833,7 +3833,7 @@ int ObTransformPreProcess::prune_counted_fulltext_view(ObDMLStmt *stmt,
     } else if (count->get_expr_type() != T_FUN_COUNT || count->is_param_distinct()
                || count->get_real_param_count() != 0
                || outer.get_select_item(0).expr_ != count
-               || !view->is_generated_table() || view->cte_type_ != CTEType::NOT_CTE) {
+               || !view->is_generated_table() || view->cte_type_ != TableItem::NOT_CTE) {
     } else if (OB_ISNULL(inner = view->ref_query_)) {
       ret = OB_ERR_UNEXPECTED;
     } else if (inner->is_set_stmt() || inner->has_distinct() || inner->has_group_by()
