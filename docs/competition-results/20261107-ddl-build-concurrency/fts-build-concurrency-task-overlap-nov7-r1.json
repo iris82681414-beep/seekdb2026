@@ -1,0 +1,265 @@
+{
+  "complete": true,
+  "source_report": "/root/oceanbase2026/results/fts-build-concurrency-clean-nov7-r2-aba-aba.json",
+  "source_report_sha256": "a34ca1f48faaeda7049df74c1c90643cb65d95ad34dfa3002dffb11431b88f9a",
+  "timings_rerun": false,
+  "runs": [
+    {
+      "label": "parent-a",
+      "binary_sha256": "fd2856a85c375a4c23befe472337b3b5ecadc7a3e43214586cc75ff38558a1e6",
+      "archives": [
+        {
+          "path": "/root/oceanbase2026/archives/comparison-logs/20261107-014623/seekdb.log.gz",
+          "uncompressed_sha256": "3df3152cb5bbbb76a0c852c88719b188dc29fb9ed9d5b0d9002f6bbcf658dacb"
+        }
+      ],
+      "intervals": [
+        {
+          "task_id": 16000033,
+          "tid": 933306,
+          "worker_name": "DdlBuild",
+          "parallel_hint": 1,
+          "started_at_unix": 1793987167.490357,
+          "finished_at_unix": 1793987167.708453
+        },
+        {
+          "task_id": 16000095,
+          "tid": 933306,
+          "worker_name": "DdlBuild",
+          "parallel_hint": 1,
+          "started_at_unix": 1793987167.80701,
+          "finished_at_unix": 1793987168.019829
+        },
+        {
+          "task_id": 16000101,
+          "tid": 933306,
+          "worker_name": "DdlBuild",
+          "parallel_hint": 1,
+          "started_at_unix": 1793987168.019872,
+          "finished_at_unix": 1793987170.634081
+        },
+        {
+          "task_id": 16000106,
+          "tid": 933306,
+          "worker_name": "DdlBuild",
+          "parallel_hint": 1,
+          "started_at_unix": 1793987170.634166,
+          "finished_at_unix": 1793987173.087686
+        },
+        {
+          "task_id": 16001179,
+          "tid": 933306,
+          "worker_name": "DdlBuild",
+          "parallel_hint": 1,
+          "started_at_unix": 1793987173.272647,
+          "finished_at_unix": 1793987175.412702
+        },
+        {
+          "task_id": 16001183,
+          "tid": 933306,
+          "worker_name": "DdlBuild",
+          "parallel_hint": 1,
+          "started_at_unix": 1793987175.412759,
+          "finished_at_unix": 1793987177.498962
+        },
+        {
+          "task_id": 16002034,
+          "tid": 933306,
+          "worker_name": "DdlBuild",
+          "parallel_hint": 1,
+          "started_at_unix": 1793987177.679323,
+          "finished_at_unix": 1793987178.787851
+        },
+        {
+          "task_id": 16002039,
+          "tid": 933306,
+          "worker_name": "DdlBuild",
+          "parallel_hint": 1,
+          "started_at_unix": 1793987178.787908,
+          "finished_at_unix": 1793987179.833484
+        }
+      ],
+      "distinct_workers": 1,
+      "overlaps": []
+    },
+    {
+      "label": "build-concurrency",
+      "binary_sha256": "79da823f2237a7749d5af4d0b3ac7895d841abc168336c1ac45d8b1924fc6330",
+      "archives": [
+        {
+          "path": "/root/oceanbase2026/archives/comparison-logs/20261107-014710/seekdb.log.gz",
+          "uncompressed_sha256": "d8964b5c46d58ffd85fc31f95953b13f738601d9e0efa17097cca8766d08a647"
+        }
+      ],
+      "intervals": [
+        {
+          "task_id": 17000032,
+          "tid": 934036,
+          "worker_name": "DdlBuild0",
+          "parallel_hint": 1,
+          "started_at_unix": 1793987219.115887,
+          "finished_at_unix": 1793987219.336009
+        },
+        {
+          "task_id": 17000094,
+          "tid": 934037,
+          "worker_name": "DdlBuild1",
+          "parallel_hint": 1,
+          "started_at_unix": 1793987219.419552,
+          "finished_at_unix": 1793987219.628874
+        },
+        {
+          "task_id": 17000100,
+          "tid": 934036,
+          "worker_name": "DdlBuild0",
+          "parallel_hint": 1,
+          "started_at_unix": 1793987219.440255,
+          "finished_at_unix": 1793987222.417078
+        },
+        {
+          "task_id": 17000103,
+          "tid": 934037,
+          "worker_name": "DdlBuild1",
+          "parallel_hint": 1,
+          "started_at_unix": 1793987219.628937,
+          "finished_at_unix": 1793987222.408185
+        },
+        {
+          "task_id": 17000801,
+          "tid": 934037,
+          "worker_name": "DdlBuild1",
+          "parallel_hint": 1,
+          "started_at_unix": 1793987222.607436,
+          "finished_at_unix": 1793987224.996122
+        },
+        {
+          "task_id": 17000805,
+          "tid": 934036,
+          "worker_name": "DdlBuild0",
+          "parallel_hint": 1,
+          "started_at_unix": 1793987222.621975,
+          "finished_at_unix": 1793987224.950927
+        },
+        {
+          "task_id": 17001349,
+          "tid": 934036,
+          "worker_name": "DdlBuild0",
+          "parallel_hint": 1,
+          "started_at_unix": 1793987225.193441,
+          "finished_at_unix": 1793987226.434071
+        },
+        {
+          "task_id": 17001354,
+          "tid": 934037,
+          "worker_name": "DdlBuild1",
+          "parallel_hint": 1,
+          "started_at_unix": 1793987225.209841,
+          "finished_at_unix": 1793987226.34626
+        }
+      ],
+      "distinct_workers": 2,
+      "overlaps": [
+        {
+          "first_task": 17000094,
+          "second_task": 17000100,
+          "overlap_seconds": 0.18861913681030273
+        },
+        {
+          "first_task": 17000100,
+          "second_task": 17000103,
+          "overlap_seconds": 2.779247999191284
+        },
+        {
+          "first_task": 17000801,
+          "second_task": 17000805,
+          "overlap_seconds": 2.3289520740509033
+        },
+        {
+          "first_task": 17001349,
+          "second_task": 17001354,
+          "overlap_seconds": 1.1364190578460693
+        }
+      ]
+    },
+    {
+      "label": "parent-b",
+      "binary_sha256": "fd2856a85c375a4c23befe472337b3b5ecadc7a3e43214586cc75ff38558a1e6",
+      "archives": [
+        {
+          "path": "/root/oceanbase2026/archives/comparison-logs/20261107-014802/seekdb.log.gz",
+          "uncompressed_sha256": "8b79d15f061b4dac52bb9baec8213827bcbec4a6c21aa0594f999f31330a839f"
+        }
+      ],
+      "intervals": [
+        {
+          "task_id": 18000032,
+          "tid": 934720,
+          "worker_name": "DdlBuild",
+          "parallel_hint": 1,
+          "started_at_unix": 1793987265.853074,
+          "finished_at_unix": 1793987266.071587
+        },
+        {
+          "task_id": 18000096,
+          "tid": 934720,
+          "worker_name": "DdlBuild",
+          "parallel_hint": 1,
+          "started_at_unix": 1793987266.162216,
+          "finished_at_unix": 1793987266.367223
+        },
+        {
+          "task_id": 18000102,
+          "tid": 934720,
+          "worker_name": "DdlBuild",
+          "parallel_hint": 1,
+          "started_at_unix": 1793987266.367266,
+          "finished_at_unix": 1793987268.952604
+        },
+        {
+          "task_id": 18000107,
+          "tid": 934720,
+          "worker_name": "DdlBuild",
+          "parallel_hint": 1,
+          "started_at_unix": 1793987268.95271,
+          "finished_at_unix": 1793987271.439044
+        },
+        {
+          "task_id": 18001166,
+          "tid": 934720,
+          "worker_name": "DdlBuild",
+          "parallel_hint": 1,
+          "started_at_unix": 1793987271.643091,
+          "finished_at_unix": 1793987273.759893
+        },
+        {
+          "task_id": 18001170,
+          "tid": 934720,
+          "worker_name": "DdlBuild",
+          "parallel_hint": 1,
+          "started_at_unix": 1793987273.759938,
+          "finished_at_unix": 1793987275.845334
+        },
+        {
+          "task_id": 18001943,
+          "tid": 934720,
+          "worker_name": "DdlBuild",
+          "parallel_hint": 1,
+          "started_at_unix": 1793987276.042036,
+          "finished_at_unix": 1793987277.121816
+        },
+        {
+          "task_id": 18001948,
+          "tid": 934720,
+          "worker_name": "DdlBuild",
+          "parallel_hint": 1,
+          "started_at_unix": 1793987277.121865,
+          "finished_at_unix": 1793987278.207264
+        }
+      ],
+      "distinct_workers": 1,
+      "overlaps": []
+    }
+  ],
+  "started_at_unix": 1793987564.1500409,
+  "finished_at_unix": 1793987566.3390734
+}

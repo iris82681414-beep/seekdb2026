@@ -1,0 +1,16 @@
+{
+  "complete": true,
+  "phase": "complete",
+  "primary_updated": false,
+  "started_at_unix": 1793986661.0707,
+  "binary_sha256": "fd2856a85c375a4c23befe472337b3b5ecadc7a3e43214586cc75ff38558a1e6",
+  "parent_commit": "296bed1d2552b6f2193ebeb0166622e08b13ddce",
+  "test_sha256": "27316c05c19b5c3d209692387c89e70c02bf3974dd69360c0462bb552ea5e73b",
+  "exit": 0,
+  "result_sha256": "5dffe51fc03552dbfc80efcf146006f60bddc3a23582a9e8692d0c91f0be2285",
+  "finished_at_unix": 1793986704.4130692,
+  "comparison_stopped": true,
+  "validation_link_restored_to_original": true,
+  "log_archive_exit": 0,
+  "log_archive_result": "{\n  \"complete\": true,\n  \"primary_updated\": false,\n  \"source_logs_removed\": false,\n  \"files\": [\n    {\n      \"source\": \"/root/oceanbase2026/instances/fts-score-usage-nov5-r2/log/seekdb.log\",\n      \"archive\": \"/root/oceanbase2026/archives/comparison-logs/20261107-013824/seekdb.log.gz\",\n      \"sha256\": \"507fd4d892f38c1b4baa5d427eefba3cfb845729ee6c2a33328131549503fe5c\"\n    },\n    {\n      \"source\": \"/root/oceanbase2026/instances/fts-score-usage-nov5-r2/log/seekdb.log.20261107013751936\",\n      \"archive\": \"/root/oceanbase2026/archives/comparison-logs/20261107-013824/seekdb.log.20261107013751936.gz\",\n      \"sha256\": \"deafaada52ecba9820826dd909faf39370f526013474252fd0d33592ac322ff4\"\n    }\n  ]\n}"
+}
