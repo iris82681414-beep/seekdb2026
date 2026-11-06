@@ -1,0 +1,9 @@
+{
+  "complete": true,
+  "unit": "ob2026-fts-limited-count-nov7-r2-pipeline.service",
+  "controller_pid": 966441,
+  "cgroup_path": "system.slice/ob2026-fts-limited-count-nov7-r2-pipeline.service",
+  "cpu_max": "400000 100000",
+  "memory_max_bytes": 5368709120,
+  "checked_at_unix": 1793993411.0979655
+}
