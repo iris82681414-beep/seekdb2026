@@ -12816,9 +12816,20 @@ int ObTransformUtils::check_need_calc_match_score(ObExecContext *exec_ctx,
   ObStmtExprGetter visitor;
   visitor.set_relation_scope();
   visitor.remove_scope(SCOPE_WHERE);
+  bool constant_unordered_output = false;
+  if (nullptr != stmt && stmt->is_select_stmt() && !stmt->has_order_by()
+      && !stmt->is_fetch_with_ties() && !stmt->is_calc_found_rows()
+      && stmt->get_limit_percent_expr() == nullptr) {
+    const ObSelectStmt &select = *static_cast<const ObSelectStmt *>(stmt);
+    constant_unordered_output = select.get_select_item_size() > 0;
+    for (int64_t i = 0; constant_unordered_output && i < select.get_select_item_size(); ++i) {
+      const ObRawExpr *expr = select.get_select_item(i).expr_;
+      constant_unordered_output = nullptr != expr && expr->is_const_expr();
+    }
+  }
   if (OB_ISNULL(exec_ctx) || OB_ISNULL(stmt) || OB_ISNULL(match_expr)) {
     ret = OB_INVALID_ARGUMENT;
-  } else if (!stmt->is_select_stmt() || stmt->has_limit()
+  } else if (!stmt->is_select_stmt() || (stmt->has_limit() && !constant_unordered_output)
              || T_FUN_MATCH_AGAINST != match_expr->get_expr_type()
              || NATURAL_LANGUAGE_MODE != match_expr->get_mode_flag()
              || !match_expr->get_columns_boosts().empty()

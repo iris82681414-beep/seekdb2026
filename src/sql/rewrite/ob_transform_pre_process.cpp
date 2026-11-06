@@ -189,6 +189,12 @@ int ObTransformPreProcess::transform_one_stmt(common::ObIArray<ObParentDMLStmt> 
       }
     }
     if (OB_SUCC(ret)) {
+      if (OB_FAIL(prune_counted_fulltext_view(stmt, is_happened))) {
+      } else {
+        trans_happened |= is_happened;
+      }
+    }
+    if (OB_SUCC(ret)) {
       if (stmt->get_match_exprs().count() > 0 &&
           OB_FAIL(preserve_order_for_fulltext_search(stmt, is_happened))) {
       } else {
@@ -3795,6 +3801,96 @@ int ObTransformPreProcess::do_flatten_conditions(ObDMLStmt *stmt, ObIArray<ObRaw
   } else if (trans_happened) {
     trans_happened =  flatten_happend ;
     OPT_TRACE("   flatten_happend:", flatten_happend);
+  }
+  return ret;
+}
+
+int ObTransformPreProcess::prune_counted_fulltext_view(ObDMLStmt *stmt,
+                                                      bool &trans_happened)
+{
+  int ret = OB_SUCCESS;
+  trans_happened = false;
+  if (OB_ISNULL(stmt) || OB_ISNULL(ctx_)) {
+    ret = OB_INVALID_ARGUMENT;
+  } else if (stmt->is_select_stmt()) {
+    ObSelectStmt &outer = *static_cast<ObSelectStmt *>(stmt);
+    TableItem *view = nullptr;
+    ObSelectStmt *inner = nullptr;
+    ObAggFunRawExpr *count = nullptr;
+    // A scalar COUNT(*) with no other consumer observes only the view's row
+    // count. Its unused columns and ordinary LIMIT ordering cannot affect it.
+    if (!outer.is_scala_group_by() || outer.get_select_item_size() != 1
+        || outer.get_aggr_item_size() != 1 || outer.get_table_size() != 1
+        || outer.get_from_item_size() != 1 || outer.get_from_item(0).is_joined_
+        || outer.get_condition_size() != 0 || outer.has_having()
+        || outer.has_order_by() || outer.has_window_function() || outer.has_limit()
+        || outer.has_for_update() || outer.has_select_into()
+        || outer.is_calc_found_rows() || outer.is_set_stmt()
+        || outer.get_subquery_exprs().count() != 0 || outer.get_semi_infos().count() != 0) {
+    } else if (OB_ISNULL(count = outer.get_aggr_item(0))
+               || OB_ISNULL(view = outer.get_table_item(0))) {
+      ret = OB_ERR_UNEXPECTED;
+    } else if (count->get_expr_type() != T_FUN_COUNT || count->is_param_distinct()
+               || count->get_real_param_count() != 0
+               || outer.get_select_item(0).expr_ != count
+               || !view->is_generated_table() || view->cte_type_ != CTEType::NOT_CTE) {
+    } else if (OB_ISNULL(inner = view->ref_query_)) {
+      ret = OB_ERR_UNEXPECTED;
+    } else if (inner->is_set_stmt() || inner->has_distinct() || inner->has_group_by()
+               || inner->has_rollup() || inner->has_having() || inner->has_window_function()
+               || inner->get_aggr_item_size() != 0 || inner->get_table_size() != 1
+               || inner->get_from_item_size() != 1 || inner->get_from_item(0).is_joined_
+               || inner->get_condition_size() != 1 || inner->get_match_exprs().count() != 1
+               || inner->get_limit_expr() == nullptr || inner->get_limit_percent_expr() != nullptr
+               || inner->is_fetch_with_ties() || inner->is_calc_found_rows()
+               || inner->has_for_update() || inner->has_select_into()
+               || inner->get_subquery_exprs().count() != 0
+               || inner->get_semi_infos().count() != 0) {
+    } else if (OB_ISNULL(inner->get_table_item(0))) {
+      ret = OB_ERR_UNEXPECTED;
+    } else if (inner->get_table_item(0)->is_basic_table()) {
+      ObMatchFunRawExpr *match = inner->get_match_exprs().at(0);
+      ObRawExpr *filter = inner->get_condition_exprs().at(0);
+      bool valid = false;
+      if (OB_ISNULL(match) || OB_ISNULL(filter)) {
+        ret = OB_ERR_UNEXPECTED;
+      } else {
+        valid = match->get_expr_type() == T_FUN_MATCH_AGAINST
+            && match->get_mode_flag() == NATURAL_LANGUAGE_MODE
+            && match->get_columns_boosts().empty() && match->get_param_text_expr() == nullptr
+            && (filter == match || (filter->get_expr_type() == T_OP_BOOL
+                && filter->get_param_count() == 1 && filter->get_param_expr(0) == match));
+      }
+      // Keep observable values, side effects, score predicates, FETCH WITH
+      // TIES, grouping and shared CTEs on their existing execution paths.
+      for (int64_t i = 0; OB_SUCC(ret) && valid && i < inner->get_select_item_size(); ++i) {
+        ObRawExpr *expr = inner->get_select_item(i).expr_;
+        if (OB_ISNULL(expr)) {
+          ret = OB_ERR_UNEXPECTED;
+        } else {
+          valid = expr->is_column_ref_expr() || expr->is_const_expr();
+        }
+      }
+      for (int64_t i = 0; valid && i < inner->get_order_item_size(); ++i) {
+        valid = inner->get_order_item(i).expr_ == match;
+      }
+      if (OB_SUCC(ret) && valid) {
+        ObSqlBitSet<> removed;
+        for (int64_t i = 0; OB_SUCC(ret) && i < inner->get_select_item_size(); ++i) {
+          ret = removed.add_member(i);
+        }
+        if (OB_FAIL(ret)) {
+        } else if (OB_FAIL(ObTransformUtils::remove_select_items(ctx_, view->table_id_,
+                                                                 *inner, outer, removed))) {
+        } else {
+          // LIMIT and OFFSET remain unchanged. A constant projection makes
+          // the identity of the selected documents unobservable to COUNT(*).
+          inner->get_order_items().reuse();
+          trans_happened = true;
+          ret = inner->formalize_stmt(ctx_->session_info_);
+        }
+      }
+    }
   }
   return ret;
 }
