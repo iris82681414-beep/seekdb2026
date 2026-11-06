@@ -197,3 +197,71 @@ SELECT JSON_LENGTH(JSON_EXTRACT(TOKENIZE(@memo_many,'ngram2',
 SELECT TOKENIZE('alpha beta','space'),TOKENIZE('alpha beta','space');
 DROP DATABASE fts_tokenize_memo;
 USE test;
+
+
+--echo # JSON wire text reuse must own bytes and preserve every JSON value.
+CREATE DATABASE fts_json_wire;
+USE fts_json_wire;
+SET NAMES utf8mb4;
+CREATE TABLE json_rows (id INT PRIMARY KEY,j JSON,k JSON);
+INSERT INTO json_rows VALUES
+ (1,'["alpha","beta",null,true,12.5]','{"key":"first","n":1}'),
+ (2,'["alpha","beta",null,true,12.5]','{"key":"second","n":2}'),
+ (3,'["gamma","delta"]','{"key":"first","n":1}'),
+ (4,'["alpha","beta",null,true,12.5]','{"key":"first","n":1}'),
+ (5,NULL,'null'),(6,'[]','{}'),(7,'"中文 café 😀"','"quoted"');
+SELECT id,j,j,j FROM json_rows ORDER BY id;
+SELECT id,j,k,j,k FROM json_rows ORDER BY id;
+SELECT j FROM json_rows WHERE id=1;
+SELECT j FROM json_rows WHERE id=2;
+SELECT JSON_ARRAY('alpha','beta',NULL,TRUE,CAST(12.5 AS DECIMAL(5,1)));
+SELECT JSON_OBJECT('nested',JSON_ARRAY(1,JSON_OBJECT('k','v')),'empty',JSON_OBJECT());
+SELECT JSON_OBJECT('nested',JSON_ARRAY(1,JSON_OBJECT('k','v')),'empty',JSON_OBJECT());
+SELECT JSON_ARRAY(CONCAT('quote" slash\\ newline',CHAR(10),'tab',CHAR(9),'nul',CHAR(0),'end'));
+SELECT JSON_ARRAY(CONCAT('quote" slash\\ newline',CHAR(10),'tab',CHAR(9),'nul',CHAR(0),'end'));
+SELECT JSON_ARRAY(CAST('2026-11-07' AS DATE),CAST('12:34:56.123456' AS TIME(6)),CAST('2026-11-07 12:34:56.123456' AS DATETIME(6)),CAST(12.500 AS DECIMAL(8,3)),1E30,CAST('abc' AS BINARY));
+SELECT JSON_ARRAY(CAST('2026-11-07' AS DATE),CAST('12:34:56.123456' AS TIME(6)),CAST('2026-11-07 12:34:56.123456' AS DATETIME(6)),CAST(12.500 AS DECIMAL(8,3)),1E30,CAST('abc' AS BINARY));
+SET @wire_old_tz=@@session.time_zone,@wire_old_mode=@@session.sql_mode;
+SET time_zone='+08:00';
+SELECT j,k FROM json_rows WHERE id=7;
+SET time_zone='-05:00';
+SELECT j,k FROM json_rows WHERE id=7;
+SET sql_mode='NO_BACKSLASH_ESCAPES';
+SELECT j,k FROM json_rows WHERE id=7;
+SET sql_mode=@wire_old_mode,time_zone=@wire_old_tz;
+SET NAMES latin1;
+SELECT j,k FROM json_rows WHERE id=1;
+SET NAMES utf8mb4;
+SELECT j,k FROM json_rows WHERE id=1;
+START TRANSACTION;
+UPDATE json_rows SET j=JSON_SET(j,'$[0]','changed') WHERE id=1;
+SELECT j,j FROM json_rows WHERE id=1;
+ROLLBACK;
+SELECT j,j FROM json_rows WHERE id=1;
+PREPARE wire_stmt FROM 'SELECT j,k,j FROM json_rows WHERE id=?';
+SET @wire_id=1;
+EXECUTE wire_stmt USING @wire_id;
+EXECUTE wire_stmt USING @wire_id;
+SET @wire_id=3;
+EXECUTE wire_stmt USING @wire_id;
+SET @wire_id=1;
+EXECUTE wire_stmt USING @wire_id;
+DEALLOCATE PREPARE wire_stmt;
+--echo # Actual binary protocol still renders JSON without borrowing memo storage.
+--enable_ps_protocol
+SELECT id,j,j FROM json_rows ORDER BY id;
+SELECT id,j,k,j FROM json_rows ORDER BY id;
+SELECT j FROM json_rows WHERE id=1;
+SELECT j FROM json_rows WHERE id=1;
+--disable_ps_protocol
+--echo # Values beyond either bound use the existing formatter.
+SELECT JSON_ARRAY(REPEAT('x',5000)) AS oversized_binary;
+SELECT JSON_ARRAY(REPEAT('x',5000)) AS oversized_binary;
+SELECT JSON_ARRAY(REPEAT(CHAR(1),3000)) AS oversized_rendered_text;
+SELECT JSON_ARRAY(REPEAT(CHAR(1),3000)) AS oversized_rendered_text;
+SELECT j,j FROM json_rows WHERE id=1;
+--error ER_INVALID_JSON_TEXT_IN_PARAM
+SELECT JSON_EXTRACT('not json','$');
+SELECT j,j FROM json_rows WHERE id=1;
+DROP DATABASE fts_json_wire;
+USE test;
