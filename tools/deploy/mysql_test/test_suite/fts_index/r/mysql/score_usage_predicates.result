@@ -181,3 +181,52 @@ count(*)
 194
 set session tx_isolation=@count_saved_isolation;
 drop database fts_count_regression;
+create database fts_count_large_regression;
+use fts_count_large_regression;
+create table digits(n int primary key);
+insert into digits values(0),(1),(2),(3),(4),(5),(6),(7),(8),(9);
+create table docs(id int primary key, content varchar(128));
+alter table docs add fulltext index words(content) with parser beng;
+select count(*) from docs where match(content) against('alpha');
+count(*)
+66049
+select count(*) from docs where match(content) against('alpha beta');
+count(*)
+66049
+select /*+ use_das(docs) */ count(*) from docs where match(content) against('alpha beta');
+count(*)
+66049
+select /*+ no_use_das(docs) */ count(*) from docs where match(content) against('alpha beta');
+count(*)
+66049
+select count(*) from docs where match(content) against('beta');
+count(*)
+33024
+prepare count_large_q from 'select count(*) from docs where match(content) against(?)';
+set @q='beta';
+execute count_large_q using @q;
+count(*)
+33024
+set @q='alpha beta';
+execute count_large_q using @q;
+count(*)
+66049
+set @q='missing';
+execute count_large_q using @q;
+count(*)
+0
+set @q='beta';
+execute count_large_q using @q;
+count(*)
+33024
+deallocate prepare count_large_q;
+start transaction;
+delete from docs where id <= 3;
+select count(*) from docs where match(content) against('alpha beta');
+count(*)
+66046
+rollback;
+select count(*) from docs where match(content) against('alpha beta');
+count(*)
+66049
+drop database fts_count_large_regression;

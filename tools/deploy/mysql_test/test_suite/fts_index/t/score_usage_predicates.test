@@ -106,3 +106,39 @@ select count(*) from docs where match(content) against('alpha beta');
 set session tx_isolation=@count_saved_isolation;
 disconnect count_writer;
 drop database fts_count_regression;
+
+# The bounded dense-set path must rewind all terms before general counting when
+# the posting budget is exceeded, including prepared execution after a fast set.
+create database fts_count_large_regression;
+use fts_count_large_regression;
+create table digits(n int primary key);
+insert into digits values(0),(1),(2),(3),(4),(5),(6),(7),(8),(9);
+create table docs(id int primary key, content varchar(128));
+--disable_query_log
+insert into docs
+select id, if(id % 2 = 0, 'alpha beta', 'alpha')
+from (select a.n*10000+b.n*1000+c.n*100+d.n*10+e.n+1 as id
+ from digits a, digits b, digits c, digits d, digits e) s where id <= 66049;
+--enable_query_log
+alter table docs add fulltext index words(content) with parser beng;
+select count(*) from docs where match(content) against('alpha');
+select count(*) from docs where match(content) against('alpha beta');
+select /*+ use_das(docs) */ count(*) from docs where match(content) against('alpha beta');
+select /*+ no_use_das(docs) */ count(*) from docs where match(content) against('alpha beta');
+select count(*) from docs where match(content) against('beta');
+prepare count_large_q from 'select count(*) from docs where match(content) against(?)';
+set @q='beta';
+execute count_large_q using @q;
+set @q='alpha beta';
+execute count_large_q using @q;
+set @q='missing';
+execute count_large_q using @q;
+set @q='beta';
+execute count_large_q using @q;
+deallocate prepare count_large_q;
+start transaction;
+delete from docs where id <= 3;
+select count(*) from docs where match(content) against('alpha beta');
+rollback;
+select count(*) from docs where match(content) against('alpha beta');
+drop database fts_count_large_regression;
