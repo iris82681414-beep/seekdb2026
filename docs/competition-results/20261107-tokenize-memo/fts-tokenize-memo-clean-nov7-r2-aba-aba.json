@@ -1,0 +1,221 @@
+{
+  "phase": "complete",
+  "complete": true,
+  "primary_updated": false,
+  "formal_score": null,
+  "profiled": false,
+  "benchmarks": [
+    {
+      "label": "parent-a",
+      "binary_sha256": "ed2dc65da33103fac4cc1e12c82f47f2e28a5bcec85cdd8dbd8f87c9b4e9bd74",
+      "pid": "919119",
+      "metrics": {
+        "table rows": 20000.0,
+        "git_dirty": 1.0,
+        "rows": 20000.0,
+        "batch": 500.0,
+        "rounds": 3000.0,
+        "query_rounds": 200.0,
+        "samples": 3.0,
+        "warmup": 30.0,
+        "skip_load": 0.0,
+        "select1_avg_ms": 0.0202,
+        "select1_stdev_ms": 0.0005,
+        "raw_load_sec": 0.206,
+        "raw_load_rows_per_sec": 97087.4,
+        "build_ik_all_sec": 5.747,
+        "build_ik_content_sec": 4.425,
+        "build_beng_en_sec": 2.322,
+        "build_total_sec": 12.5,
+        "tokenize_ik_avg_ms": 0.0761,
+        "tokenize_ik_median_ms": 0.075,
+        "tokenize_ik_stdev_ms": 0.0025,
+        "tokenize_beng_avg_ms": 0.0362,
+        "tokenize_beng_median_ms": 0.0366,
+        "tokenize_beng_stdev_ms": 0.0008,
+        "query_cn_hits": 8001.0,
+        "query_cn_avg_ms": 0.4721,
+        "query_cn_stdev_ms": 0.0072,
+        "query_beng_hits": 11000.0,
+        "query_beng_avg_ms": 0.6183,
+        "query_beng_stdev_ms": 0.0043,
+        "query_mixed_hits": 7332.0,
+        "query_mixed_avg_ms": 0.5053,
+        "query_mixed_stdev_ms": 0.0042,
+        "query_limit_hits": 20.0,
+        "query_limit_avg_ms": 1.5665,
+        "query_limit_stdev_ms": 0.0312
+      },
+      "exit": 0,
+      "elapsed_seconds": 17.148130175017286,
+      "log_archive": {
+        "complete": true,
+        "primary_updated": false,
+        "source_logs_removed": false,
+        "files": [
+          {
+            "source": "/root/oceanbase2026/instances/fts-build-fresh-nov6-r3/log/seekdb.log",
+            "archive": "/root/oceanbase2026/archives/comparison-logs/20261107-011021/seekdb.log.gz",
+            "sha256": "62a69349492f4adae15b7c9d26eed5d04b7ead17c945527371aae6c62cfeeb96"
+          }
+        ]
+      }
+    },
+    {
+      "label": "tokenize-memo",
+      "binary_sha256": "fd2856a85c375a4c23befe472337b3b5ecadc7a3e43214586cc75ff38558a1e6",
+      "pid": "919791",
+      "metrics": {
+        "table rows": 20000.0,
+        "git_dirty": 1.0,
+        "rows": 20000.0,
+        "batch": 500.0,
+        "rounds": 3000.0,
+        "query_rounds": 200.0,
+        "samples": 3.0,
+        "warmup": 30.0,
+        "skip_load": 0.0,
+        "select1_avg_ms": 0.0205,
+        "select1_stdev_ms": 0.0003,
+        "raw_load_sec": 0.208,
+        "raw_load_rows_per_sec": 96153.8,
+        "build_ik_all_sec": 5.848,
+        "build_ik_content_sec": 4.426,
+        "build_beng_en_sec": 2.322,
+        "build_total_sec": 12.602,
+        "tokenize_ik_avg_ms": 0.0351,
+        "tokenize_ik_median_ms": 0.0354,
+        "tokenize_ik_stdev_ms": 0.0007,
+        "tokenize_beng_avg_ms": 0.0269,
+        "tokenize_beng_median_ms": 0.0267,
+        "tokenize_beng_stdev_ms": 0.0005,
+        "query_cn_hits": 8001.0,
+        "query_cn_avg_ms": 0.4649,
+        "query_cn_stdev_ms": 0.0156,
+        "query_beng_hits": 11000.0,
+        "query_beng_avg_ms": 0.5931,
+        "query_beng_stdev_ms": 0.0195,
+        "query_mixed_hits": 7332.0,
+        "query_mixed_avg_ms": 0.4621,
+        "query_mixed_stdev_ms": 0.0038,
+        "query_limit_hits": 20.0,
+        "query_limit_avg_ms": 1.5544,
+        "query_limit_stdev_ms": 0.0306
+      },
+      "exit": 0,
+      "elapsed_seconds": 16.739665820990922,
+      "log_archive": {
+        "complete": true,
+        "primary_updated": false,
+        "source_logs_removed": false,
+        "files": [
+          {
+            "source": "/root/oceanbase2026/instances/fts-build-fresh-nov6-r3/log/seekdb.log",
+            "archive": "/root/oceanbase2026/archives/comparison-logs/20261107-011111/seekdb.log.gz",
+            "sha256": "6b14acaa20ffd4ca2df811acd0e74c32c5abeaf62309ee47f4ef5d1b5e6597e9"
+          }
+        ]
+      }
+    },
+    {
+      "label": "parent-b",
+      "binary_sha256": "ed2dc65da33103fac4cc1e12c82f47f2e28a5bcec85cdd8dbd8f87c9b4e9bd74",
+      "pid": "920558",
+      "metrics": {
+        "table rows": 20000.0,
+        "git_dirty": 1.0,
+        "rows": 20000.0,
+        "batch": 500.0,
+        "rounds": 3000.0,
+        "query_rounds": 200.0,
+        "samples": 3.0,
+        "warmup": 30.0,
+        "skip_load": 0.0,
+        "select1_avg_ms": 0.0206,
+        "select1_stdev_ms": 0.0005,
+        "raw_load_sec": 0.202,
+        "raw_load_rows_per_sec": 99009.9,
+        "build_ik_all_sec": 5.846,
+        "build_ik_content_sec": 4.426,
+        "build_beng_en_sec": 2.32,
+        "build_total_sec": 12.598,
+        "tokenize_ik_avg_ms": 0.0738,
+        "tokenize_ik_median_ms": 0.0721,
+        "tokenize_ik_stdev_ms": 0.0029,
+        "tokenize_beng_avg_ms": 0.0356,
+        "tokenize_beng_median_ms": 0.0358,
+        "tokenize_beng_stdev_ms": 0.0005,
+        "query_cn_hits": 8001.0,
+        "query_cn_avg_ms": 0.4647,
+        "query_cn_stdev_ms": 0.0024,
+        "query_beng_hits": 11000.0,
+        "query_beng_avg_ms": 0.5991,
+        "query_beng_stdev_ms": 0.0113,
+        "query_mixed_hits": 7332.0,
+        "query_mixed_avg_ms": 0.492,
+        "query_mixed_stdev_ms": 0.0165,
+        "query_limit_hits": 20.0,
+        "query_limit_avg_ms": 1.5831,
+        "query_limit_stdev_ms": 0.0127
+      },
+      "exit": 0,
+      "elapsed_seconds": 17.198385596013395,
+      "log_archive": {
+        "complete": true,
+        "primary_updated": false,
+        "source_logs_removed": false,
+        "files": [
+          {
+            "source": "/root/oceanbase2026/instances/fts-build-fresh-nov6-r3/log/seekdb.log",
+            "archive": "/root/oceanbase2026/archives/comparison-logs/20261107-011202/seekdb.log.gz",
+            "sha256": "497a640a918e0f36d7bc32913c31b33ab0fdd9267b2ebd71b2a8841cfc579dae"
+          }
+        ]
+      }
+    }
+  ],
+  "started_at_unix": 1793984654.1946251,
+  "controller_pid": 915412,
+  "driver": "official-native-client",
+  "background_binary_transfer_stopped_before_measurement": true,
+  "workload_sha256": {
+    "tools/benchmark/fts_large_bench.sh": "596ea5d1c0038e666b78aa94bef22d2dfb87ffc9e84dbc7e2a1da1f746424462",
+    "tools/benchmark/fts_large_bench_gen.py": "b0c816dd8211ac0471f60b72a37a3fb5c62580357a5b6d7ac95f5a8c2e3f143d",
+    "tools/benchmark/fts_large_bench_setup.sql": "311826751df7f51ac45156fb4284aeca9bd9197370aceb88f4fb92832b458108",
+    "tools/benchmark/fts_large_bench_baseline.json": "f4e97eddb2e49c982b967fc8047f7cf37177eebe53d648f6746d85aacda91f0c",
+    "tools/benchmark/fts_large_bench_score.py": "bea52eb1c68d05693bb3ac5b910ab0e2fa0e70e01582f40466898ee1e2e3ef55"
+  },
+  "parent_commit": "912bedc6806b7a777ce7cad3b7028d8c8ea9ad76",
+  "primary_pid": "3892",
+  "verified_offload_remote_sources_absent": [
+    "seekdb-fts-union-nov6-r2-candidate.gz",
+    "seekdb-fts-batch-nov6-r2-candidate.gz",
+    "seekdb-fts-batch-nov6-r4-candidate.gz",
+    "seekdb-fts-linear-nov5-candidate.gz",
+    "seekdb-fts-tokenize-nov5-r2-candidate.gz",
+    "seekdb-fts-stream-nov6-r3-candidate.gz"
+  ],
+  "pre_run_recyclebin": [
+    {
+      "label": "parent-a",
+      "count": 0
+    },
+    {
+      "label": "tokenize-memo",
+      "count": 0
+    },
+    {
+      "label": "parent-b",
+      "count": 0
+    }
+  ],
+  "relative_to_same_machine_parent": {
+    "build": -0.0031428340469269087,
+    "tokenize": 0.3911920853456622,
+    "query": 0.02983814114051675
+  },
+  "mean_category_reduction": 0.13929579747975068,
+  "finished_at_unix": 1793985122.9283981,
+  "comparison_stopped": true,
+  "validation_link_restored_to_original": true
+}

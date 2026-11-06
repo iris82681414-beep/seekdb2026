@@ -1,0 +1,1108 @@
+{
+  "complete": true,
+  "phase": "complete",
+  "primary_updated": false,
+  "formal_score": null,
+  "diagnostic_only": true,
+  "rows": 2048,
+  "samples": 7,
+  "runs": [
+    {
+      "label": "parent-a",
+      "binary_sha256": "ed2dc65da33103fac4cc1e12c82f47f2e28a5bcec85cdd8dbd8f87c9b4e9bd74",
+      "cases": {
+        "space-default": {
+          "samples": [
+            {
+              "seconds": 0.014903066999977455,
+              "stdout": "18432"
+            },
+            {
+              "seconds": 0.014391097007319331,
+              "stdout": "18432"
+            },
+            {
+              "seconds": 0.014512432011542842,
+              "stdout": "18432"
+            },
+            {
+              "seconds": 0.014544673002092168,
+              "stdout": "18432"
+            },
+            {
+              "seconds": 0.014018492976902053,
+              "stdout": "18432"
+            },
+            {
+              "seconds": 0.014026811986695975,
+              "stdout": "18432"
+            },
+            {
+              "seconds": 0.013822605018503964,
+              "stdout": "18432"
+            }
+          ],
+          "median_seconds": 0.014391097007319331,
+          "stdout": "18432"
+        },
+        "space-all": {
+          "samples": [
+            {
+              "seconds": 0.015948148997267708,
+              "stdout": "4096"
+            },
+            {
+              "seconds": 0.016015741013688967,
+              "stdout": "4096"
+            },
+            {
+              "seconds": 0.015861015010159463,
+              "stdout": "4096"
+            },
+            {
+              "seconds": 0.015983388992026448,
+              "stdout": "4096"
+            },
+            {
+              "seconds": 0.015815493010450155,
+              "stdout": "4096"
+            },
+            {
+              "seconds": 0.01601808099076152,
+              "stdout": "4096"
+            },
+            {
+              "seconds": 0.01599930998054333,
+              "stdout": "4096"
+            }
+          ],
+          "median_seconds": 0.015983388992026448,
+          "stdout": "4096"
+        },
+        "beng-default": {
+          "samples": [
+            {
+              "seconds": 0.015593274991260841,
+              "stdout": "18432"
+            },
+            {
+              "seconds": 0.014886486023897305,
+              "stdout": "18432"
+            },
+            {
+              "seconds": 0.014742200990440324,
+              "stdout": "18432"
+            },
+            {
+              "seconds": 0.014759231999050826,
+              "stdout": "18432"
+            },
+            {
+              "seconds": 0.01684548400226049,
+              "stdout": "18432"
+            },
+            {
+              "seconds": 0.015757160988869146,
+              "stdout": "18432"
+            },
+            {
+              "seconds": 0.01605112201650627,
+              "stdout": "18432"
+            }
+          ],
+          "median_seconds": 0.015593274991260841,
+          "stdout": "18432"
+        },
+        "beng-all": {
+          "samples": [
+            {
+              "seconds": 0.017180597002152354,
+              "stdout": "4096"
+            },
+            {
+              "seconds": 0.01679717199294828,
+              "stdout": "4096"
+            },
+            {
+              "seconds": 0.016871873987838626,
+              "stdout": "4096"
+            },
+            {
+              "seconds": 0.016872525011422113,
+              "stdout": "4096"
+            },
+            {
+              "seconds": 0.016810512985102832,
+              "stdout": "4096"
+            },
+            {
+              "seconds": 0.017013739998219535,
+              "stdout": "4096"
+            },
+            {
+              "seconds": 0.01691596701857634,
+              "stdout": "4096"
+            }
+          ],
+          "median_seconds": 0.016872525011422113,
+          "stdout": "4096"
+        },
+        "ik-default": {
+          "samples": [
+            {
+              "seconds": 0.04313398897647858,
+              "stdout": "24576"
+            },
+            {
+              "seconds": 0.04267728197737597,
+              "stdout": "24576"
+            },
+            {
+              "seconds": 0.04191815198282711,
+              "stdout": "24576"
+            },
+            {
+              "seconds": 0.04195905299275182,
+              "stdout": "24576"
+            },
+            {
+              "seconds": 0.04256699699908495,
+              "stdout": "24576"
+            },
+            {
+              "seconds": 0.04285243898630142,
+              "stdout": "24576"
+            },
+            {
+              "seconds": 0.042104819003725424,
+              "stdout": "24576"
+            }
+          ],
+          "median_seconds": 0.04256699699908495,
+          "stdout": "24576"
+        },
+        "ik-all": {
+          "samples": [
+            {
+              "seconds": 0.0446753200085368,
+              "stdout": "4096"
+            },
+            {
+              "seconds": 0.04455676599172875,
+              "stdout": "4096"
+            },
+            {
+              "seconds": 0.04449898301390931,
+              "stdout": "4096"
+            },
+            {
+              "seconds": 0.04436280799563974,
+              "stdout": "4096"
+            },
+            {
+              "seconds": 0.044456962001277134,
+              "stdout": "4096"
+            },
+            {
+              "seconds": 0.04435098698013462,
+              "stdout": "4096"
+            },
+            {
+              "seconds": 0.044658810016699135,
+              "stdout": "4096"
+            }
+          ],
+          "median_seconds": 0.04449898301390931,
+          "stdout": "4096"
+        },
+        "ngram-default": {
+          "samples": [
+            {
+              "seconds": 0.030348035012139007,
+              "stdout": "120844"
+            },
+            {
+              "seconds": 0.029869937017792836,
+              "stdout": "120844"
+            },
+            {
+              "seconds": 0.02980706500238739,
+              "stdout": "120844"
+            },
+            {
+              "seconds": 0.02949802199145779,
+              "stdout": "120844"
+            },
+            {
+              "seconds": 0.03000172201427631,
+              "stdout": "120844"
+            },
+            {
+              "seconds": 0.030728901008842513,
+              "stdout": "120844"
+            },
+            {
+              "seconds": 0.029927319003036246,
+              "stdout": "120844"
+            }
+          ],
+          "median_seconds": 0.029927319003036246,
+          "stdout": "120844"
+        },
+        "ngram-all": {
+          "samples": [
+            {
+              "seconds": 0.03967726300470531,
+              "stdout": "4096"
+            },
+            {
+              "seconds": 0.03988810200826265,
+              "stdout": "4096"
+            },
+            {
+              "seconds": 0.03966703297919594,
+              "stdout": "4096"
+            },
+            {
+              "seconds": 0.039725665003061295,
+              "stdout": "4096"
+            },
+            {
+              "seconds": 0.03974089599796571,
+              "stdout": "4096"
+            },
+            {
+              "seconds": 0.03976307698758319,
+              "stdout": "4096"
+            },
+            {
+              "seconds": 0.039738395978929475,
+              "stdout": "4096"
+            }
+          ],
+          "median_seconds": 0.039738395978929475,
+          "stdout": "4096"
+        },
+        "ngram2-default": {
+          "samples": [
+            {
+              "seconds": 0.05061483502504416,
+              "stdout": "231030"
+            },
+            {
+              "seconds": 0.051086853025481105,
+              "stdout": "231030"
+            },
+            {
+              "seconds": 0.050649005017476156,
+              "stdout": "231030"
+            },
+            {
+              "seconds": 0.050727848982205614,
+              "stdout": "231030"
+            },
+            {
+              "seconds": 0.050455128017347306,
+              "stdout": "231030"
+            },
+            {
+              "seconds": 0.05068957700859755,
+              "stdout": "231030"
+            },
+            {
+              "seconds": 0.05048006901051849,
+              "stdout": "231030"
+            }
+          ],
+          "median_seconds": 0.050649005017476156,
+          "stdout": "231030"
+        },
+        "ngram2-all": {
+          "samples": [
+            {
+              "seconds": 0.06937208300223574,
+              "stdout": "4096"
+            },
+            {
+              "seconds": 0.06988740400993265,
+              "stdout": "4096"
+            },
+            {
+              "seconds": 0.06976664898684248,
+              "stdout": "4096"
+            },
+            {
+              "seconds": 0.06911893299547955,
+              "stdout": "4096"
+            },
+            {
+              "seconds": 0.0690666809969116,
+              "stdout": "4096"
+            },
+            {
+              "seconds": 0.06943374601542018,
+              "stdout": "4096"
+            },
+            {
+              "seconds": 0.06895970701589249,
+              "stdout": "4096"
+            }
+          ],
+          "median_seconds": 0.06937208300223574,
+          "stdout": "4096"
+        }
+      },
+      "oversized_result_binary_bytes": 638836,
+      "log_archive": {
+        "complete": true,
+        "primary_updated": false,
+        "source_logs_removed": false,
+        "files": [
+          {
+            "source": "/root/oceanbase2026/instances/fts-build-fresh-nov6-r3/log/seekdb.log",
+            "archive": "/root/oceanbase2026/archives/comparison-logs/20261107-011254/seekdb.log.gz",
+            "sha256": "dae407454256b2ef8a42dc5a9dffcee6ddfc36c367cc50d3fed229685587515c"
+          }
+        ]
+      }
+    },
+    {
+      "label": "memo",
+      "binary_sha256": "fd2856a85c375a4c23befe472337b3b5ecadc7a3e43214586cc75ff38558a1e6",
+      "cases": {
+        "space-default": {
+          "samples": [
+            {
+              "seconds": 0.015330803988035768,
+              "stdout": "18432"
+            },
+            {
+              "seconds": 0.014866075973259285,
+              "stdout": "18432"
+            },
+            {
+              "seconds": 0.014597215020330623,
+              "stdout": "18432"
+            },
+            {
+              "seconds": 0.014292633015429601,
+              "stdout": "18432"
+            },
+            {
+              "seconds": 0.014215400005923584,
+              "stdout": "18432"
+            },
+            {
+              "seconds": 0.014198799995938316,
+              "stdout": "18432"
+            },
+            {
+              "seconds": 0.014211620000423864,
+              "stdout": "18432"
+            }
+          ],
+          "median_seconds": 0.014292633015429601,
+          "stdout": "18432"
+        },
+        "space-all": {
+          "samples": [
+            {
+              "seconds": 0.016026741999667138,
+              "stdout": "4096"
+            },
+            {
+              "seconds": 0.015920577017823234,
+              "stdout": "4096"
+            },
+            {
+              "seconds": 0.016384515998652205,
+              "stdout": "4096"
+            },
+            {
+              "seconds": 0.016326693003065884,
+              "stdout": "4096"
+            },
+            {
+              "seconds": 0.016371004981920123,
+              "stdout": "4096"
+            },
+            {
+              "seconds": 0.016892485989956185,
+              "stdout": "4096"
+            },
+            {
+              "seconds": 0.01620236798771657,
+              "stdout": "4096"
+            }
+          ],
+          "median_seconds": 0.016326693003065884,
+          "stdout": "4096"
+        },
+        "beng-default": {
+          "samples": [
+            {
+              "seconds": 0.014691959018819034,
+              "stdout": "18432"
+            },
+            {
+              "seconds": 0.014752391987713054,
+              "stdout": "18432"
+            },
+            {
+              "seconds": 0.014886785997077823,
+              "stdout": "18432"
+            },
+            {
+              "seconds": 0.014853666012641042,
+              "stdout": "18432"
+            },
+            {
+              "seconds": 0.015003161010099575,
+              "stdout": "18432"
+            },
+            {
+              "seconds": 0.014737029996467754,
+              "stdout": "18432"
+            },
+            {
+              "seconds": 0.014845065015833825,
+              "stdout": "18432"
+            }
+          ],
+          "median_seconds": 0.014845065015833825,
+          "stdout": "18432"
+        },
+        "beng-all": {
+          "samples": [
+            {
+              "seconds": 0.01705891199526377,
+              "stdout": "4096"
+            },
+            {
+              "seconds": 0.016756280994741246,
+              "stdout": "4096"
+            },
+            {
+              "seconds": 0.016883005009731278,
+              "stdout": "4096"
+            },
+            {
+              "seconds": 0.016787520988145843,
+              "stdout": "4096"
+            },
+            {
+              "seconds": 0.016674307000357658,
+              "stdout": "4096"
+            },
+            {
+              "seconds": 0.016539411997655407,
+              "stdout": "4096"
+            },
+            {
+              "seconds": 0.016672786994604394,
+              "stdout": "4096"
+            }
+          ],
+          "median_seconds": 0.016756280994741246,
+          "stdout": "4096"
+        },
+        "ik-default": {
+          "samples": [
+            {
+              "seconds": 0.043873918999452144,
+              "stdout": "24576"
+            },
+            {
+              "seconds": 0.04243065198534168,
+              "stdout": "24576"
+            },
+            {
+              "seconds": 0.04207700799452141,
+              "stdout": "24576"
+            },
+            {
+              "seconds": 0.041886160004651174,
+              "stdout": "24576"
+            },
+            {
+              "seconds": 0.04198424398782663,
+              "stdout": "24576"
+            },
+            {
+              "seconds": 0.04176215501502156,
+              "stdout": "24576"
+            },
+            {
+              "seconds": 0.04174895500182174,
+              "stdout": "24576"
+            }
+          ],
+          "median_seconds": 0.04198424398782663,
+          "stdout": "24576"
+        },
+        "ik-all": {
+          "samples": [
+            {
+              "seconds": 0.045004514016909525,
+              "stdout": "4096"
+            },
+            {
+              "seconds": 0.045189900003606454,
+              "stdout": "4096"
+            },
+            {
+              "seconds": 0.04473819298436865,
+              "stdout": "4096"
+            },
+            {
+              "seconds": 0.044924660003744066,
+              "stdout": "4096"
+            },
+            {
+              "seconds": 0.04490104899741709,
+              "stdout": "4096"
+            },
+            {
+              "seconds": 0.0444415410165675,
+              "stdout": "4096"
+            },
+            {
+              "seconds": 0.04508426602114923,
+              "stdout": "4096"
+            }
+          ],
+          "median_seconds": 0.044924660003744066,
+          "stdout": "4096"
+        },
+        "ngram-default": {
+          "samples": [
+            {
+              "seconds": 0.030130436993204057,
+              "stdout": "120844"
+            },
+            {
+              "seconds": 0.02942258000257425,
+              "stdout": "120844"
+            },
+            {
+              "seconds": 0.030053783993935212,
+              "stdout": "120844"
+            },
+            {
+              "seconds": 0.03771375599899329,
+              "stdout": "120844"
+            },
+            {
+              "seconds": 0.0356663650018163,
+              "stdout": "120844"
+            },
+            {
+              "seconds": 0.03134883500752039,
+              "stdout": "120844"
+            },
+            {
+              "seconds": 0.04164932100684382,
+              "stdout": "120844"
+            }
+          ],
+          "median_seconds": 0.03134883500752039,
+          "stdout": "120844"
+        },
+        "ngram-all": {
+          "samples": [
+            {
+              "seconds": 0.04044957397854887,
+              "stdout": "4096"
+            },
+            {
+              "seconds": 0.04030914799659513,
+              "stdout": "4096"
+            },
+            {
+              "seconds": 0.03997499498655088,
+              "stdout": "4096"
+            },
+            {
+              "seconds": 0.0404147719964385,
+              "stdout": "4096"
+            },
+            {
+              "seconds": 0.03984096000203863,
+              "stdout": "4096"
+            },
+            {
+              "seconds": 0.04028272701543756,
+              "stdout": "4096"
+            },
+            {
+              "seconds": 0.03989723202539608,
+              "stdout": "4096"
+            }
+          ],
+          "median_seconds": 0.04028272701543756,
+          "stdout": "4096"
+        },
+        "ngram2-default": {
+          "samples": [
+            {
+              "seconds": 0.05077885100035928,
+              "stdout": "231030"
+            },
+            {
+              "seconds": 0.051250029006041586,
+              "stdout": "231030"
+            },
+            {
+              "seconds": 0.050596084009157494,
+              "stdout": "231030"
+            },
+            {
+              "seconds": 0.050896244996692985,
+              "stdout": "231030"
+            },
+            {
+              "seconds": 0.050767609995091334,
+              "stdout": "231030"
+            },
+            {
+              "seconds": 0.050600154005223885,
+              "stdout": "231030"
+            },
+            {
+              "seconds": 0.051308972004335374,
+              "stdout": "231030"
+            }
+          ],
+          "median_seconds": 0.05077885100035928,
+          "stdout": "231030"
+        },
+        "ngram2-all": {
+          "samples": [
+            {
+              "seconds": 0.0697171259962488,
+              "stdout": "4096"
+            },
+            {
+              "seconds": 0.0702848500222899,
+              "stdout": "4096"
+            },
+            {
+              "seconds": 0.06960384198464453,
+              "stdout": "4096"
+            },
+            {
+              "seconds": 0.06960195300052874,
+              "stdout": "4096"
+            },
+            {
+              "seconds": 0.06967050500679761,
+              "stdout": "4096"
+            },
+            {
+              "seconds": 0.06940408499212936,
+              "stdout": "4096"
+            },
+            {
+              "seconds": 0.0692483079910744,
+              "stdout": "4096"
+            }
+          ],
+          "median_seconds": 0.06960384198464453,
+          "stdout": "4096"
+        }
+      },
+      "oversized_result_binary_bytes": 638836,
+      "log_archive": {
+        "complete": true,
+        "primary_updated": false,
+        "source_logs_removed": false,
+        "files": [
+          {
+            "source": "/root/oceanbase2026/instances/fts-build-fresh-nov6-r3/log/seekdb.log",
+            "archive": "/root/oceanbase2026/archives/comparison-logs/20261107-011316/seekdb.log.gz",
+            "sha256": "af216d64677054f0ed993228a1b12c851a3ff8e60e854cdb3103bb5e998a1309"
+          }
+        ]
+      }
+    },
+    {
+      "label": "parent-b",
+      "binary_sha256": "ed2dc65da33103fac4cc1e12c82f47f2e28a5bcec85cdd8dbd8f87c9b4e9bd74",
+      "cases": {
+        "space-default": {
+          "samples": [
+            {
+              "seconds": 0.014615274994866922,
+              "stdout": "18432"
+            },
+            {
+              "seconds": 0.014281722978921607,
+              "stdout": "18432"
+            },
+            {
+              "seconds": 0.014220111013855785,
+              "stdout": "18432"
+            },
+            {
+              "seconds": 0.01444965900736861,
+              "stdout": "18432"
+            },
+            {
+              "seconds": 0.014067534008063376,
+              "stdout": "18432"
+            },
+            {
+              "seconds": 0.014009211998200044,
+              "stdout": "18432"
+            },
+            {
+              "seconds": 0.01419556001201272,
+              "stdout": "18432"
+            }
+          ],
+          "median_seconds": 0.014220111013855785,
+          "stdout": "18432"
+        },
+        "space-all": {
+          "samples": [
+            {
+              "seconds": 0.016258321003988385,
+              "stdout": "4096"
+            },
+            {
+              "seconds": 0.016120404994580895,
+              "stdout": "4096"
+            },
+            {
+              "seconds": 0.016002240998204798,
+              "stdout": "4096"
+            },
+            {
+              "seconds": 0.015959548007231206,
+              "stdout": "4096"
+            },
+            {
+              "seconds": 0.01577584201004356,
+              "stdout": "4096"
+            },
+            {
+              "seconds": 0.016006451012799516,
+              "stdout": "4096"
+            },
+            {
+              "seconds": 0.015788151999004185,
+              "stdout": "4096"
+            }
+          ],
+          "median_seconds": 0.016002240998204798,
+          "stdout": "4096"
+        },
+        "beng-default": {
+          "samples": [
+            {
+              "seconds": 0.01458421497954987,
+              "stdout": "18432"
+            },
+            {
+              "seconds": 0.01474169100401923,
+              "stdout": "18432"
+            },
+            {
+              "seconds": 0.014682928012916818,
+              "stdout": "18432"
+            },
+            {
+              "seconds": 0.014749071007827297,
+              "stdout": "18432"
+            },
+            {
+              "seconds": 0.01462785599869676,
+              "stdout": "18432"
+            },
+            {
+              "seconds": 0.014714050019392744,
+              "stdout": "18432"
+            },
+            {
+              "seconds": 0.014829663996351883,
+              "stdout": "18432"
+            }
+          ],
+          "median_seconds": 0.014714050019392744,
+          "stdout": "18432"
+        },
+        "beng-all": {
+          "samples": [
+            {
+              "seconds": 0.01670783801819198,
+              "stdout": "4096"
+            },
+            {
+              "seconds": 0.016794311988633126,
+              "stdout": "4096"
+            },
+            {
+              "seconds": 0.01658741300343536,
+              "stdout": "4096"
+            },
+            {
+              "seconds": 0.0166877270094119,
+              "stdout": "4096"
+            },
+            {
+              "seconds": 0.017291780997766182,
+              "stdout": "4096"
+            },
+            {
+              "seconds": 0.01691471697995439,
+              "stdout": "4096"
+            },
+            {
+              "seconds": 0.016786330990726128,
+              "stdout": "4096"
+            }
+          ],
+          "median_seconds": 0.016786330990726128,
+          "stdout": "4096"
+        },
+        "ik-default": {
+          "samples": [
+            {
+              "seconds": 0.043548095010919496,
+              "stdout": "24576"
+            },
+            {
+              "seconds": 0.04284452900174074,
+              "stdout": "24576"
+            },
+            {
+              "seconds": 0.04265274998033419,
+              "stdout": "24576"
+            },
+            {
+              "seconds": 0.04245774299488403,
+              "stdout": "24576"
+            },
+            {
+              "seconds": 0.041874969989294186,
+              "stdout": "24576"
+            },
+            {
+              "seconds": 0.042794376000529155,
+              "stdout": "24576"
+            },
+            {
+              "seconds": 0.04195272197830491,
+              "stdout": "24576"
+            }
+          ],
+          "median_seconds": 0.04265274998033419,
+          "stdout": "24576"
+        },
+        "ik-all": {
+          "samples": [
+            {
+              "seconds": 0.045061796001391485,
+              "stdout": "4096"
+            },
+            {
+              "seconds": 0.044466541992733255,
+              "stdout": "4096"
+            },
+            {
+              "seconds": 0.044396358978701755,
+              "stdout": "4096"
+            },
+            {
+              "seconds": 0.044505533995106816,
+              "stdout": "4096"
+            },
+            {
+              "seconds": 0.04459633698570542,
+              "stdout": "4096"
+            },
+            {
+              "seconds": 0.04453834501327947,
+              "stdout": "4096"
+            },
+            {
+              "seconds": 0.0447855050151702,
+              "stdout": "4096"
+            }
+          ],
+          "median_seconds": 0.04453834501327947,
+          "stdout": "4096"
+        },
+        "ngram-default": {
+          "samples": [
+            {
+              "seconds": 0.030036732990993187,
+              "stdout": "120844"
+            },
+            {
+              "seconds": 0.029920608998509124,
+              "stdout": "120844"
+            },
+            {
+              "seconds": 0.02956738500506617,
+              "stdout": "120844"
+            },
+            {
+              "seconds": 0.030049744003918022,
+              "stdout": "120844"
+            },
+            {
+              "seconds": 0.02959624701179564,
+              "stdout": "120844"
+            },
+            {
+              "seconds": 0.03058408500510268,
+              "stdout": "120844"
+            },
+            {
+              "seconds": 0.030104016012046486,
+              "stdout": "120844"
+            }
+          ],
+          "median_seconds": 0.030036732990993187,
+          "stdout": "120844"
+        },
+        "ngram-all": {
+          "samples": [
+            {
+              "seconds": 0.03959562999079935,
+              "stdout": "4096"
+            },
+            {
+              "seconds": 0.03959266998572275,
+              "stdout": "4096"
+            },
+            {
+              "seconds": 0.039660723006818444,
+              "stdout": "4096"
+            },
+            {
+              "seconds": 0.0396754730027169,
+              "stdout": "4096"
+            },
+            {
+              "seconds": 0.039640261995373294,
+              "stdout": "4096"
+            },
+            {
+              "seconds": 0.03972670598886907,
+              "stdout": "4096"
+            },
+            {
+              "seconds": 0.040020796994213015,
+              "stdout": "4096"
+            }
+          ],
+          "median_seconds": 0.039660723006818444,
+          "stdout": "4096"
+        },
+        "ngram2-default": {
+          "samples": [
+            {
+              "seconds": 0.05083279201062396,
+              "stdout": "231030"
+            },
+            {
+              "seconds": 0.05089001602027565,
+              "stdout": "231030"
+            },
+            {
+              "seconds": 0.05060376398614608,
+              "stdout": "231030"
+            },
+            {
+              "seconds": 0.050595573004102334,
+              "stdout": "231030"
+            },
+            {
+              "seconds": 0.0507425990072079,
+              "stdout": "231030"
+            },
+            {
+              "seconds": 0.05069738699239679,
+              "stdout": "231030"
+            },
+            {
+              "seconds": 0.05051473999628797,
+              "stdout": "231030"
+            }
+          ],
+          "median_seconds": 0.05069738699239679,
+          "stdout": "231030"
+        },
+        "ngram2-all": {
+          "samples": [
+            {
+              "seconds": 0.06986016299924813,
+              "stdout": "4096"
+            },
+            {
+              "seconds": 0.06946073699509725,
+              "stdout": "4096"
+            },
+            {
+              "seconds": 0.07057861099019647,
+              "stdout": "4096"
+            },
+            {
+              "seconds": 0.0695609200047329,
+              "stdout": "4096"
+            },
+            {
+              "seconds": 0.06942610599799082,
+              "stdout": "4096"
+            },
+            {
+              "seconds": 0.06921871699159965,
+              "stdout": "4096"
+            },
+            {
+              "seconds": 0.06941599500714801,
+              "stdout": "4096"
+            }
+          ],
+          "median_seconds": 0.06946073699509725,
+          "stdout": "4096"
+        }
+      },
+      "oversized_result_binary_bytes": 638836,
+      "log_archive": {
+        "complete": true,
+        "primary_updated": false,
+        "source_logs_removed": false,
+        "files": [
+          {
+            "source": "/root/oceanbase2026/instances/fts-build-fresh-nov6-r3/log/seekdb.log",
+            "archive": "/root/oceanbase2026/archives/comparison-logs/20261107-011339/seekdb.log.gz",
+            "sha256": "e9be223553d1b2d6801812261e64e148a417d74f488463600d45603c484a9f9d"
+          }
+        ]
+      }
+    }
+  ],
+  "started_at_unix": 1793984760.240032,
+  "input_sha256": {
+    "setup.sql": "b4d7450e7cd69f7828f353a3262a629bb6bb76ff2e879b185b3dea0d43fd5786",
+    "queries.json": "4ec9b7916447365e3afba996c280c3c1a1329e91d0ea9829b051bd327a244ffb"
+  },
+  "relative_to_parent_median": {
+    "space-default": 0.0009067072699872059,
+    "space-all": -0.020876750469021932,
+    "beng-default": 0.02036454813379207,
+    "beng-all": 0.004346375071583308,
+    "ik-default": 0.014682735494017218,
+    "ik-all": -0.009119680456396884,
+    "ngram-default": -0.0455876134135087,
+    "ngram-all": -0.01468952124439249,
+    "ngram2-default": -0.002085027267917372,
+    "ngram2-all": -0.002700110621993268
+  },
+  "finished_at_unix": 1793985220.2365937,
+  "comparison_stopped": true,
+  "managed_link_restored_to_original": true
+}
