@@ -16,6 +16,7 @@
 
 #include "ob_ddl_task_executor.h"
 #include "lib/ob_running_mode.h"
+#include "lib/cpu/ob_cpu_topology.h"
 #include "lib/thread/ob_thread_name.h"
 #include "lib/stat/ob_diagnostic_info_guard.h"
 #include "share/rc/ob_server_runtime.h"
@@ -350,7 +351,16 @@ int ObDDLLocalBuilder::push_task(ObAsyncTask &task)
 
 int64_t ObDDLLocalBuilder::get_thread_cnt_() const
 {
-  return lib::is_mini_mode() ? 1 : 16;
+  int64_t thread_cnt = 16;
+  if (lib::is_mini_mode()) {
+    // Independent auxiliary-index builds already run concurrently outside mini
+    // mode. Keep small instances serial, but allow two admitted DDL tasks when
+    // CPU and memory budgets can support their execution pipelines.
+    const int64_t memory_budget = lib::ObRunningModeConfig::instance().memory_budget_;
+    thread_cnt = get_cpu_count() >= 4
+        && memory_budget >= 2 * lib::ObRunningModeConfig::MINI_MEM_LOWER ? 2 : 1;
+  }
+  return thread_cnt;
 }
 
 }  // end namespace share
