@@ -200,6 +200,9 @@ USE test;
 
 
 --echo # JSON wire text reuse must own bytes and preserve every JSON value.
+--disable_warnings
+DROP DATABASE IF EXISTS fts_json_wire;
+--enable_warnings
 CREATE DATABASE fts_json_wire;
 USE fts_json_wire;
 SET NAMES utf8mb4;
@@ -229,7 +232,7 @@ SELECT j,k FROM json_rows WHERE id=7;
 SET sql_mode='NO_BACKSLASH_ESCAPES';
 SELECT j,k FROM json_rows WHERE id=7;
 SET sql_mode=@wire_old_mode,time_zone=@wire_old_tz;
-SET NAMES latin1;
+SET NAMES utf8;
 SELECT j,k FROM json_rows WHERE id=1;
 SET NAMES utf8mb4;
 SELECT j,k FROM json_rows WHERE id=1;
