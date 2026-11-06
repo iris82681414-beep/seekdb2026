@@ -1,0 +1,69 @@
+{
+  "complete": true,
+  "performance_report_sha256": "4d2f40b1206960960cf1b32d424b035b2f9a946b5b18c990ef248b71f66ec10e",
+  "runs": [
+    {
+      "label": "c251-a",
+      "pid": "953780",
+      "startup_memory_budget_bytes": 4294967296,
+      "last_reload": {
+        "time": "2026-11-07 02:51:18.674324",
+        "memory_budget": 4294967296,
+        "configured_memory_budget": 4294967296
+      },
+      "runtime_builder_threads": 1,
+      "log_archives": [
+        {
+          "archive": "/root/oceanbase2026/archives/comparison-logs/20261107-025207/seekdb.log.gz",
+          "compressed_sha256": "5ae74d0cd37ddf8e0128f2c2b3a86c3a2a7a338e2a2055039963d308781c11b1",
+          "uncompressed_sha256": "411d977141b33742beb6847fb7b025b15e4a907f5e79453514965c621fa805da"
+        }
+      ]
+    },
+    {
+      "label": "combined",
+      "pid": "954484",
+      "startup_memory_budget_bytes": 4294967296,
+      "last_reload": {
+        "time": "2026-11-07 02:52:10.542331",
+        "memory_budget": 4294967296,
+        "configured_memory_budget": 4294967296
+      },
+      "runtime_builder_threads": 2,
+      "log_archives": [
+        {
+          "archive": "/root/oceanbase2026/archives/comparison-logs/20261107-025253/seekdb.log.gz",
+          "compressed_sha256": "7b1e07d8793926a4f6c3c30dd82f057c59e94828fb6552a467b8015dcff671af",
+          "uncompressed_sha256": "75e5b35110e4c91d85fae59ba5cb5769b0d0f0a3439d035a0b4b159c422001a2"
+        }
+      ]
+    },
+    {
+      "label": "c251-b",
+      "pid": "955131",
+      "startup_memory_budget_bytes": 4294967296,
+      "last_reload": {
+        "time": "2026-11-07 02:52:55.625047",
+        "memory_budget": 4294967296,
+        "configured_memory_budget": 4294967296
+      },
+      "runtime_builder_threads": 1,
+      "log_archives": [
+        {
+          "archive": "/root/oceanbase2026/archives/comparison-logs/20261107-025345/seekdb.log.gz",
+          "compressed_sha256": "e00548d4596fb330db13a5ee591d44361c915682111e114f556f3d77729d5d2a",
+          "uncompressed_sha256": "3bbdc2fdf13a8b04522f4a508fd8090310d253464584e41a9a44a803005c4131"
+        }
+      ]
+    }
+  ],
+  "started_at_unix": 1793991229.837535,
+  "formal_score": null,
+  "primary_unchanged": true,
+  "baseline_product_files_verified": 6936,
+  "ports_closed": [
+    2883,
+    2885
+  ],
+  "finished_at_unix": 1793991231.37624
+}

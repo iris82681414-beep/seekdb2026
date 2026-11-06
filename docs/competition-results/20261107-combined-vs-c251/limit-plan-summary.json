@@ -1,0 +1,67 @@
+{
+  "complete": true,
+  "phase": "complete",
+  "diagnostic_only": true,
+  "formal_score": null,
+  "primary_updated": false,
+  "candidate_commit": "99655e09d2bf5faf6c7563558c1a5f32df9f0bda",
+  "started_at_unix": 1793991408.1964688,
+  "controller_pid": 956765,
+  "plans": [
+    {
+      "label": "count-limited-id",
+      "sql": "SELECT COUNT(*) FROM (SELECT id FROM fts_large_bench.docs WHERE MATCH(content) AGAINST('\u5012\u6392\u7d22\u5f15 tokenizer') LIMIT 20) t",
+      "path": "/root/oceanbase2026/results/fts-limit-plan-nov7-r1/count-limited-id.plan.txt",
+      "sha256": "5f7912ffd2d4c8973d9ef3a8e9837a4e048b551edab965e3af7576145358af99"
+    },
+    {
+      "label": "count-limited-constant",
+      "sql": "SELECT COUNT(*) FROM (SELECT 1 FROM fts_large_bench.docs WHERE MATCH(content) AGAINST('\u5012\u6392\u7d22\u5f15 tokenizer') LIMIT 20) t",
+      "path": "/root/oceanbase2026/results/fts-limit-plan-nov7-r1/count-limited-constant.plan.txt",
+      "sha256": "8512e94ca96e477c8ec8465e680c0788ea884622bac4637e9613034c20931fdb"
+    },
+    {
+      "label": "limited-constant",
+      "sql": "SELECT 1 FROM fts_large_bench.docs WHERE MATCH(content) AGAINST('\u5012\u6392\u7d22\u5f15 tokenizer') LIMIT 20",
+      "path": "/root/oceanbase2026/results/fts-limit-plan-nov7-r1/limited-constant.plan.txt",
+      "sha256": "0b29330f02076674bc0143ff27abce29392c772180f335dff4883c21a811c200"
+    },
+    {
+      "label": "limited-id",
+      "sql": "SELECT id FROM fts_large_bench.docs WHERE MATCH(content) AGAINST('\u5012\u6392\u7d22\u5f15 tokenizer') LIMIT 20",
+      "path": "/root/oceanbase2026/results/fts-limit-plan-nov7-r1/limited-id.plan.txt",
+      "sha256": "971a780851a6a36d4f4ff869887ff04a6c3fb1c98c2299ce2d9725fa5d92722b"
+    },
+    {
+      "label": "plain-count",
+      "sql": "SELECT COUNT(*) FROM fts_large_bench.docs WHERE MATCH(content) AGAINST('\u5012\u6392\u7d22\u5f15 tokenizer')",
+      "path": "/root/oceanbase2026/results/fts-limit-plan-nov7-r1/plain-count.plan.txt",
+      "sha256": "51fb5a66aed3ab47a7748988ce994cb41693613b830e09d40a7dfb1fc4f13d03"
+    },
+    {
+      "label": "explicit-id-order",
+      "sql": "SELECT id FROM fts_large_bench.docs WHERE MATCH(content) AGAINST('\u5012\u6392\u7d22\u5f15 tokenizer') ORDER BY id LIMIT 20",
+      "path": "/root/oceanbase2026/results/fts-limit-plan-nov7-r1/explicit-id-order.plan.txt",
+      "sha256": "f03e4e1b02c9d85af029b5e75220db1896c281cd62724c3f169db48639545f4b"
+    },
+    {
+      "label": "unused-projected-score",
+      "sql": "SELECT COUNT(*) FROM (SELECT MATCH(content) AGAINST('\u5012\u6392\u7d22\u5f15 tokenizer') score FROM fts_large_bench.docs WHERE MATCH(content) AGAINST('\u5012\u6392\u7d22\u5f15 tokenizer') LIMIT 20) t",
+      "path": "/root/oceanbase2026/results/fts-limit-plan-nov7-r1/unused-projected-score.plan.txt",
+      "sha256": "f0fc40a2c3b48ab2836b135eed99768bbdc22bae1fae6df6ecffd281b16c6333"
+    }
+  ],
+  "candidate_binary_sha256": "79da823f2237a7749d5af4d0b3ac7895d841abc168336c1ac45d8b1924fc6330",
+  "primary_pid": "3892",
+  "comparison_pid": "956774",
+  "rows": 20000,
+  "counts": {
+    "count-limited-id": 20,
+    "count-limited-constant": 20,
+    "unused-projected-score": 20
+  },
+  "plain_match_count": 9333,
+  "finished_at_unix": 1793991412.8752177,
+  "comparison_stopped": true,
+  "managed_restored": true
+}
