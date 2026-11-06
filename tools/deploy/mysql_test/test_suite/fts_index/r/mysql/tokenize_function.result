@@ -211,3 +211,200 @@ ERROR 0A000: ik config not supported
 
 drop table if exists memo;
 drop database fts;
+
+# Repeated values remain isolated by text, parser, options and collation.
+CREATE DATABASE fts_tokenize_memo;
+USE fts_tokenize_memo;
+SET NAMES utf8mb4;
+CREATE TABLE repeated_text (id INT PRIMARY KEY, v VARCHAR(2048), t TEXT) DEFAULT CHARSET=utf8mb4;
+INSERT INTO repeated_text VALUES
+ (1,'alpha beta alpha','alpha beta alpha'),(2,'alpha beta alpha','alpha beta alpha'),
+ (3,'gamma delta','gamma delta'),(4,'alpha beta alpha','alpha beta alpha'),
+ (5,NULL,NULL),(6,'',''),(7,'中文测试 fullwidth ＡＢＣ','中文测试 fullwidth ＡＢＣ'),
+ (8,'alpha beta alpha','alpha beta alpha');
+SELECT id,TOKENIZE(v,'space') FROM repeated_text ORDER BY id;
++----+--------------------------------------------+
+| id | TOKENIZE(v,'space')                        |
++----+--------------------------------------------+
+|  1 | ["alpha", "beta"]                          |
+|  2 | ["alpha", "beta"]                          |
+|  3 | ["delta", "gamma"]                         |
+|  4 | ["alpha", "beta"]                          |
+|  5 | []                                         |
+|  6 | []                                         |
+|  7 | ["中文测试", "ａｂｃ", "fullwidth"]        |
+|  8 | ["alpha", "beta"]                          |
++----+--------------------------------------------+
+SELECT id,TOKENIZE(t,'space'),TOKENIZE(v,'space'),TOKENIZE(t,'space') FROM repeated_text ORDER BY id;
++----+--------------------------------------------+--------------------------------------------+--------------------------------------------+
+| id | TOKENIZE(t,'space')                        | TOKENIZE(v,'space')                        | TOKENIZE(t,'space')                        |
++----+--------------------------------------------+--------------------------------------------+--------------------------------------------+
+|  1 | ["alpha", "beta"]                          | ["alpha", "beta"]                          | ["alpha", "beta"]                          |
+|  2 | ["alpha", "beta"]                          | ["alpha", "beta"]                          | ["alpha", "beta"]                          |
+|  3 | ["delta", "gamma"]                         | ["delta", "gamma"]                         | ["delta", "gamma"]                         |
+|  4 | ["alpha", "beta"]                          | ["alpha", "beta"]                          | ["alpha", "beta"]                          |
+|  5 | []                                         | []                                         | []                                         |
+|  6 | []                                         | []                                         | []                                         |
+|  7 | ["中文测试", "ａｂｃ", "fullwidth"]        | ["中文测试", "ａｂｃ", "fullwidth"]        | ["中文测试", "ａｂｃ", "fullwidth"]        |
+|  8 | ["alpha", "beta"]                          | ["alpha", "beta"]                          | ["alpha", "beta"]                          |
++----+--------------------------------------------+--------------------------------------------+--------------------------------------------+
+SELECT TOKENIZE('alpha beta','space'),TOKENIZE('gamma delta','space'),TOKENIZE('alpha beta','space');
++--------------------------------+---------------------------------+--------------------------------+
+| TOKENIZE('alpha beta','space') | TOKENIZE('gamma delta','space') | TOKENIZE('alpha beta','space') |
++--------------------------------+---------------------------------+--------------------------------+
+| ["alpha", "beta"]              | ["delta", "gamma"]              | ["alpha", "beta"]              |
++--------------------------------+---------------------------------+--------------------------------+
+SELECT JSON_SET(TOKENIZE('alpha beta','space'),'$[0]','changed'),TOKENIZE('alpha beta','space');
++-----------------------------------------------------------+--------------------------------+
+| JSON_SET(TOKENIZE('alpha beta','space'),'$[0]','changed') | TOKENIZE('alpha beta','space') |
++-----------------------------------------------------------+--------------------------------+
+| ["changed", "beta"]                                       | ["alpha", "beta"]              |
++-----------------------------------------------------------+--------------------------------+
+SELECT TOKENIZE('中文测试 alpha','ik'),TOKENIZE('中文测试 alpha','space'),TOKENIZE('中文测试 alpha','ik');
++-------------------------------------+----------------------------------------+-------------------------------------+
+| TOKENIZE('中文测试 alpha','ik')     | TOKENIZE('中文测试 alpha','space')     | TOKENIZE('中文测试 alpha','ik')     |
++-------------------------------------+----------------------------------------+-------------------------------------+
+| ["alpha", "中文", "测试"]           | ["中文测试", "alpha"]                  | ["alpha", "中文", "测试"]           |
++-------------------------------------+----------------------------------------+-------------------------------------+
+SELECT TOKENIZE('alpha beta','beng'),TOKENIZE('alpha beta','beng');
++-------------------------------+-------------------------------+
+| TOKENIZE('alpha beta','beng') | TOKENIZE('alpha beta','beng') |
++-------------------------------+-------------------------------+
+| ["alpha", "beta"]             | ["alpha", "beta"]             |
++-------------------------------+-------------------------------+
+SELECT TOKENIZE(CONCAT('alpha',CHAR(0),'beta'),'space'),TOKENIZE('alpha beta','space');
++--------------------------------------------------+--------------------------------+
+| TOKENIZE(CONCAT('alpha',CHAR(0),'beta'),'space') | TOKENIZE('alpha beta','space') |
++--------------------------------------------------+--------------------------------+
+| ["beta", "alpha"]                                | ["alpha", "beta"]              |
++--------------------------------------------------+--------------------------------+
+SELECT TOKENIZE(CONCAT('alpha',CHAR(0),'beta'),'space');
++--------------------------------------------------+
+| TOKENIZE(CONCAT('alpha',CHAR(0),'beta'),'space') |
++--------------------------------------------------+
+| ["beta", "alpha"]                                |
++--------------------------------------------------+
+SELECT TOKENIZE(_utf8mb4'Alpha ALPHA café CAFÉ' COLLATE utf8mb4_bin,'space');
++-------------------------------------------------------------------------+
+| TOKENIZE(_utf8mb4'Alpha ALPHA café CAFÉ' COLLATE utf8mb4_bin,'space')   |
++-------------------------------------------------------------------------+
+| ["alpha", "café"]                                                       |
++-------------------------------------------------------------------------+
+SELECT TOKENIZE(_utf8mb4'Alpha ALPHA café CAFÉ' COLLATE utf8mb4_general_ci,'space');
++--------------------------------------------------------------------------------+
+| TOKENIZE(_utf8mb4'Alpha ALPHA café CAFÉ' COLLATE utf8mb4_general_ci,'space')   |
++--------------------------------------------------------------------------------+
+| ["café", "alpha"]                                                              |
++--------------------------------------------------------------------------------+
+SELECT TOKENIZE(_utf8mb4'Alpha ALPHA café CAFÉ' COLLATE utf8mb4_bin,'space');
++-------------------------------------------------------------------------+
+| TOKENIZE(_utf8mb4'Alpha ALPHA café CAFÉ' COLLATE utf8mb4_bin,'space')   |
++-------------------------------------------------------------------------+
+| ["alpha", "café"]                                                       |
++-------------------------------------------------------------------------+
+PREPARE memo_bind FROM 'SELECT TOKENIZE(?,?,?)';
+SET @memo_text='alpha beta alpha',@memo_parser='space',@memo_options=NULL;
+EXECUTE memo_bind USING @memo_text,@memo_parser,@memo_options;
++-------------------+
+| TOKENIZE(?,?,?)   |
++-------------------+
+| ["alpha", "beta"] |
++-------------------+
+EXECUTE memo_bind USING @memo_text,@memo_parser,@memo_options;
++-------------------+
+| TOKENIZE(?,?,?)   |
++-------------------+
+| ["alpha", "beta"] |
++-------------------+
+SET @memo_options='[{"output":"all"}]';
+EXECUTE memo_bind USING @memo_text,@memo_parser,@memo_options;
++-------------------------------------------------------+
+| TOKENIZE(?,?,?)                                       |
++-------------------------------------------------------+
+| {"tokens": [{"alpha": 2}, {"beta": 1}], "doc_len": 3} |
++-------------------------------------------------------+
+EXECUTE memo_bind USING @memo_text,@memo_parser,@memo_options;
++-------------------------------------------------------+
+| TOKENIZE(?,?,?)                                       |
++-------------------------------------------------------+
+| {"tokens": [{"alpha": 2}, {"beta": 1}], "doc_len": 3} |
++-------------------------------------------------------+
+SET @memo_parser='ngram',@memo_options='[{"additional_args":[{"ngram_token_size":1}]}]';
+EXECUTE memo_bind USING @memo_text,@memo_parser,@memo_options;
++-------------------------------------+
+| TOKENIZE(?,?,?)                     |
++-------------------------------------+
+| ["a", "h", "l", "t", "b", "e", "p"] |
++-------------------------------------+
+SET @memo_options='[{"additional_args":[{"ngram_token_size":2}]}]';
+EXECUTE memo_bind USING @memo_text,@memo_parser,@memo_options;
++--------------------------------------------+
+| TOKENIZE(?,?,?)                            |
++--------------------------------------------+
+| ["ta", "al", "ph", "lp", "et", "be", "ha"] |
++--------------------------------------------+
+SET @memo_parser='space',@memo_options='[{"additional_args":[{"min_token_size":0}]}]';
+EXECUTE memo_bind USING @memo_text,@memo_parser,@memo_options;
+ERROR HY000: Incorrect arguments to the min_token_size must be in [1, 16]
+SET @memo_options=NULL;
+EXECUTE memo_bind USING @memo_text,@memo_parser,@memo_options;
++-------------------+
+| TOKENIZE(?,?,?)   |
++-------------------+
+| ["alpha", "beta"] |
++-------------------+
+SET @memo_text=NULL;
+EXECUTE memo_bind USING @memo_text,@memo_parser,@memo_options;
++-----------------+
+| TOKENIZE(?,?,?) |
++-----------------+
+| []              |
++-----------------+
+SET @memo_text='';
+EXECUTE memo_bind USING @memo_text,@memo_parser,@memo_options;
++-----------------+
+| TOKENIZE(?,?,?) |
++-----------------+
+| []              |
++-----------------+
+DEALLOCATE PREPARE memo_bind;
+# Oversized keys and results keep the uncached path correct.
+SELECT JSON_LENGTH(TOKENIZE(REPEAT('alpha beta ',600),'space')) AS long_key_words;
++----------------+
+| long_key_words |
++----------------+
+|              2 |
++----------------+
+SELECT JSON_LENGTH(TOKENIZE(REPEAT('alpha beta ',600),'space')) AS long_key_words;
++----------------+
+| long_key_words |
++----------------+
+|              2 |
++----------------+
+CREATE TABLE digits (n INT PRIMARY KEY);
+INSERT INTO digits VALUES (0),(1),(2),(3),(4),(5),(6),(7),(8),(9);
+SET SESSION group_concat_max_len=8192;
+SELECT GROUP_CONCAT(MD5(CONCAT(a.n,':',b.n)) ORDER BY a.n,b.n SEPARATOR '') INTO @memo_many
+ FROM digits a CROSS JOIN digits b WHERE a.n+10*b.n < 64;
+SELECT JSON_LENGTH(JSON_EXTRACT(TOKENIZE(@memo_many,'ngram2',
+ '[{"output":"all"},{"additional_args":[{"min_ngram_size":1},{"max_ngram_size":16}]}]'),'$.tokens')) AS many_terms;
++------------+
+| many_terms |
++------------+
+|      28357 |
++------------+
+SELECT JSON_LENGTH(JSON_EXTRACT(TOKENIZE(@memo_many,'ngram2',
+ '[{"output":"all"},{"additional_args":[{"min_ngram_size":1},{"max_ngram_size":16}]}]'),'$.tokens')) AS many_terms;
++------------+
+| many_terms |
++------------+
+|      28357 |
++------------+
+SELECT TOKENIZE('alpha beta','space'),TOKENIZE('alpha beta','space');
++--------------------------------+--------------------------------+
+| TOKENIZE('alpha beta','space') | TOKENIZE('alpha beta','space') |
++--------------------------------+--------------------------------+
+| ["alpha", "beta"]              | ["alpha", "beta"]              |
++--------------------------------+--------------------------------+
+DROP DATABASE fts_tokenize_memo;
+USE test;
