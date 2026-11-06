@@ -108,6 +108,7 @@ private:
   int init_topk_limit();
   int init_block_max_iter_param();
   int init_doc_length_est_param();
+  int get_count_row();
 private:
   static const int64_t INV_IDX_ROWKEY_COL_CNT = 2;
 private:
@@ -148,6 +149,7 @@ private:
   };
   bool check_rangekey_inited_;
   bool inv_idx_tablet_switched_;
+  bool count_row_emitted_;
   bool is_inited_;
   DISALLOW_COPY_AND_ASSIGN(ObDASLegacyTRMergeIter);
 };

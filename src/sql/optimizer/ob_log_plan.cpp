@@ -4549,7 +4549,8 @@ int ObLogPlan::try_push_aggr_into_table_scan(ObLogicalOperator *top,
     } else if (is_get ||
                has_npd_filter ||
                scan_op->get_index_back() ||
-               scan_op->is_text_retrieval_scan() ||
+               (scan_op->is_text_retrieval_scan()
+                && !scan_op->can_pushdown_text_count(aggr_items, groupby_columns)) ||
                scan_op->is_sample_scan() ||
                (scan_op->is_index_scan() && !groupby_columns.empty()) ||
                (is_descending_direction(scan_op->get_scan_direction()) && !groupby_columns.empty())) {
@@ -4558,7 +4559,7 @@ int ObLogPlan::try_push_aggr_into_table_scan(ObLogicalOperator *top,
       //2. TSC is sample scan operator
       //3. TSC contains filters that cannot be pushed down to the storage
       //4. TSC is point get
-      //5. TSC is text retrieval scan
+      //5. TSC is text retrieval scan, except an exact covering COUNT(*)
       //6. TSC is index table scan with group by
           } else if (OB_FAIL(scan_op->get_pushdown_aggr_exprs().assign(aggr_items))) {
     } else if (OB_FAIL(scan_op->get_pushdown_groupby_columns().assign(groupby_columns))) {

@@ -983,6 +983,15 @@ int ObTscCgService::generate_pushdown_aggr_ctdef(const ObLogTableScan &op,
                                        : op.get_text_retrieval_info();
     if (OB_FAIL(generate_text_ir_pushdown_expr_ctdef(tr_info, op, scan_ctdef))) {
     }
+    if (OB_SUCC(ret) && aggregate_output_count > 0
+        && op.can_pushdown_text_count(pushdown_aggr_exprs, group_by_columns)) {
+      // This expression is filled by the merge over all terms. Do not add it
+      // to the term scan's storage aggregates, which would count duplicates.
+      ObExpr *count_expr = nullptr;
+      if (OB_FAIL(cg_.generate_rt_expr(*pushdown_aggr_exprs.at(0), count_expr))) {
+      } else if (OB_FAIL(cg_.mark_expr_self_produced(pushdown_aggr_exprs.at(0)))) {
+      }
+    }
   } else if (op.get_index_back() && aggregate_output_count > 0) {
     ret = OB_NOT_SUPPORTED;
     LOG_WARN("pushdown aggr to table scan not supported in index lookup",
@@ -1913,6 +1922,17 @@ int ObTscCgService::generate_text_ir_ctdef(const ObLogTableScan &op,
         }
       }
       index_back_doc_id_column = ir_scan_ctdef->inv_scan_domain_id_col_;
+    }
+  }
+
+  if (OB_SUCC(ret) && !op.get_pushdown_aggr_exprs().empty()) {
+    if (!op.can_pushdown_text_count(op.get_pushdown_aggr_exprs(), op.get_pushdown_groupby_columns())
+        || ir_scan_ctdef->result_output_.count() != 1) {
+      ret = OB_NOT_SUPPORTED;
+    } else if (OB_FAIL(cg_.generate_rt_expr(*op.get_pushdown_aggr_exprs().at(0),
+                                          ir_scan_ctdef->count_star_expr_))) {
+    } else {
+      ir_scan_ctdef->result_output_.at(0) = ir_scan_ctdef->count_star_expr_;
     }
   }
 

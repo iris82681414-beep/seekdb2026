@@ -20,6 +20,7 @@
 #include "sql/das/iter/ob_das_text_retrieval_eval_node.h"
 #include "sql/das/iter/sparse_retrieval/ob_das_text_retrieval_engine.h"
 #include "sql/das/ob_das_ir_define.h"
+#include "sql/engine/ob_exec_context.h"
 
 namespace oceanbase
 {
@@ -55,6 +56,7 @@ ObDASLegacyTRMergeIter::ObDASLegacyTRMergeIter()
     flags_(0),
     check_rangekey_inited_(false),
     inv_idx_tablet_switched_(false),
+    count_row_emitted_(false),
     is_inited_(false)
 {
 }
@@ -384,6 +386,7 @@ int ObDASLegacyTRMergeIter::create_sparse_retrieval_iter()
   sr_iter_param_.filter_expr_ = ir_ctdef_->need_calc_relevance()
       ? ir_ctdef_->match_filter_ : nullptr;
   sr_iter_param_.topk_limit_ = topk_limit_;
+  sr_iter_param_.count_only_ = ir_ctdef_->count_star_expr_ != nullptr;
   if (OB_NOT_NULL(ir_ctdef_->field_boost_expr_)) {
     ObDatum *boost_datum = nullptr;
     if (OB_FAIL(ir_ctdef_->field_boost_expr_->eval(*ir_rtdef_->eval_ctx_, boost_datum))) {
@@ -714,6 +717,7 @@ int ObDASLegacyTRMergeIter::gen_inv_idx_scan_one_range(const ObString &query_tok
 int ObDASLegacyTRMergeIter::do_table_scan()
 {
   int ret = OB_SUCCESS;
+  count_row_emitted_ = false;
   if (IS_NOT_INIT) {
     ret = OB_NOT_INIT;
   } else {
@@ -753,6 +757,7 @@ int ObDASLegacyTRMergeIter::reuse_das_iter_scan_param(const ObTabletID &tablet_i
 int ObDASLegacyTRMergeIter::inner_reuse()
 {
   int ret = OB_SUCCESS;
+  count_row_emitted_ = false;
   if (IS_NOT_INIT) {
     ret = OB_NOT_INIT;
   } else if (OB_ISNULL(sparse_retrieval_iter_)) {
@@ -795,6 +800,7 @@ int ObDASLegacyTRMergeIter::inner_reuse()
 int ObDASLegacyTRMergeIter::rescan()
 {
   int ret = OB_SUCCESS;
+  count_row_emitted_ = false;
   if (IS_NOT_INIT) {
     ret = OB_NOT_INIT;
   } else if (OB_ISNULL(sparse_retrieval_iter_)) {
@@ -874,6 +880,7 @@ int ObDASLegacyTRMergeIter::inner_release()
   snapshot_ = nullptr;
   topk_limit_ = 0;
   inv_idx_tablet_switched_ = false;
+  count_row_emitted_ = false;
   is_inited_ = false;
   return ret;
 }
@@ -885,6 +892,8 @@ int ObDASLegacyTRMergeIter::inner_get_next_row()
     ret = OB_NOT_INIT;
   } else if (OB_ISNULL(sparse_retrieval_iter_)) {
     ret = OB_ERR_UNEXPECTED;
+  } else if (OB_NOT_NULL(ir_ctdef_->count_star_expr_)) {
+    ret = get_count_row();
   } else {
     ret = sparse_retrieval_iter_->get_next_row();
   }
@@ -894,14 +903,66 @@ int ObDASLegacyTRMergeIter::inner_get_next_row()
 int ObDASLegacyTRMergeIter::inner_get_next_rows(int64_t &count, int64_t capacity)
 {
   int ret = OB_SUCCESS;
+  count = 0;
   if (IS_NOT_INIT) {
     ret = OB_NOT_INIT;
   } else if (OB_ISNULL(sparse_retrieval_iter_)) {
     ret = OB_ERR_UNEXPECTED;
   } else if (OB_UNLIKELY(0 == capacity)) {
     count = 0;
+  } else if (OB_NOT_NULL(ir_ctdef_->count_star_expr_)) {
+    if (OB_FAIL(get_count_row())) {
+    } else {
+      count = 1;
+    }
   } else {
     ret = sparse_retrieval_iter_->get_next_rows(capacity, count);
+  }
+  return ret;
+}
+
+int ObDASLegacyTRMergeIter::get_count_row()
+{
+  int ret = OB_SUCCESS;
+  int64_t total = 0;
+  bool done = false;
+  if (count_row_emitted_) {
+    ret = OB_ITER_END;
+  } else if (OB_ISNULL(ir_ctdef_->count_star_expr_)
+             || ir_ctdef_->need_calc_relevance()
+             || function_lookup_mode_ || topk_mode_
+             || sr_iter_param_.limit_param_->is_valid()) {
+    ret = OB_ERR_UNEXPECTED;
+  } else {
+    while (OB_SUCC(ret) && !done) {
+      int64_t rows = 0;
+      if (OB_FAIL(exec_ctx_->fast_check_status())) {
+      } else if (OB_FAIL(sparse_retrieval_iter_->get_next_rows(sr_iter_param_.max_batch_size_, rows))) {
+        if (OB_ITER_END == ret) {
+          done = true;
+          ret = OB_SUCCESS;
+        }
+      }
+      if (OB_SUCC(ret)) {
+        if (OB_UNLIKELY(rows < 0 || rows > INT64_MAX - total)) {
+          ret = OB_OPERATE_OVERFLOW;
+        } else {
+          total += rows;
+        }
+      }
+    }
+    if (OB_SUCC(ret)) {
+      ObExpr *expr = ir_ctdef_->count_star_expr_;
+      ObEvalCtx &ctx = *ir_rtdef_->eval_ctx_;
+      ObEvalCtx::BatchInfoScopeGuard guard(ctx);
+      guard.set_batch_idx(0);
+      expr->locate_datum_for_write(ctx).set_int(total);
+      if (ctx.is_vectorized() && expr->is_batch_result()) {
+        expr->get_evaluated_flags(ctx).set(0);
+      }
+      expr->set_evaluated_projected(ctx);
+      count_row_emitted_ = true;
+    }
   }
   return ret;
 }

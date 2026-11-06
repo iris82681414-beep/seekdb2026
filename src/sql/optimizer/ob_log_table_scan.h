@@ -808,6 +808,8 @@ public:
                                   ObIArray<ObRawExpr*> &nonpushdown_filters,
                                   ObIArray<ObRawExpr*> &pushdown_filters) const;
   int has_nonpushdown_filter(bool &has_npd_filter);
+  bool can_pushdown_text_count(const common::ObIArray<ObAggFunRawExpr *> &aggr_exprs,
+                               const common::ObIArray<ObRawExpr *> &group_exprs) const;
   int replace_index_back_pushdown_filters(ObRawExprReplacer &replacer);
   int replace_index_merge_pushdown_filters(ObIndexMergeNode *node, ObRawExprReplacer &replacer);
   int extract_virtual_gen_access_exprs(ObIArray<ObRawExpr*> &access_exprs,
