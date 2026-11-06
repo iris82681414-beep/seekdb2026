@@ -53,3 +53,131 @@ count(*)
 0
 deallocate prepare long_query;
 drop database fts_score_predicates;
+create database fts_count_regression;
+use fts_count_regression;
+create table digits(n int primary key);
+insert into digits values(0),(1),(2),(3),(4),(5),(6),(7),(8),(9);
+create table docs(id int primary key, content varchar(512));
+alter table docs add fulltext index words(content) with parser beng;
+select count(*) from docs where match(content) against('alpha beta');
+count(*)
+193
+select /*+ use_das(docs) */ count(*) from docs where match(content) against('alpha beta');
+count(*)
+193
+select /*+ no_use_das(docs) */ count(*) from docs where match(content) against('alpha beta');
+count(*)
+193
+select count(*), count(*) from docs where match(content) against('alpha beta');
+count(*)	count(*)
+193	193
+select count(1) from docs where match(content) against('alpha beta');
+count(1)
+193
+select count(null) from docs where match(content) against('alpha beta');
+count(null)
+0
+select count(content), count(distinct id) from docs where match(content) against('alpha beta');
+count(content)	count(distinct id)
+193	193
+select count(*), sum(id), min(id), max(id) from docs where match(content) against('alpha beta');
+count(*)	sum(id)	min(id)	max(id)
+193	24897	1	257
+select count(*) from docs where match(content) against('alpha beta') and id > 100;
+count(*)
+118
+select count(*) from docs where match(content) against('alpha beta') > 0.12;
+count(*)
+193
+select count(*) from docs where match(content) against('+alpha -beta' in boolean mode);
+count(*)
+65
+select count(*) from (select id from docs where match(content) against('alpha beta') limit 7 offset 3) d;
+count(*)
+7
+select count(*) as n from docs where match(content) against('alpha beta') having n >= 100;
+n
+193
+select count(*) from docs where match(content) against('missing absent');
+count(*)
+0
+select count(*) from docs where match(content) against('');
+count(*)
+0
+select count(*) from docs where match(content) against(null);
+count(*)
+0
+prepare count_q from 'select count(*) from docs where match(content) against(?)';
+set @q='alpha beta';
+execute count_q using @q;
+count(*)
+193
+set @q='missing absent';
+execute count_q using @q;
+count(*)
+0
+set @q='';
+execute count_q using @q;
+count(*)
+0
+set @q=null;
+execute count_q using @q;
+count(*)
+0
+set @q='gamma';
+execute count_q using @q;
+count(*)
+64
+deallocate prepare count_q;
+create table empty_docs(id int primary key, content varchar(512), fulltext index words(content) with parser beng);
+select count(*) from empty_docs where match(content) against('alpha beta');
+count(*)
+0
+create table no_key(content varchar(512), fulltext index words(content) with parser beng);
+insert into no_key select content from docs;
+select count(*) from no_key where match(content) against('alpha beta');
+count(*)
+193
+create table split_docs(id int primary key, content varchar(512),
+fulltext index words(content) with parser beng) partition by hash(id) partitions 2;
+insert into split_docs select * from docs;
+select count(*) from split_docs where match(content) against('alpha beta');
+count(*)
+193
+select count(*) from split_docs where match(content) against('missing absent');
+count(*)
+0
+select /*+ parallel(2) use_das(split_docs) */ count(*) from split_docs where match(content) against('alpha beta');
+count(*)
+193
+select /*+ no_use_das(split_docs) */ count(*) from split_docs where match(content) against('alpha beta');
+count(*)
+193
+set @count_saved_isolation=@@tx_isolation;
+set session transaction isolation level repeatable read;
+start transaction with consistent snapshot;
+select count(*) from docs where match(content) against('alpha beta');
+count(*)
+193
+insert into docs values(1001,'alpha beta');
+select count(*) from docs where match(content) against('alpha beta');
+count(*)
+193
+commit;
+select count(*) from docs where match(content) against('alpha beta');
+count(*)
+194
+start transaction;
+insert into docs values(1002,'alpha beta');
+select count(*) from docs where match(content) against('alpha beta');
+count(*)
+195
+select count(*) from docs where match(content) against('alpha beta');
+count(*)
+194
+rollback;
+select count(*) from docs where match(content) against('alpha beta');
+count(*)
+194
+set session tx_isolation=@count_saved_isolation;
+drop database fts_count_regression;
