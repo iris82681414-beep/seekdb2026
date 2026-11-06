@@ -146,7 +146,7 @@ int ObExprTokenize::eval_tokenize(const ObExpr &expr, ObEvalCtx &ctx, ObDatum &e
     } else if (OB_FAIL(tokenize_fulltext(param, param.output_mode_, temp_allocator, json_result))) {
     } else if (OB_ISNULL(json_result)) {
       expr_datum.set_null();
-    } else if (OB_FAIL(ObJsonWrapper::get_raw_binary(json_result, serialized, &temp_allocator))) {
+    } else if (OB_FAIL(share::ObJsonWrapper::get_raw_binary(json_result, serialized, &temp_allocator))) {
     } else if (OB_FAIL(ObJsonExprHelper::pack_json_str_res(expr, ctx, expr_datum, serialized))) {
     } else {
       memo.store(param, epoch, serialized);
