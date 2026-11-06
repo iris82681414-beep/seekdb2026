@@ -1,0 +1,99 @@
+{
+  "complete": true,
+  "phase": "complete",
+  "primary_updated": false,
+  "diagnostic_only": true,
+  "performance_score": null,
+  "source_commit": "c251fef9334dd42f7ebf2c7aa19692bec46bab53",
+  "started_at_unix": 1793951765.531406,
+  "events": [
+    {
+      "line": "[3/5] build fulltext indexes ...",
+      "monotonic": 171993.019326586,
+      "unix": 1793951804.99896
+    },
+    {
+      "line": "build_ik_all: 3.647s",
+      "monotonic": 171996.668529384,
+      "unix": 1793951808.6481626
+    },
+    {
+      "line": "build_ik_content: 2.629s",
+      "monotonic": 171999.299618322,
+      "unix": 1793951811.279252
+    },
+    {
+      "line": "build_beng_en: 1.426s",
+      "monotonic": 172000.727784233,
+      "unix": 1793951812.7074172
+    },
+    {
+      "line": "[4/5] TOKENIZE hot-path ...",
+      "monotonic": 172000.729271201,
+      "unix": 1793951812.7089043
+    },
+    {
+      "line": "[5/5] MATCH query ...",
+      "monotonic": 172001.877662052,
+      "unix": 1793951813.8572953
+    }
+  ],
+  "observation": "Process CPU, storage, memory and runnable thread sampling; this instrumented run is not a speed comparison.",
+  "primary_pid": "3892",
+  "workload_sha256": {
+    "tools/benchmark/fts_large_bench.sh": "596ea5d1c0038e666b78aa94bef22d2dfb87ffc9e84dbc7e2a1da1f746424462",
+    "tools/benchmark/fts_large_bench_gen.py": "b0c816dd8211ac0471f60b72a37a3fb5c62580357a5b6d7ac95f5a8c2e3f143d",
+    "tools/benchmark/fts_large_bench_setup.sql": "311826751df7f51ac45156fb4284aeca9bd9197370aceb88f4fb92832b458108",
+    "tools/benchmark/fts_large_bench_baseline.json": "f4e97eddb2e49c982b967fc8047f7cf37177eebe53d648f6746d85aacda91f0c",
+    "tools/benchmark/fts_large_bench_score.py": "bea52eb1c68d05693bb3ac5b910ab0e2fa0e70e01582f40466898ee1e2e3ef55"
+  },
+  "comparison_pid": "734150",
+  "workload_exit": 0,
+  "build_resources": [
+    {
+      "phase": "build_ik_all",
+      "sample_elapsed_seconds": 3.593347546993755,
+      "process_cpu_seconds": 7.41,
+      "average_busy_cpu_cores": 2.062143976637971,
+      "storage_io_delta": {
+        "read_bytes": 4866048,
+        "write_bytes": 13664256
+      },
+      "max_rss_kb": 1495496,
+      "max_swap_kb": 0,
+      "samples_with_uninterruptible_threads": 3,
+      "sample_count": 36
+    },
+    {
+      "phase": "build_ik_content",
+      "sample_elapsed_seconds": 2.6752462279982865,
+      "process_cpu_seconds": 5.760000000000002,
+      "average_busy_cpu_cores": 2.1530728423117287,
+      "storage_io_delta": {
+        "read_bytes": 4509696,
+        "write_bytes": 9732096
+      },
+      "max_rss_kb": 1457976,
+      "max_swap_kb": 0,
+      "samples_with_uninterruptible_threads": 6,
+      "sample_count": 25
+    },
+    {
+      "phase": "build_beng_en",
+      "sample_elapsed_seconds": 1.4499954000057187,
+      "process_cpu_seconds": 3.030000000000001,
+      "average_busy_cpu_cores": 2.089661801677475,
+      "storage_io_delta": {
+        "read_bytes": 2646016,
+        "write_bytes": 8716288
+      },
+      "max_rss_kb": 1486336,
+      "max_swap_kb": 0,
+      "samples_with_uninterruptible_threads": 6,
+      "sample_count": 14
+    }
+  ],
+  "finished_at_unix": 1793951817.0422816,
+  "comparison_stopped": true,
+  "validation_link_restored_to_original": true
+}
