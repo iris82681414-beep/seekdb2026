@@ -14,6 +14,7 @@
 | 全文检索 | `69b8fb5891cdb10ccaee208f8627b9c71c73f2bb` | 11 月 6 日 15:10 | 执行成功；功能 1 通过/0 失败，性能 0 分；最高仍 7.415 |
 | Qoder | `0f56f098aa4534466e21b0becf1dc1c32fb4a077` | 11 月 6 日 15:11 | 待执行 |
 | 全文检索同版本稳定性复测 | `69b8fb5891cdb10ccaee208f8627b9c71c73f2bb` | 11 月 6 日 15:36 | 执行成功；功能 1 通过/0 失败，性能仍为 0 分 |
+| 全文检索前缀/剩余流计数 | `912bedc6806b7a777ce7cad3b7028d8c8ea9ad76` | 11 月 6 日 20:32 | 提测成功，执行中；尚未出分 |
 
 Qoder 和 MiniMax 的登记仓库均为 `iris82681414-beep/PowerContext2026`，分支 `2026-competition-ecosystem`；全文检索登记仓库为 `iris82681414-beep/seekdb2026`，分支 `codex/competition-fts-union`。Qoder 账号标识及证据索引已纳入 `qoder/SUBMISSION.md`，用户已确认无痕窗口无需登录即可访问作品网站。MiniMax 已补充数据库部署步骤和经渲染核验的一页 PDF 技术说明。两项生态评测仍待执行；新全文检索版本没有增加分数，总分保留 517.415。
 
@@ -150,7 +151,7 @@ PowerContext [正式记录](https://open.oceanbase.com/train/TestRecord?question
 
 第一版计时控制器误把历史归档编号随候选版本一起替换，前置检查在任何负载启动前停止了该轮；修正控制器后新建独立记录，没有覆盖失败记录或重选已测样本。完整私有证据 `8064db60…` 的 159 个文件摘要已逐一核验。[构建](competition-results/20261106-count-suffix/fts-count-nov6-r5-build.json)、[含新边界的严格回归](competition-results/20261106-count-suffix/fts-count-nov6-r6-validation.json)、[完整对照](competition-results/20261106-count-suffix/fts-count-nov6-r5b-aba-aba.json)、[大结果集](competition-results/20261106-count-suffix/large-result-cost.json)、[部分批次实际路径](competition-results/20261106-count-suffix/partial-batch-proof.json)。比较实例已经停止并恢复原运行链接，主实例未更新；计时期间暂停的旧压缩包转存已恢复。
 
-最终版本已获平台“提测成功”确认，并在 600080 提测记录中显示同一固定 SHA、分支及“执行中”，总提测次数 14。结果尚未返回，不将本机性能比率记作正式得分。Qoder 和 MiniMax 在 20:19 复核仍待执行，公开榜单仍为 517.415。AMD 按用户要求暂停。
+最终版本已获平台“提测成功”确认，并在 600080 提测记录中显示同一固定 SHA、分支及“执行中”，总提测次数 14。结果尚未返回，不将本机性能比率记作正式得分。Qoder 和 MiniMax 本轮复核仍待执行，公开榜单仍为 517.415。AMD 按用户要求暂停。
 
 旧的 6 份实验二进制转存已经完成，逐份核验压缩和解压摘要后移除远端重复压缩包，释放约 2.32 GB。R3 二进制另存压缩快照并核验原始摘要后回收未执行的原始文件；原版、当前主实例以及独立测试基线均保留。
 

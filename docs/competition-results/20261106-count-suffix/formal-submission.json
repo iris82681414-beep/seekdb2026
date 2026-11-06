@@ -1,0 +1,15 @@
+{
+  "question_id": 600080,
+  "repository": "https://github.com/iris82681414-beep/seekdb2026",
+  "branch": "codex/competition-fts-count-pushdown",
+  "commit": "912bedc6806b7a777ce7cad3b7028d8c8ea9ad76",
+  "platform_submission_time_cst": "2026-11-06 20:32",
+  "platform_state": "执行中",
+  "platform_submission_count": 14,
+  "formal_score": null,
+  "highest_retained_fts_score": 7.415,
+  "total_score_before_result": 517.415,
+  "ui_success_confirmed": true,
+  "same_commit_verified_in_record": true,
+  "evidence_archive_sha256": "8064db604687bef0bdd84b75b165d6cb58fe566393c803a9163da86de5cfe97a"
+}
