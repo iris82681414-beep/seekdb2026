@@ -1,0 +1,75 @@
+{
+  "complete": true,
+  "performance_runs": [
+    {
+      "label": "parent-a",
+      "pid": "933271",
+      "startup_budget_bytes": 4294967296,
+      "last_reload": {
+        "time": "2026-11-07 01:45:35.625694",
+        "memory_budget": 4294967296,
+        "configured_memory_budget": 0
+      }
+    },
+    {
+      "label": "build-concurrency",
+      "pid": "934001",
+      "startup_budget_bytes": 4294967296,
+      "last_reload": {
+        "time": "2026-11-07 01:46:27.474138",
+        "memory_budget": 4294967296,
+        "configured_memory_budget": 0
+      }
+    },
+    {
+      "label": "parent-b",
+      "pid": "934683",
+      "startup_budget_bytes": 4294967296,
+      "last_reload": {
+        "time": "2026-11-07 01:47:14.543646",
+        "memory_budget": 4294967296,
+        "configured_memory_budget": 0
+      }
+    }
+  ],
+  "limit_probes": [
+    {
+      "label": "low-cpu",
+      "pid": "941647",
+      "configured_cpu_count": 2,
+      "builder_thread_count": 1,
+      "startup_budget_bytes": 4294967296,
+      "last_reload": {
+        "time": "2026-11-07 02:07:28.186174",
+        "memory_budget": 4294967296,
+        "configured_memory_budget": 4294967296
+      }
+    },
+    {
+      "label": "boundary-memory",
+      "pid": "941781",
+      "configured_cpu_count": 4,
+      "builder_thread_count": 2,
+      "startup_budget_bytes": 2147483648,
+      "last_reload": {
+        "time": "2026-11-07 02:07:33.795813",
+        "memory_budget": 2147483648,
+        "configured_memory_budget": 2147483648
+      }
+    },
+    {
+      "label": "low-memory",
+      "pid": "941910",
+      "configured_cpu_count": 4,
+      "builder_thread_count": 1,
+      "startup_budget_bytes": 1610612736,
+      "last_reload": {
+        "time": "2026-11-07 02:07:39.272868",
+        "memory_budget": 1610612736,
+        "configured_memory_budget": 1610612736
+      }
+    }
+  ],
+  "started_at_unix": 1793988671.656576,
+  "finished_at_unix": 1793988676.8831913
+}

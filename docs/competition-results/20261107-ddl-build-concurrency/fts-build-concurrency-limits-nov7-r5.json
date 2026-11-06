@@ -1,0 +1,94 @@
+{
+  "complete": true,
+  "phase": "complete",
+  "primary_updated": false,
+  "formal_score": null,
+  "diagnostic_only": true,
+  "cases": [
+    {
+      "label": "low-cpu",
+      "configured_memory_budget": "4G",
+      "effective_memory_budget_bytes": 4294967296,
+      "configured_cpu_count": 2,
+      "pid": "941647",
+      "builder_thread_count": 1,
+      "builder_tids": [
+        "941682"
+      ],
+      "sql_exit": 0,
+      "matching_rows": 2,
+      "candidate_binary_sha256": "79da823f2237a7749d5af4d0b3ac7895d841abc168336c1ac45d8b1924fc6330",
+      "log_archives": [
+        {
+          "name": "low-cpu-seekdb.log.gz",
+          "compressed_sha256": "1025b336efc8e8eebc672428b571479a03dd7dfab30aaf7b7522a4f0257d657a",
+          "raw_sha256": "da6c71b3f9e67c66d59b0de74b6d13d22c79e4eac53fc16e16a7cd791b142129"
+        },
+        {
+          "name": "low-cpu-seekdb.log.20261107020257349.gz",
+          "compressed_sha256": "ea610df71484d0e3e61b4b4dd56603b940cbbd1495cb4f412072913abfe96a0a",
+          "raw_sha256": "6f88bc7ebcc3f4650aa674cc221a7f2a67f4dc0f08ad5f687d30ffd763956808"
+        }
+      ]
+    },
+    {
+      "label": "boundary-memory",
+      "configured_memory_budget": "2G",
+      "effective_memory_budget_bytes": 2147483648,
+      "configured_cpu_count": 4,
+      "pid": "941781",
+      "builder_thread_count": 2,
+      "builder_tids": [
+        "941816",
+        "941817"
+      ],
+      "sql_exit": 0,
+      "matching_rows": 2,
+      "candidate_binary_sha256": "79da823f2237a7749d5af4d0b3ac7895d841abc168336c1ac45d8b1924fc6330",
+      "log_archives": [
+        {
+          "name": "boundary-memory-seekdb.log.gz",
+          "compressed_sha256": "5e87d9d9b6da8d54974c9eb0730123bfba0ae4e08b6d181c88195a3307fdd92a",
+          "raw_sha256": "5cb3ecc98c4f179148ef46da07d061c7e020d86f6e3345be808537a14654defd"
+        },
+        {
+          "name": "boundary-memory-seekdb.log.20261107020257349.gz",
+          "compressed_sha256": "bb2e6bb3e172816493d6275b2b9bc090ce4747e12f16243d0ae6ed03d05e712a",
+          "raw_sha256": "6f88bc7ebcc3f4650aa674cc221a7f2a67f4dc0f08ad5f687d30ffd763956808"
+        }
+      ]
+    },
+    {
+      "label": "low-memory",
+      "configured_memory_budget": "1536M",
+      "effective_memory_budget_bytes": 1610612736,
+      "configured_cpu_count": 4,
+      "pid": "941910",
+      "builder_thread_count": 1,
+      "builder_tids": [
+        "941945"
+      ],
+      "sql_exit": 0,
+      "matching_rows": 2,
+      "candidate_binary_sha256": "79da823f2237a7749d5af4d0b3ac7895d841abc168336c1ac45d8b1924fc6330",
+      "log_archives": [
+        {
+          "name": "low-memory-seekdb.log.gz",
+          "compressed_sha256": "9042e6c866f645e0a2ec010577b94314c65815d5d6764cd9eaf34d8fbdf65d54",
+          "raw_sha256": "a6204285306173b71e86bc6d1f4ff468cfcc4a3d53d0ba6d08a5358781dd120e"
+        },
+        {
+          "name": "low-memory-seekdb.log.20261107020257349.gz",
+          "compressed_sha256": "775e17f848e78418070cf6dae5a6a95096ef2bf9b77a3124673cbc19f48b0c37",
+          "raw_sha256": "6f88bc7ebcc3f4650aa674cc221a7f2a67f4dc0f08ad5f687d30ffd763956808"
+        }
+      ]
+    }
+  ],
+  "started_at_unix": 1793988446.8833497,
+  "resumed_owned_instance_source": "/root/oceanbase2026/results/fts-build-concurrency-limits-nov7-r4/summary.json",
+  "disposable_instance_removed": true,
+  "finished_at_unix": 1793988464.5704951,
+  "diagnostic_port_closed": true,
+  "existing_comparison_port_closed": true
+}

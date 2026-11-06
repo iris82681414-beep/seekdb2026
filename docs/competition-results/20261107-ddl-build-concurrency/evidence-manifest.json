@@ -1,0 +1,10 @@
+{
+  "archive_sha256": "358bb77ab58700bceba4649abe55e50963394e54b20f847378b1940ebb5ba0c3",
+  "archive_bytes": 184581307,
+  "files": 131,
+  "archive_public": false,
+  "local_archive_verified": true,
+  "primary_unchanged": true,
+  "comparison_port_closed": true,
+  "restored_baseline_files": 6936
+}
