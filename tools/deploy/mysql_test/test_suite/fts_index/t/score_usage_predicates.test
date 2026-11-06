@@ -142,3 +142,37 @@ select count(*) from docs where match(content) against('alpha beta');
 rollback;
 select count(*) from docs where match(content) against('alpha beta');
 drop database fts_count_large_regression;
+
+# Two 33,025-document terms overlap once. After the 65,536-posting prefix,
+# the unread suffix starts inside a batch and still contains new document IDs.
+create database fts_count_prefix_boundary;
+use fts_count_prefix_boundary;
+create table digits(n int primary key);
+insert into digits values(0),(1),(2),(3),(4),(5),(6),(7),(8),(9);
+create table docs(id int primary key, content varchar(128));
+--disable_query_log
+insert into docs
+select id, case when id < 33025 then 'gamma'
+ when id = 33025 then 'gamma delta' else 'delta' end
+from (select a.n*10000+b.n*1000+c.n*100+d.n*10+e.n+1 as id
+ from digits a, digits b, digits c, digits d, digits e) s where id <= 66049;
+--enable_query_log
+alter table docs add fulltext index words(content) with parser beng;
+select count(*) from docs where match(content) against('gamma');
+select count(*) from docs where match(content) against('delta');
+select count(*) from docs where match(content) against('gamma delta');
+select count(*) from docs where match(content) against('gamma gamma delta');
+prepare count_prefix_q from 'select count(*) from docs where match(content) against(?)';
+set @q='gamma delta';
+execute count_prefix_q using @q;
+set @q='missing';
+execute count_prefix_q using @q;
+set @q='delta gamma';
+execute count_prefix_q using @q;
+deallocate prepare count_prefix_q;
+start transaction;
+delete from docs where id = 33025;
+select count(*) from docs where match(content) against('gamma delta');
+rollback;
+select count(*) from docs where match(content) against('gamma delta');
+drop database fts_count_prefix_boundary;
