@@ -651,7 +651,7 @@ bool ObLogTableScan::can_pushdown_text_count(
   const ObTextRetrievalInfo &info = get_text_retrieval_info();
   return lib::is_mysql_mode()
       && is_text_retrieval_scan() && !has_es_match() && !is_vec_idx_scan()
-      && !has_func_lookup() && !use_index_merge() && !get_index_back()
+      && !has_func_lookup() && !use_index_merge() && !get_index_back() && !use_batch()
       && get_filter_exprs().empty() && group_exprs.empty()
       && !info.need_calc_relevance_ && !info.need_sort()
       && nullptr == info.pushdown_match_filter_
