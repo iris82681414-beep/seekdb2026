@@ -1,0 +1,9 @@
+{
+  "complete": true,
+  "archive": "/root/oceanbase2026/results/fts-json-text-nov7-r2-evidence.tar.gz",
+  "sha256": "2015ac0bf2dfb41c3b9294fa7176cd9e8effd87ba112659d2b0399c76d22861f",
+  "bytes": 218095160,
+  "files": 252,
+  "primary_unchanged": true,
+  "baseline_product_files_verified": 6936
+}

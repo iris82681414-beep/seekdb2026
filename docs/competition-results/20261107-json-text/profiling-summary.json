@@ -1,0 +1,56 @@
+{
+  "complete": true,
+  "phase": "complete",
+  "diagnostic_only": true,
+  "formal_score": null,
+  "primary_updated": false,
+  "source_commit": "91636f565c11c3c2962fae7884098c3e8ca15cb5",
+  "source_checkpoint": "e6a76cf8b6102d75b658d146b9e3f10fbf9429e3",
+  "controller_pid": 975476,
+  "started_at_unix": 1793994890.5670674,
+  "rounds_per_parser": 100000,
+  "warmup_per_parser": 1000,
+  "parsers": [
+    {
+      "parser": "ik",
+      "sql_sha256": "e45621f6debdb98e77f3ad6e0228aaf9c9f016436f9fa990b525d6756e7e8a11",
+      "rounds": 100000,
+      "diagnostic_seconds_with_sampling": 3.739435297989985,
+      "client_exit": 0,
+      "perf_wrapper_exit": -2,
+      "perf_data_sha256": "b76c035fb5f436010716232c6511af53aac1ad2c0cc7bc39716eabeed12bb7d2",
+      "perf_data_bytes": 20478890,
+      "build_id_matched": true,
+      "flat_report_sha256": "dee8ba138e63715320baa4b3ca61f970fd7caef372958d1c28476a1146e3a607",
+      "inclusive_report_sha256": "58239633521ca450ce22300f6d54fe7c59b8391df752cd6d7678a2e577d0e1b4"
+    },
+    {
+      "parser": "beng",
+      "sql_sha256": "aa4af7eeac9517f8b4efbeffe7519a08c7eefa8eb9f0874495152e099d1569dc",
+      "rounds": 100000,
+      "diagnostic_seconds_with_sampling": 2.8485076510114595,
+      "client_exit": 0,
+      "perf_wrapper_exit": -2,
+      "perf_data_sha256": "061d05f76e93e7c15fd2fe3de437e9d336ec29a443c3e17c1f13f0af294097a4",
+      "perf_data_bytes": 13701266,
+      "build_id_matched": true,
+      "flat_report_sha256": "e797cad335692e25e9ee5e42d4856557b4e1ac492210695ddeeaa7dcc13d84b1",
+      "inclusive_report_sha256": "97f95ef599b210722e6e992f29b99901ae88f72e6db25a6e586e5939a84b9020"
+    }
+  ],
+  "binary_sha256": "3f2fe54055979eb13c4ba3739dcee6286157c3ed950b02ef21058f7fac8ab3bd",
+  "build_id": "48ba003f42f99fd8d9cfed37b977d486d133b3bf",
+  "workload_sha256": {
+    "tools/benchmark/fts_large_bench.sh": "596ea5d1c0038e666b78aa94bef22d2dfb87ffc9e84dbc7e2a1da1f746424462",
+    "tools/benchmark/fts_large_bench_gen.py": "b0c816dd8211ac0471f60b72a37a3fb5c62580357a5b6d7ac95f5a8c2e3f143d",
+    "tools/benchmark/fts_large_bench_setup.sql": "311826751df7f51ac45156fb4284aeca9bd9197370aceb88f4fb92832b458108",
+    "tools/benchmark/fts_large_bench_baseline.json": "f4e97eddb2e49c982b967fc8047f7cf37177eebe53d648f6746d85aacda91f0c",
+    "tools/benchmark/fts_large_bench_score.py": "bea52eb1c68d05693bb3ac5b910ab0e2fa0e70e01582f40466898ee1e2e3ef55"
+  },
+  "primary_pid": "3892",
+  "comparison_pid": "975549",
+  "capture_cgroup": "system.slice/ob2026-fts-tokenize-hotpath-nov7-r1.service",
+  "finished_at_unix": 1793994937.9038594,
+  "comparison_stopped": true,
+  "managed_link_restored_to_original": true
+}

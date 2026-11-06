@@ -1,0 +1,443 @@
+{
+  "phase": "complete",
+  "complete": true,
+  "primary_updated": false,
+  "formal_score": null,
+  "profiled": false,
+  "benchmarks": [
+    {
+      "label": "parent-a",
+      "binary_sha256": "3f2fe54055979eb13c4ba3739dcee6286157c3ed950b02ef21058f7fac8ab3bd",
+      "pid": "987089",
+      "metrics": {
+        "table rows": 20000.0,
+        "git_dirty": 1.0,
+        "rows": 20000.0,
+        "batch": 500.0,
+        "rounds": 3000.0,
+        "query_rounds": 200.0,
+        "samples": 3.0,
+        "warmup": 30.0,
+        "skip_load": 0.0,
+        "select1_avg_ms": 0.0204,
+        "select1_stdev_ms": 0.0003,
+        "raw_load_sec": 0.197,
+        "raw_load_rows_per_sec": 101522.8,
+        "build_ik_all_sec": 3.546,
+        "build_ik_content_sec": 2.725,
+        "build_beng_en_sec": 1.423,
+        "build_total_sec": 7.7,
+        "tokenize_ik_avg_ms": 0.0377,
+        "tokenize_ik_median_ms": 0.036,
+        "tokenize_ik_stdev_ms": 0.0036,
+        "tokenize_beng_avg_ms": 0.028,
+        "tokenize_beng_median_ms": 0.0282,
+        "tokenize_beng_stdev_ms": 0.0004,
+        "query_cn_hits": 8001.0,
+        "query_cn_avg_ms": 0.4599,
+        "query_cn_stdev_ms": 0.004,
+        "query_beng_hits": 11000.0,
+        "query_beng_avg_ms": 0.618,
+        "query_beng_stdev_ms": 0.0175,
+        "query_mixed_hits": 7332.0,
+        "query_mixed_avg_ms": 0.5033,
+        "query_mixed_stdev_ms": 0.0023,
+        "query_limit_hits": 20.0,
+        "query_limit_avg_ms": 0.1327,
+        "query_limit_stdev_ms": 0.0086
+      },
+      "exit": 0,
+      "elapsed_seconds": 11.005404041992733,
+      "run_started_at_unix": 1793996945.0744948,
+      "workload_finished_at_unix": 1793996989.1760645,
+      "log_archive": {
+        "complete": true,
+        "primary_updated": false,
+        "source_logs_removed": false,
+        "files": [
+          {
+            "source": "/root/oceanbase2026/instances/fts-build-fresh-nov6-r3/log/seekdb.log",
+            "archive": "/root/oceanbase2026/archives/comparison-logs/20261107-042949/seekdb.log.gz",
+            "sha256": "9839f6462392ed0b6f3fbaa334f3aa577c13386a22a8e26ca1a8c71016d9a911"
+          }
+        ]
+      },
+      "task_overlap": {
+        "complete_intervals": [
+          {
+            "task_id": 28000033,
+            "tid": 987125,
+            "parallel_hint": 1,
+            "started_at_unix": 1793996978.793955,
+            "finished_at_unix": 1793996979.011463
+          },
+          {
+            "task_id": 28000097,
+            "tid": 987124,
+            "parallel_hint": 1,
+            "started_at_unix": 1793996979.11481,
+            "finished_at_unix": 1793996979.329655
+          },
+          {
+            "task_id": 28000103,
+            "tid": 987125,
+            "parallel_hint": 1,
+            "started_at_unix": 1793996979.133777,
+            "finished_at_unix": 1793996982.141247
+          },
+          {
+            "task_id": 28000106,
+            "tid": 987124,
+            "parallel_hint": 1,
+            "started_at_unix": 1793996979.329716,
+            "finished_at_unix": 1793996982.185748
+          },
+          {
+            "task_id": 28000818,
+            "tid": 987125,
+            "parallel_hint": 1,
+            "started_at_unix": 1793996982.366501,
+            "finished_at_unix": 1793996984.875277
+          },
+          {
+            "task_id": 28000822,
+            "tid": 987124,
+            "parallel_hint": 1,
+            "started_at_unix": 1793996982.381654,
+            "finished_at_unix": 1793996984.734298
+          },
+          {
+            "task_id": 28001386,
+            "tid": 987124,
+            "parallel_hint": 1,
+            "started_at_unix": 1793996985.075835,
+            "finished_at_unix": 1793996986.382305
+          },
+          {
+            "task_id": 28001390,
+            "tid": 987125,
+            "parallel_hint": 1,
+            "started_at_unix": 1793996985.093571,
+            "finished_at_unix": 1793996986.301884
+          }
+        ],
+        "distinct_workers": 2,
+        "different_workers_overlap": true
+      }
+    },
+    {
+      "label": "json-text",
+      "binary_sha256": "77844c9f038d2cd012e117ccb8182c0609407df7e1e212cdf82da35f12272768",
+      "pid": "987673",
+      "metrics": {
+        "table rows": 20000.0,
+        "git_dirty": 1.0,
+        "rows": 20000.0,
+        "batch": 500.0,
+        "rounds": 3000.0,
+        "query_rounds": 200.0,
+        "samples": 3.0,
+        "warmup": 30.0,
+        "skip_load": 0.0,
+        "select1_avg_ms": 0.0206,
+        "select1_stdev_ms": 0.0,
+        "raw_load_sec": 0.21,
+        "raw_load_rows_per_sec": 95238.1,
+        "build_ik_all_sec": 3.544,
+        "build_ik_content_sec": 2.625,
+        "build_beng_en_sec": 1.421,
+        "build_total_sec": 7.597,
+        "tokenize_ik_avg_ms": 0.0298,
+        "tokenize_ik_median_ms": 0.0296,
+        "tokenize_ik_stdev_ms": 0.0005,
+        "tokenize_beng_avg_ms": 0.026,
+        "tokenize_beng_median_ms": 0.0259,
+        "tokenize_beng_stdev_ms": 0.0016,
+        "query_cn_hits": 8001.0,
+        "query_cn_avg_ms": 0.476,
+        "query_cn_stdev_ms": 0.0166,
+        "query_beng_hits": 11000.0,
+        "query_beng_avg_ms": 0.6423,
+        "query_beng_stdev_ms": 0.0059,
+        "query_mixed_hits": 7332.0,
+        "query_mixed_avg_ms": 0.5178,
+        "query_mixed_stdev_ms": 0.0056,
+        "query_limit_hits": 20.0,
+        "query_limit_avg_ms": 0.133,
+        "query_limit_stdev_ms": 0.0038
+      },
+      "exit": 0,
+      "elapsed_seconds": 10.866535050008679,
+      "run_started_at_unix": 1793996989.7144475,
+      "workload_finished_at_unix": 1793997034.6803553,
+      "log_archive": {
+        "complete": true,
+        "primary_updated": false,
+        "source_logs_removed": false,
+        "files": [
+          {
+            "source": "/root/oceanbase2026/instances/fts-build-fresh-nov6-r3/log/seekdb.log",
+            "archive": "/root/oceanbase2026/archives/comparison-logs/20261107-043034/seekdb.log.gz",
+            "sha256": "d2ff76a0b05d68cefbd0acf1133c6ef8047d8e33acb2bab5d90243dda363d661"
+          }
+        ]
+      },
+      "task_overlap": {
+        "complete_intervals": [
+          {
+            "task_id": 29000032,
+            "tid": 987709,
+            "parallel_hint": 1,
+            "started_at_unix": 1793997024.455456,
+            "finished_at_unix": 1793997024.676063
+          },
+          {
+            "task_id": 29000096,
+            "tid": 987708,
+            "parallel_hint": 1,
+            "started_at_unix": 1793997024.769603,
+            "finished_at_unix": 1793997024.987416
+          },
+          {
+            "task_id": 29000107,
+            "tid": 987709,
+            "parallel_hint": 1,
+            "started_at_unix": 1793997024.789844,
+            "finished_at_unix": 1793997027.733248
+          },
+          {
+            "task_id": 29000102,
+            "tid": 987708,
+            "parallel_hint": 1,
+            "started_at_unix": 1793997024.987477,
+            "finished_at_unix": 1793997027.817689
+          },
+          {
+            "task_id": 29000805,
+            "tid": 987709,
+            "parallel_hint": 1,
+            "started_at_unix": 1793997028.041338,
+            "finished_at_unix": 1793997030.503069
+          },
+          {
+            "task_id": 29000809,
+            "tid": 987708,
+            "parallel_hint": 1,
+            "started_at_unix": 1793997028.057367,
+            "finished_at_unix": 1793997030.40038
+          },
+          {
+            "task_id": 29001386,
+            "tid": 987708,
+            "parallel_hint": 1,
+            "started_at_unix": 1793997030.637797,
+            "finished_at_unix": 1793997031.884406
+          },
+          {
+            "task_id": 29001391,
+            "tid": 987709,
+            "parallel_hint": 1,
+            "started_at_unix": 1793997030.650852,
+            "finished_at_unix": 1793997031.813033
+          }
+        ],
+        "distinct_workers": 2,
+        "different_workers_overlap": true
+      }
+    },
+    {
+      "label": "parent-b",
+      "binary_sha256": "3f2fe54055979eb13c4ba3739dcee6286157c3ed950b02ef21058f7fac8ab3bd",
+      "pid": "988225",
+      "metrics": {
+        "table rows": 20000.0,
+        "git_dirty": 1.0,
+        "rows": 20000.0,
+        "batch": 500.0,
+        "rounds": 3000.0,
+        "query_rounds": 200.0,
+        "samples": 3.0,
+        "warmup": 30.0,
+        "skip_load": 0.0,
+        "select1_avg_ms": 0.0206,
+        "select1_stdev_ms": 0.0002,
+        "raw_load_sec": 0.21,
+        "raw_load_rows_per_sec": 95238.1,
+        "build_ik_all_sec": 3.645,
+        "build_ik_content_sec": 2.723,
+        "build_beng_en_sec": 1.42,
+        "build_total_sec": 7.794,
+        "tokenize_ik_avg_ms": 0.0362,
+        "tokenize_ik_median_ms": 0.0361,
+        "tokenize_ik_stdev_ms": 0.0007,
+        "tokenize_beng_avg_ms": 0.0287,
+        "tokenize_beng_median_ms": 0.0292,
+        "tokenize_beng_stdev_ms": 0.0018,
+        "query_cn_hits": 8001.0,
+        "query_cn_avg_ms": 0.4834,
+        "query_cn_stdev_ms": 0.0098,
+        "query_beng_hits": 11000.0,
+        "query_beng_avg_ms": 0.6243,
+        "query_beng_stdev_ms": 0.0205,
+        "query_mixed_hits": 7332.0,
+        "query_mixed_avg_ms": 0.5076,
+        "query_mixed_stdev_ms": 0.0069,
+        "query_limit_hits": 20.0,
+        "query_limit_avg_ms": 0.1285,
+        "query_limit_stdev_ms": 0.0078
+      },
+      "exit": 0,
+      "elapsed_seconds": 11.166361276002135,
+      "run_started_at_unix": 1793997035.4948533,
+      "workload_finished_at_unix": 1793997081.7660122,
+      "log_archive": {
+        "complete": true,
+        "primary_updated": false,
+        "source_logs_removed": false,
+        "files": [
+          {
+            "source": "/root/oceanbase2026/instances/fts-build-fresh-nov6-r3/log/seekdb.log",
+            "archive": "/root/oceanbase2026/archives/comparison-logs/20261107-043122/seekdb.log.gz",
+            "sha256": "49a34e3e350dad7f9a417aa6cf0db61cb60127b9db2bb223c2b08bb07372b4b4"
+          }
+        ]
+      },
+      "task_overlap": {
+        "complete_intervals": [
+          {
+            "task_id": 30000032,
+            "tid": 988261,
+            "parallel_hint": 1,
+            "started_at_unix": 1793997071.235336,
+            "finished_at_unix": 1793997071.456315
+          },
+          {
+            "task_id": 30000096,
+            "tid": 988260,
+            "parallel_hint": 1,
+            "started_at_unix": 1793997071.541368,
+            "finished_at_unix": 1793997071.780871
+          },
+          {
+            "task_id": 30000102,
+            "tid": 988261,
+            "parallel_hint": 1,
+            "started_at_unix": 1793997071.551368,
+            "finished_at_unix": 1793997074.61125
+          },
+          {
+            "task_id": 30000107,
+            "tid": 988260,
+            "parallel_hint": 1,
+            "started_at_unix": 1793997071.780938,
+            "finished_at_unix": 1793997074.745452
+          },
+          {
+            "task_id": 30000852,
+            "tid": 988261,
+            "parallel_hint": 1,
+            "started_at_unix": 1793997074.920146,
+            "finished_at_unix": 1793997077.469943
+          },
+          {
+            "task_id": 30000856,
+            "tid": 988260,
+            "parallel_hint": 1,
+            "started_at_unix": 1793997074.934101,
+            "finished_at_unix": 1793997077.396721
+          },
+          {
+            "task_id": 30001414,
+            "tid": 988260,
+            "parallel_hint": 1,
+            "started_at_unix": 1793997077.61846,
+            "finished_at_unix": 1793997078.886523
+          },
+          {
+            "task_id": 30001419,
+            "tid": 988261,
+            "parallel_hint": 1,
+            "started_at_unix": 1793997077.632382,
+            "finished_at_unix": 1793997078.840435
+          }
+        ],
+        "distinct_workers": 2,
+        "different_workers_overlap": true
+      }
+    }
+  ],
+  "started_at_unix": 1793996943.5585167,
+  "controller_pid": 987073,
+  "driver": "official-native-client",
+  "background_binary_transfer_stopped_before_measurement": true,
+  "workload_sha256": {
+    "tools/benchmark/fts_large_bench.sh": "596ea5d1c0038e666b78aa94bef22d2dfb87ffc9e84dbc7e2a1da1f746424462",
+    "tools/benchmark/fts_large_bench_gen.py": "b0c816dd8211ac0471f60b72a37a3fb5c62580357a5b6d7ac95f5a8c2e3f143d",
+    "tools/benchmark/fts_large_bench_setup.sql": "311826751df7f51ac45156fb4284aeca9bd9197370aceb88f4fb92832b458108",
+    "tools/benchmark/fts_large_bench_baseline.json": "f4e97eddb2e49c982b967fc8047f7cf37177eebe53d648f6746d85aacda91f0c",
+    "tools/benchmark/fts_large_bench_score.py": "bea52eb1c68d05693bb3ac5b910ab0e2fa0e70e01582f40466898ee1e2e3ef55"
+  },
+  "parent_commit": "91636f565c11c3c2962fae7884098c3e8ca15cb5",
+  "primary_pid": "3892",
+  "runtime_builder_threads": [
+    {
+      "label": "parent-a",
+      "pid": "987089",
+      "tids": [
+        "987124",
+        "987125"
+      ],
+      "count": 2,
+      "cgroup": "/system.slice/ob2026-fts-json-text-nov7-r5-pipeline.service",
+      "cpu_max": "400000 100000",
+      "memory_max": "5368709120"
+    },
+    {
+      "label": "json-text",
+      "pid": "987673",
+      "tids": [
+        "987708",
+        "987709"
+      ],
+      "count": 2,
+      "cgroup": "/system.slice/ob2026-fts-json-text-nov7-r5-pipeline.service",
+      "cpu_max": "400000 100000",
+      "memory_max": "5368709120"
+    },
+    {
+      "label": "parent-b",
+      "pid": "988225",
+      "tids": [
+        "988260",
+        "988261"
+      ],
+      "count": 2,
+      "cgroup": "/system.slice/ob2026-fts-json-text-nov7-r5-pipeline.service",
+      "cpu_max": "400000 100000",
+      "memory_max": "5368709120"
+    }
+  ],
+  "pre_run_recyclebin": [
+    {
+      "label": "parent-a",
+      "count": 0
+    },
+    {
+      "label": "json-text",
+      "count": 0
+    },
+    {
+      "label": "parent-b",
+      "count": 0
+    }
+  ],
+  "relative_to_same_machine_parent": {
+    "build": 0.017006271111248233,
+    "tokenize": 0.13819857617782738,
+    "query": -0.02152077074011577
+  },
+  "mean_category_reduction": 0.04456135884965328,
+  "finished_at_unix": 1793997082.863651,
+  "comparison_stopped": true,
+  "validation_link_restored_to_original": true
+}
