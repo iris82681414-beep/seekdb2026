@@ -1,0 +1,20 @@
+{
+  "complete": true,
+  "phase": "complete",
+  "diagnostic_only": true,
+  "performance_score": null,
+  "primary_updated": false,
+  "started_at_unix": 1793954582.3749807,
+  "primary_pid": "3892",
+  "candidate_sha256": "31bd8a9156b3e4f074ab8941c071fb824f598332bdd86798b810f42211053316",
+  "comparison_pid": "752263",
+  "debugger_pid": 752433,
+  "workload_exit": 0,
+  "debugger_exit": 0,
+  "batch_path_hit": true,
+  "returned_batch_size": 16,
+  "probe_conclusion": "New batch path was executed",
+  "finished_at_unix": 1793954699.4778855,
+  "comparison_stopped": true,
+  "validation_link_restored_to_original": true
+}

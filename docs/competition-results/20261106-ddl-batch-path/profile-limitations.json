@@ -1,0 +1,11 @@
+{
+  "raw_profile_sha256": "2be8d2c3cd9ef0b456e6bc7c4e1ac0dce1222b03f84431e1e759ba7ad1bf5e83",
+  "profiled_binary_sha256": "31bd8a9156b3e4f074ab8941c071fb824f598332bdd86798b810f42211053316",
+  "server_pid_filter": 757100,
+  "lost_samples": 139,
+  "lost_chunks": 2,
+  "limitation": "Sampling loss and unresolved/folded generic symbols prevent precise attribution from flat names. Inclusive parent frames include child work and do not measure their own cost.",
+  "diagnostic_only": true,
+  "evidence_archive_sha256": "44eeda7a1ad44b2a3bd8b1c580dca864f3b0734b8fbb43c3161e70f3abe167e1",
+  "verified_unique_member_hashes": 32
+}

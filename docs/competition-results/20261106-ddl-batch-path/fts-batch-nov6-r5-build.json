@@ -1,0 +1,164 @@
+{
+  "phase": "complete",
+  "complete": true,
+  "primary_updated": false,
+  "experimental_candidate": true,
+  "controller_pid": 750994,
+  "started_at_unix": 1793954548.9181328,
+  "archived_unused_snapshots": [
+    {
+      "path": "/root/oceanbase2026/seekdb-fts-batch-nov6-r4-candidate.gz",
+      "uncompressed_sha256": "c0b595d8a014899b0bcd8db925d97ec6a68576eeda4a9370ba2a06556c79a22b",
+      "original_mode": "0o755",
+      "original_bytes": 1367163840
+    }
+  ],
+  "primary_pid": "3892",
+  "verified_baseline_product_files": 6936,
+  "required_free_bytes": 3628801212,
+  "available_bytes": 2495062016,
+  "archived_stopped_comparison_logs": "{\"complete\": true, \"archived_files\": 2, \"free_bytes\": 3863674880}",
+  "reused_unchanged_source_timestamps": [
+    {
+      "path": "src/oblib/lib/charset/ob_ctype_utf8.cc",
+      "sha256": "0786369098730ebfa75379722eb6c463613f95e36d3a961b98f4b706e91f45ec"
+    },
+    {
+      "path": "src/observer/composition/retrieval/ob_das_legacy_tr_merge_iter.cpp",
+      "sha256": "7d75bdb2f629d34ffe4c5bb7a273c0646b9e7ab2bac276ba876939e212cce637"
+    },
+    {
+      "path": "src/rootserver/ddl_task/ob_ddl_common_rs_impl.cpp",
+      "sha256": "2b627dff01f76131ee67cd4e35c306a01ad0221aa7510cce585f3c4c4d2c1e1c"
+    },
+    {
+      "path": "src/sql/das/iter/ob_das_iter_utils.cpp",
+      "sha256": "4d27ad77d0c9958d7326bd3107b3283762861ecf524a67ec53adcb3d163e1d8a"
+    },
+    {
+      "path": "src/sql/optimizer/ob_log_plan.cpp",
+      "sha256": "c189ef8d6e2c25da6056816b5d6f4a09d4668302e2a9bca2520c843ea2c2bb8a"
+    },
+    {
+      "path": "src/sql/optimizer/ob_optimizer_util.cpp",
+      "sha256": "9d229eb38aa6046923b3831412eaba2b1830b907892282cc53214264a62a046a"
+    },
+    {
+      "path": "src/sql/rewrite/ob_transform_utils.cpp",
+      "sha256": "d578be0d3f647a50f98640c443870be76ed12b32664c908aac0cc8d5672cda43"
+    },
+    {
+      "path": "src/sql/rewrite/ob_transform_utils.h",
+      "sha256": "d7f935ba23df3f0710fa78933ddcf7c78aa14c8c6eddb4e9d83c87a3b9812664"
+    },
+    {
+      "path": "src/storage/retrieval/ob_text_daat_iter.cpp",
+      "sha256": "77a8a828cf57b42703ee9b3b7a42a82cb558e525e318c730cae7e4ffd778c866"
+    },
+    {
+      "path": "src/storage/retrieval/ob_text_daat_iter.h",
+      "sha256": "04576e7e88b365a189f61f613d2619dfd94ecc2abdf4fbc5f23f9be4ccc2b593"
+    },
+    {
+      "path": "src/storage/retrieval/ob_text_retrieval_token_iter.cpp",
+      "sha256": "25998be7b1ed1e65beb4d397510bd87c6cf7e0e3975d545b7b0af69925314c23"
+    },
+    {
+      "path": "src/storage/retrieval/ob_text_taat_iter.cpp",
+      "sha256": "0dce474c767a0d96b9d707591bc481e688de3561cfbbea568ec7fbf1d962224d"
+    },
+    {
+      "path": "src/sql/engine/table/ob_table_scan_op.cpp",
+      "sha256": "c36501f87cc0f89f16df9e1367bdeeb340d7c010232979d896f66d020db444f6"
+    },
+    {
+      "path": "src/sql/engine/table/ob_table_scan_op.h",
+      "sha256": "0a954ba442612b4db2cebad4de6a5201f1070327f47ecc48d03e798583e9a111"
+    }
+  ],
+  "candidate_files": {
+    "src/oblib/lib/charset/ob_ctype_utf8.cc": {
+      "before": "1e437f1a88cb43ac9921e8e6beaf9cb393ff1d52e251977b3dc457650d6cc451",
+      "after": "0786369098730ebfa75379722eb6c463613f95e36d3a961b98f4b706e91f45ec"
+    },
+    "src/observer/composition/retrieval/ob_das_legacy_tr_merge_iter.cpp": {
+      "before": "476eff31bed4f4377f8e833d542d65f7307cae37fbd58df127770a7a9d2b69ef",
+      "after": "7d75bdb2f629d34ffe4c5bb7a273c0646b9e7ab2bac276ba876939e212cce637"
+    },
+    "src/rootserver/ddl_task/ob_ddl_common_rs_impl.cpp": {
+      "before": "1e50e4dc3a1a9ac1cd06bc6fbfe980dfbb437adb2d2ede16e65c9ed4024dbef1",
+      "after": "2b627dff01f76131ee67cd4e35c306a01ad0221aa7510cce585f3c4c4d2c1e1c"
+    },
+    "src/sql/das/iter/ob_das_iter_utils.cpp": {
+      "before": "0326581b1928b07fc21e1f150ac2a369ab44aec62241f5e497cdf01e3c9e0fc4",
+      "after": "4d27ad77d0c9958d7326bd3107b3283762861ecf524a67ec53adcb3d163e1d8a"
+    },
+    "src/sql/optimizer/ob_log_plan.cpp": {
+      "before": "05f2447757edef54e8a4bfad7d0ebe72388b66e4a2fa2d2340d4e4123145cf47",
+      "after": "c189ef8d6e2c25da6056816b5d6f4a09d4668302e2a9bca2520c843ea2c2bb8a"
+    },
+    "src/sql/optimizer/ob_optimizer_util.cpp": {
+      "before": "8a5a3ffb8a3fc581fa8a42cf0d913d130f746c44843044cf9099051dd8617553",
+      "after": "9d229eb38aa6046923b3831412eaba2b1830b907892282cc53214264a62a046a"
+    },
+    "src/sql/rewrite/ob_transform_utils.cpp": {
+      "before": "95e0e9036a6b8b0f9816512b5e135c621ac07a0422463d870fb62d8102e4f67d",
+      "after": "d578be0d3f647a50f98640c443870be76ed12b32664c908aac0cc8d5672cda43"
+    },
+    "src/sql/rewrite/ob_transform_utils.h": {
+      "before": "5461956420e9374dc563fe904c84dfc4803445aed7545d4a045df5789ff5a197",
+      "after": "d7f935ba23df3f0710fa78933ddcf7c78aa14c8c6eddb4e9d83c87a3b9812664"
+    },
+    "src/storage/retrieval/ob_text_daat_iter.cpp": {
+      "before": "17590000c1f5422bb8cad665debf67df8d4093a00edd5bc840ace1527b2ceabb",
+      "after": "77a8a828cf57b42703ee9b3b7a42a82cb558e525e318c730cae7e4ffd778c866"
+    },
+    "src/storage/retrieval/ob_text_daat_iter.h": {
+      "before": "4c52cfba4d5890e8f88d13180bf6caa92f0d2525de4edf7d1bf48e2ffaa9c03b",
+      "after": "04576e7e88b365a189f61f613d2619dfd94ecc2abdf4fbc5f23f9be4ccc2b593"
+    },
+    "src/storage/retrieval/ob_text_retrieval_token_iter.cpp": {
+      "before": "537a63f0cb1bc697f4aefcb3108a478ff20045ce29bf57f4dabb2de6f4e63804",
+      "after": "25998be7b1ed1e65beb4d397510bd87c6cf7e0e3975d545b7b0af69925314c23"
+    },
+    "src/storage/retrieval/ob_text_taat_iter.cpp": {
+      "before": "5b9fdedca1f4f20f407e958f8684f49de5b54e10fa4f2f86d1744ca2b5e16167",
+      "after": "0dce474c767a0d96b9d707591bc481e688de3561cfbbea568ec7fbf1d962224d"
+    },
+    "src/sql/code_generator/ob_static_engine_cg.cpp": {
+      "before": "13e6233408fc0b22c45506dc0c37b050ae0d95cb3c9e768c001ebc058ccba0b4",
+      "after": "47facb3d1ee66e66220953406158351ec1da1e73320b1884ab74037d9c415120"
+    },
+    "src/sql/engine/table/ob_table_scan_op.cpp": {
+      "before": "80f7728c348b23ac8adddda18fa4dfae57b229d538700dc6795275bb699c15b1",
+      "after": "c36501f87cc0f89f16df9e1367bdeeb340d7c010232979d896f66d020db444f6"
+    },
+    "src/sql/engine/table/ob_table_scan_op.h": {
+      "before": "15543386319606d535eb58c3a85d225af8a81f1bce65eab5c16a74afbd8a09c7",
+      "after": "0a954ba442612b4db2cebad4de6a5201f1070327f47ecc48d03e798583e9a111"
+    }
+  },
+  "applied_sources_at_unix": 1793954566.2333372,
+  "build_pid": 751047,
+  "build_exit": 0,
+  "build_seconds": 26.044618820975302,
+  "changed_code_generator_object_recompiled": "/root/oceanbase2026/seekdb/build_release/src/sql/CMakeFiles/ob_sql.dir/Unity/unity_ob_sql_ob_sql_code_generator_0_c___cxx.cxx.o",
+  "reclaimed_generated_intermediates": [
+    {
+      "path": "/root/oceanbase2026/seekdb/build_release/src/observer/liboceanbase_static.a",
+      "bytes": 262510002
+    },
+    {
+      "path": "/root/oceanbase2026/seekdb/build_release/src/sql/libob_sql_static.a",
+      "bytes": 711681438
+    },
+    {
+      "path": "/root/oceanbase2026/seekdb/build_release/src/share/libob_share_static.a",
+      "bytes": 884829994
+    }
+  ],
+  "candidate_binary_sha256": "31bd8a9156b3e4f074ab8941c071fb824f598332bdd86798b810f42211053316",
+  "finished_at_unix": 1793954596.0994396,
+  "production_source_restored": true,
+  "restored_product_files": 6936
+}

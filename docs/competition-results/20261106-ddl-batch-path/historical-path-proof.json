@@ -1,0 +1,17 @@
+{
+  "historical_candidate_sha256": "60b05ec6d03c4582f1d2cd444c1f4cfa11e01873f50ecbae44a592223a7e2e83",
+  "diagnostic_only": true,
+  "complete_native_workload_exit": 0,
+  "new_batch_path_hit": false,
+  "scalar_path_hit": true,
+  "scan_specification": {
+    "max_batch_size": 0,
+    "output_count": 4,
+    "filter_count": 0,
+    "all_four_outputs_batch_results": true
+  },
+  "timings_not_accepted_as_batch_performance": true,
+  "isolated_instances_stopped": true,
+  "primary_updated": false,
+  "evidence_archive_sha256": "a1cd1f8dffec776b835781711b4a333e9e3bae262ddf7fbea3f393ccfbfb7ba0"
+}
