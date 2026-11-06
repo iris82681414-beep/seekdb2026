@@ -1,0 +1,381 @@
+{
+  "complete": true,
+  "phase": "complete",
+  "primary_updated": false,
+  "diagnostic_only": true,
+  "formal_score": null,
+  "clients": 16,
+  "cases_per_client": 32,
+  "runs": [
+    {
+      "label": "parent-a",
+      "binary_sha256": "ed2dc65da33103fac4cc1e12c82f47f2e28a5bcec85cdd8dbd8f87c9b4e9bd74",
+      "pid": "918330",
+      "clients": [
+        {
+          "client": "client-00",
+          "exit": 0,
+          "stdout_sha256": "94933f740f0299b4ef7d3ef0e37eb6b95a8f55db61be4d7ddc226dcb43ca4790",
+          "bytes": 29328
+        },
+        {
+          "client": "client-01",
+          "exit": 0,
+          "stdout_sha256": "e6e06987c51f5bf4a8cdc2d93b7bd20bf0d535498cef435236b9c769e21410d6",
+          "bytes": 31142
+        },
+        {
+          "client": "client-02",
+          "exit": 0,
+          "stdout_sha256": "c3027b68948f2bc92ef1afaeafd2c587dcd566b5fed50820731878ac40c4f5b4",
+          "bytes": 32234
+        },
+        {
+          "client": "client-03",
+          "exit": 0,
+          "stdout_sha256": "50a351676b7a3ce1d2503ae583afcec24e439aea2cc4b17ea678eebe34cacaa5",
+          "bytes": 34562
+        },
+        {
+          "client": "client-04",
+          "exit": 0,
+          "stdout_sha256": "760a84d2898d547838679df70f01c9d0c29602fdc61599ed4ce107df8ab652e8",
+          "bytes": 29314
+        },
+        {
+          "client": "client-05",
+          "exit": 0,
+          "stdout_sha256": "02dc8396c02aa9249dab558fa4a9ddb85ae29d960cfb028276e537831d555b60",
+          "bytes": 30666
+        },
+        {
+          "client": "client-06",
+          "exit": 0,
+          "stdout_sha256": "39050e1bcfd03274b425a641f9ac6662028009a988876f7a494253e428464dbb",
+          "bytes": 31664
+        },
+        {
+          "client": "client-07",
+          "exit": 0,
+          "stdout_sha256": "a6381f609915c02ca9a0d8d932c0e53c90f0218b1be4ba6eace16861641de0df",
+          "bytes": 31118
+        },
+        {
+          "client": "client-08",
+          "exit": 0,
+          "stdout_sha256": "1e53e28a221db4c41a9f4f85d7ba45fa7cf40b825a2b48a2c449d7a32444c781",
+          "bytes": 31878
+        },
+        {
+          "client": "client-09",
+          "exit": 0,
+          "stdout_sha256": "a553e7405815a8f85805d7828202e356552ade67401b5f03ca1c3cda24d1f2fd",
+          "bytes": 31112
+        },
+        {
+          "client": "client-10",
+          "exit": 0,
+          "stdout_sha256": "6b53526e85088743362c18135e5e31c55b3a906193222ed84d7f284e7d4ec22b",
+          "bytes": 30216
+        },
+        {
+          "client": "client-11",
+          "exit": 0,
+          "stdout_sha256": "dfaaff2cd3fdc1e757e7b64d3a54ca29e6a674d32ad1c6d9bf7c00dfeb731cc1",
+          "bytes": 30900
+        },
+        {
+          "client": "client-12",
+          "exit": 0,
+          "stdout_sha256": "de198b81e0acb7a0bea0e21a1043315b9a5789c047f67efb27c8d17be6abbd7e",
+          "bytes": 30364
+        },
+        {
+          "client": "client-13",
+          "exit": 0,
+          "stdout_sha256": "b84bf82ad8f4ac51fa73b09040932e6193f341161ffc8a0873fbaa4d6994d436",
+          "bytes": 32926
+        },
+        {
+          "client": "client-14",
+          "exit": 0,
+          "stdout_sha256": "01e579b5cc17f058c693489cef1ebd84cd92064f578b88734118b0e7c3e34069",
+          "bytes": 32870
+        },
+        {
+          "client": "client-15",
+          "exit": 0,
+          "stdout_sha256": "17267f7b45897538a64c4cebf8e76958ee01335ec20063c03b53c4f3a697a3c1",
+          "bytes": 29870
+        }
+      ],
+      "log_archive": {
+        "complete": true,
+        "primary_updated": false,
+        "source_logs_removed": false,
+        "files": [
+          {
+            "source": "/root/oceanbase2026/instances/fts-score-usage-nov5-r2/log/seekdb.log",
+            "archive": "/root/oceanbase2026/archives/comparison-logs/20261107-010859/seekdb.log.gz",
+            "sha256": "c6e35060f5e3f27475043d853d035f468e21c3bb26fb0d41ca71ec6abc1d284c"
+          }
+        ]
+      }
+    },
+    {
+      "label": "memo",
+      "binary_sha256": "fd2856a85c375a4c23befe472337b3b5ecadc7a3e43214586cc75ff38558a1e6",
+      "pid": "918580",
+      "clients": [
+        {
+          "client": "client-00",
+          "exit": 0,
+          "stdout_sha256": "94933f740f0299b4ef7d3ef0e37eb6b95a8f55db61be4d7ddc226dcb43ca4790",
+          "bytes": 29328
+        },
+        {
+          "client": "client-01",
+          "exit": 0,
+          "stdout_sha256": "e6e06987c51f5bf4a8cdc2d93b7bd20bf0d535498cef435236b9c769e21410d6",
+          "bytes": 31142
+        },
+        {
+          "client": "client-02",
+          "exit": 0,
+          "stdout_sha256": "c3027b68948f2bc92ef1afaeafd2c587dcd566b5fed50820731878ac40c4f5b4",
+          "bytes": 32234
+        },
+        {
+          "client": "client-03",
+          "exit": 0,
+          "stdout_sha256": "50a351676b7a3ce1d2503ae583afcec24e439aea2cc4b17ea678eebe34cacaa5",
+          "bytes": 34562
+        },
+        {
+          "client": "client-04",
+          "exit": 0,
+          "stdout_sha256": "760a84d2898d547838679df70f01c9d0c29602fdc61599ed4ce107df8ab652e8",
+          "bytes": 29314
+        },
+        {
+          "client": "client-05",
+          "exit": 0,
+          "stdout_sha256": "02dc8396c02aa9249dab558fa4a9ddb85ae29d960cfb028276e537831d555b60",
+          "bytes": 30666
+        },
+        {
+          "client": "client-06",
+          "exit": 0,
+          "stdout_sha256": "39050e1bcfd03274b425a641f9ac6662028009a988876f7a494253e428464dbb",
+          "bytes": 31664
+        },
+        {
+          "client": "client-07",
+          "exit": 0,
+          "stdout_sha256": "a6381f609915c02ca9a0d8d932c0e53c90f0218b1be4ba6eace16861641de0df",
+          "bytes": 31118
+        },
+        {
+          "client": "client-08",
+          "exit": 0,
+          "stdout_sha256": "1e53e28a221db4c41a9f4f85d7ba45fa7cf40b825a2b48a2c449d7a32444c781",
+          "bytes": 31878
+        },
+        {
+          "client": "client-09",
+          "exit": 0,
+          "stdout_sha256": "a553e7405815a8f85805d7828202e356552ade67401b5f03ca1c3cda24d1f2fd",
+          "bytes": 31112
+        },
+        {
+          "client": "client-10",
+          "exit": 0,
+          "stdout_sha256": "6b53526e85088743362c18135e5e31c55b3a906193222ed84d7f284e7d4ec22b",
+          "bytes": 30216
+        },
+        {
+          "client": "client-11",
+          "exit": 0,
+          "stdout_sha256": "dfaaff2cd3fdc1e757e7b64d3a54ca29e6a674d32ad1c6d9bf7c00dfeb731cc1",
+          "bytes": 30900
+        },
+        {
+          "client": "client-12",
+          "exit": 0,
+          "stdout_sha256": "de198b81e0acb7a0bea0e21a1043315b9a5789c047f67efb27c8d17be6abbd7e",
+          "bytes": 30364
+        },
+        {
+          "client": "client-13",
+          "exit": 0,
+          "stdout_sha256": "b84bf82ad8f4ac51fa73b09040932e6193f341161ffc8a0873fbaa4d6994d436",
+          "bytes": 32926
+        },
+        {
+          "client": "client-14",
+          "exit": 0,
+          "stdout_sha256": "01e579b5cc17f058c693489cef1ebd84cd92064f578b88734118b0e7c3e34069",
+          "bytes": 32870
+        },
+        {
+          "client": "client-15",
+          "exit": 0,
+          "stdout_sha256": "17267f7b45897538a64c4cebf8e76958ee01335ec20063c03b53c4f3a697a3c1",
+          "bytes": 29870
+        }
+      ],
+      "log_archive": {
+        "complete": true,
+        "primary_updated": false,
+        "source_logs_removed": false,
+        "files": [
+          {
+            "source": "/root/oceanbase2026/instances/fts-score-usage-nov5-r2/log/seekdb.log",
+            "archive": "/root/oceanbase2026/archives/comparison-logs/20261107-010913/seekdb.log.gz",
+            "sha256": "3174268a4aa64d8e2e7df27791d5cc53d42d97a3eb667e776a7a5a965d59ebb9"
+          }
+        ]
+      }
+    },
+    {
+      "label": "parent-b",
+      "binary_sha256": "ed2dc65da33103fac4cc1e12c82f47f2e28a5bcec85cdd8dbd8f87c9b4e9bd74",
+      "pid": "918809",
+      "clients": [
+        {
+          "client": "client-00",
+          "exit": 0,
+          "stdout_sha256": "94933f740f0299b4ef7d3ef0e37eb6b95a8f55db61be4d7ddc226dcb43ca4790",
+          "bytes": 29328
+        },
+        {
+          "client": "client-01",
+          "exit": 0,
+          "stdout_sha256": "e6e06987c51f5bf4a8cdc2d93b7bd20bf0d535498cef435236b9c769e21410d6",
+          "bytes": 31142
+        },
+        {
+          "client": "client-02",
+          "exit": 0,
+          "stdout_sha256": "c3027b68948f2bc92ef1afaeafd2c587dcd566b5fed50820731878ac40c4f5b4",
+          "bytes": 32234
+        },
+        {
+          "client": "client-03",
+          "exit": 0,
+          "stdout_sha256": "50a351676b7a3ce1d2503ae583afcec24e439aea2cc4b17ea678eebe34cacaa5",
+          "bytes": 34562
+        },
+        {
+          "client": "client-04",
+          "exit": 0,
+          "stdout_sha256": "760a84d2898d547838679df70f01c9d0c29602fdc61599ed4ce107df8ab652e8",
+          "bytes": 29314
+        },
+        {
+          "client": "client-05",
+          "exit": 0,
+          "stdout_sha256": "02dc8396c02aa9249dab558fa4a9ddb85ae29d960cfb028276e537831d555b60",
+          "bytes": 30666
+        },
+        {
+          "client": "client-06",
+          "exit": 0,
+          "stdout_sha256": "39050e1bcfd03274b425a641f9ac6662028009a988876f7a494253e428464dbb",
+          "bytes": 31664
+        },
+        {
+          "client": "client-07",
+          "exit": 0,
+          "stdout_sha256": "a6381f609915c02ca9a0d8d932c0e53c90f0218b1be4ba6eace16861641de0df",
+          "bytes": 31118
+        },
+        {
+          "client": "client-08",
+          "exit": 0,
+          "stdout_sha256": "1e53e28a221db4c41a9f4f85d7ba45fa7cf40b825a2b48a2c449d7a32444c781",
+          "bytes": 31878
+        },
+        {
+          "client": "client-09",
+          "exit": 0,
+          "stdout_sha256": "a553e7405815a8f85805d7828202e356552ade67401b5f03ca1c3cda24d1f2fd",
+          "bytes": 31112
+        },
+        {
+          "client": "client-10",
+          "exit": 0,
+          "stdout_sha256": "6b53526e85088743362c18135e5e31c55b3a906193222ed84d7f284e7d4ec22b",
+          "bytes": 30216
+        },
+        {
+          "client": "client-11",
+          "exit": 0,
+          "stdout_sha256": "dfaaff2cd3fdc1e757e7b64d3a54ca29e6a674d32ad1c6d9bf7c00dfeb731cc1",
+          "bytes": 30900
+        },
+        {
+          "client": "client-12",
+          "exit": 0,
+          "stdout_sha256": "de198b81e0acb7a0bea0e21a1043315b9a5789c047f67efb27c8d17be6abbd7e",
+          "bytes": 30364
+        },
+        {
+          "client": "client-13",
+          "exit": 0,
+          "stdout_sha256": "b84bf82ad8f4ac51fa73b09040932e6193f341161ffc8a0873fbaa4d6994d436",
+          "bytes": 32926
+        },
+        {
+          "client": "client-14",
+          "exit": 0,
+          "stdout_sha256": "01e579b5cc17f058c693489cef1ebd84cd92064f578b88734118b0e7c3e34069",
+          "bytes": 32870
+        },
+        {
+          "client": "client-15",
+          "exit": 0,
+          "stdout_sha256": "17267f7b45897538a64c4cebf8e76958ee01335ec20063c03b53c4f3a697a3c1",
+          "bytes": 29870
+        }
+      ],
+      "log_archive": {
+        "complete": true,
+        "primary_updated": false,
+        "source_logs_removed": false,
+        "files": [
+          {
+            "source": "/root/oceanbase2026/instances/fts-score-usage-nov5-r2/log/seekdb.log",
+            "archive": "/root/oceanbase2026/archives/comparison-logs/20261107-010927/seekdb.log.gz",
+            "sha256": "5076360c4c6baa6fb611ed4951caebb65ebce91af613b1662dd75621c339fbc8"
+          }
+        ]
+      }
+    }
+  ],
+  "started_at_unix": 1793984654.1825745,
+  "input_sha256": {
+    "client-00.sql": "c4065f5c9051d7cb3cb0196cc380dea9478f055569c316e2042679be06e1772a",
+    "client-01.sql": "8be5a015ea48c44e200e39be6e72bdba551de4f19fe28e533a9aa2df54daa522",
+    "client-02.sql": "1e90bccc125a4d936adb52e2c26b5dc3d4bef570426bd8e5ea64aa0386c65e4f",
+    "client-03.sql": "8350168fe2bc1ab31fd2c8f0148175d0d16f9868a1205b315db77f2ed443c384",
+    "client-04.sql": "af6214c268f0e2581fef2ae3a8df5cd61e4c8881c73a4afdf4845e298a463505",
+    "client-05.sql": "5da1774c3a17b4cb2bae1af55b9413a30fe81805db78b823bb6788c17cff6be3",
+    "client-06.sql": "689ee2dd02d4a8bd0c390021f24a8cb1d60a63c66c3d4ed1328c421ead9d11af",
+    "client-07.sql": "7316e0382fd88cdc7145eda1c6e5843f82d620d5b7cc6633886c98942659b85e",
+    "client-08.sql": "5869ac0d4838e70ef2497678b5911433f62be6059ca4f7f2c0becd7fd206ed76",
+    "client-09.sql": "63da255e93c5456fec6b23faf7b1365b3cf08b080e32dec5682858e82a4c52ab",
+    "client-10.sql": "4332f1598a6519fe8bdcaa89e9556cf1d35197914194506ab4161675fe73e591",
+    "client-11.sql": "b0f7cda5da432d35fb85c69456cb5951edd528647c2ace67231e546eb06e522c",
+    "client-12.sql": "b25f4ca7bde8346fbfe25e736eedfb82208e1ba6f068ed538e26915c2d95d0d7",
+    "client-13.sql": "14e4a485f9da183952a532d55e0ae5006f5581236dd2eecd7379edfec7d4382d",
+    "client-14.sql": "d17a9ba5cfb76750e9858425f0b56107508ee811c7bb0502c6484209751f3774",
+    "client-15.sql": "57337ad88679e78e43684b0930fd343ea6fedf52c620f90528a447e89aca2399"
+  },
+  "reference_commit": "912bedc6806b7a777ce7cad3b7028d8c8ea9ad76",
+  "independent_cases": 512,
+  "exact_output_pairs": 512,
+  "finished_at_unix": 1793984968.1745045,
+  "comparison_stopped": true,
+  "managed_link_restored_to_original": true
+}
