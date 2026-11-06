@@ -11,10 +11,12 @@
 | 题目 | 固定提交 | 平台时间（北京时间） | 最近核对状态 |
 | --- | --- | --- | --- |
 | MiniMax | `0f56f098aa4534466e21b0becf1dc1c32fb4a077` | 11 月 6 日 15:07 | 待执行 |
-| 全文检索 | `69b8fb5891cdb10ccaee208f8627b9c71c73f2bb` | 11 月 6 日 15:10 | 执行中 |
+| 全文检索 | `69b8fb5891cdb10ccaee208f8627b9c71c73f2bb` | 11 月 6 日 15:10 | 执行成功；功能 1 通过/0 失败，性能 0 分；最高仍 7.415 |
 | Qoder | `0f56f098aa4534466e21b0becf1dc1c32fb4a077` | 11 月 6 日 15:11 | 待执行 |
 
-Qoder 和 MiniMax 的登记仓库均为 `iris82681414-beep/PowerContext2026`，分支 `2026-competition-ecosystem`；全文检索登记仓库为 `iris82681414-beep/seekdb2026`，分支 `codex/competition-fts-union`。Qoder 账号标识及证据索引已纳入 `qoder/SUBMISSION.md`，用户已确认无痕窗口无需登录即可访问作品网站。MiniMax 已补充数据库部署步骤和经渲染核验的一页 PDF 技术说明。三项新结果尚未计入分数。
+Qoder 和 MiniMax 的登记仓库均为 `iris82681414-beep/PowerContext2026`，分支 `2026-competition-ecosystem`；全文检索登记仓库为 `iris82681414-beep/seekdb2026`，分支 `codex/competition-fts-union`。Qoder 账号标识及证据索引已纳入 `qoder/SUBMISSION.md`，用户已确认无痕窗口无需登录即可访问作品网站。MiniMax 已补充数据库部署步骤和经渲染核验的一页 PDF 技术说明。两项生态评测仍待执行；新全文检索版本没有增加分数，总分保留 517.415。
+
+新全文检索正式报告的综合改善率为 -9.1113%，内部性能分 0。与此前 7.415 分版本的不同次正式运行比较，IK 单列构建从 7.132 秒变为 13.846 秒、英文构建从 2.624 秒变为 5.918 秒；查询类平均耗时下降约 22.18%，分词类下降约 6.04%，但构建类平均耗时增加约 71.16%。这不是同次运行的基线对照，不能仅凭这些值证明代码回归或具体原因；正式评分使用平台参考基线。实际拖分项指向构建阶段，后续需定位构建耗时和波动。旧最高提交 `c251fef9…` 保留，不以本机加速比换算正式分数。
 
 Qoder《资料到行动》已由真实 Qoder CN 会话完成主要应用开发，并经 Codex 集成修正。Python 3.12、真实 seekdb 1.4 的 46 项检查全部通过，包含两个独立 HTTP 服务进程之间的资料、引用和待办恢复；已通过首次创建独立测试库的验收。应用验收检查点为 `6e77cbcb0f78b6afd09396c3af11e6bd64b0f0cd`，正式提交使用包含账号及证据索引的 `0f56f098…`，应用源代码未改变。个人 Qoder Sites [公开网站](https://materials-to-action-xf0r9seqh0p.qoder.zone) 的发布状态为 `publication_completed`、访问策略为 `public`；页面、真实截图和四项证据均已通过无 Cookie、无授权头的 HTTP 访问。该站点提供项目说明和本地复现入口。正式提测已成功、当前待执行，不预记 20 分。
 

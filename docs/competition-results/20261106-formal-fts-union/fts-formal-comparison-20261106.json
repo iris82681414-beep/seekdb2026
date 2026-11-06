@@ -1,0 +1,51 @@
+{
+  "note": "Different formal executions; timing differences alone do not prove a code regression or its cause. Official score uses the platform reference, not the previous candidate.",
+  "parent_commit": "c251fef9334dd42f7ebf2c7aa19692bec46bab53",
+  "candidate_commit": "69b8fb5891cdb10ccaee208f8627b9c71c73f2bb",
+  "relative_elapsed_reduction": {
+    "build": -0.7115548919652069,
+    "tokenize": 0.06043652438182068,
+    "query": 0.22181907404611367
+  },
+  "metrics": {
+    "build_ik_all_sec": {
+      "parent": 6.558,
+      "candidate": 6.151
+    },
+    "build_ik_content_sec": {
+      "parent": 7.132,
+      "candidate": 13.846
+    },
+    "build_beng_en_sec": {
+      "parent": 2.624,
+      "candidate": 5.918
+    },
+    "tokenize_ik_avg_ms": {
+      "parent": 0.0762,
+      "candidate": 0.071
+    },
+    "tokenize_beng_avg_ms": {
+      "parent": 0.0418,
+      "candidate": 0.0396
+    },
+    "query_cn_avg_ms": {
+      "parent": 1.0872,
+      "candidate": 0.7941
+    },
+    "query_beng_avg_ms": {
+      "parent": 1.6423,
+      "candidate": 1.2038
+    },
+    "query_mixed_avg_ms": {
+      "parent": 1.2507,
+      "candidate": 0.9374
+    },
+    "query_limit_avg_ms": {
+      "parent": 1.8746,
+      "candidate": 1.6868
+    }
+  },
+  "official_candidate_score": 0,
+  "official_highest_score_retained": 7.415,
+  "verified_at_unix": 1793950026.152756
+}
