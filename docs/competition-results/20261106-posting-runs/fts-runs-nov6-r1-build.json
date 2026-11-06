@@ -1,0 +1,144 @@
+{
+  "phase": "complete",
+  "complete": true,
+  "primary_updated": false,
+  "experimental_candidate": true,
+  "controller_pid": 777215,
+  "started_at_unix": 1793959669.2991493,
+  "archived_unused_snapshots": [],
+  "primary_pid": "3892",
+  "verified_baseline_product_files": 6936,
+  "required_free_bytes": 3628801212,
+  "available_bytes": 2688303104,
+  "reused_unchanged_source_timestamps": [
+    {
+      "path": "src/oblib/lib/charset/ob_ctype_utf8.cc",
+      "sha256": "0786369098730ebfa75379722eb6c463613f95e36d3a961b98f4b706e91f45ec"
+    },
+    {
+      "path": "src/observer/composition/retrieval/ob_das_legacy_tr_merge_iter.cpp",
+      "sha256": "7d75bdb2f629d34ffe4c5bb7a273c0646b9e7ab2bac276ba876939e212cce637"
+    },
+    {
+      "path": "src/rootserver/ddl_task/ob_ddl_common_rs_impl.cpp",
+      "sha256": "2b627dff01f76131ee67cd4e35c306a01ad0221aa7510cce585f3c4c4d2c1e1c"
+    },
+    {
+      "path": "src/sql/das/iter/ob_das_iter_utils.cpp",
+      "sha256": "4d27ad77d0c9958d7326bd3107b3283762861ecf524a67ec53adcb3d163e1d8a"
+    },
+    {
+      "path": "src/sql/optimizer/ob_log_plan.cpp",
+      "sha256": "c189ef8d6e2c25da6056816b5d6f4a09d4668302e2a9bca2520c843ea2c2bb8a"
+    },
+    {
+      "path": "src/sql/optimizer/ob_optimizer_util.cpp",
+      "sha256": "9d229eb38aa6046923b3831412eaba2b1830b907892282cc53214264a62a046a"
+    },
+    {
+      "path": "src/sql/rewrite/ob_transform_utils.cpp",
+      "sha256": "d578be0d3f647a50f98640c443870be76ed12b32664c908aac0cc8d5672cda43"
+    },
+    {
+      "path": "src/sql/rewrite/ob_transform_utils.h",
+      "sha256": "d7f935ba23df3f0710fa78933ddcf7c78aa14c8c6eddb4e9d83c87a3b9812664"
+    },
+    {
+      "path": "src/storage/retrieval/ob_text_taat_iter.cpp",
+      "sha256": "0dce474c767a0d96b9d707591bc481e688de3561cfbbea568ec7fbf1d962224d"
+    }
+  ],
+  "candidate_files": {
+    "src/oblib/lib/charset/ob_ctype_utf8.cc": {
+      "before": "1e437f1a88cb43ac9921e8e6beaf9cb393ff1d52e251977b3dc457650d6cc451",
+      "after": "0786369098730ebfa75379722eb6c463613f95e36d3a961b98f4b706e91f45ec"
+    },
+    "src/observer/composition/retrieval/ob_das_legacy_tr_merge_iter.cpp": {
+      "before": "476eff31bed4f4377f8e833d542d65f7307cae37fbd58df127770a7a9d2b69ef",
+      "after": "7d75bdb2f629d34ffe4c5bb7a273c0646b9e7ab2bac276ba876939e212cce637"
+    },
+    "src/rootserver/ddl_task/ob_ddl_common_rs_impl.cpp": {
+      "before": "1e50e4dc3a1a9ac1cd06bc6fbfe980dfbb437adb2d2ede16e65c9ed4024dbef1",
+      "after": "2b627dff01f76131ee67cd4e35c306a01ad0221aa7510cce585f3c4c4d2c1e1c"
+    },
+    "src/sql/das/iter/ob_das_iter_utils.cpp": {
+      "before": "0326581b1928b07fc21e1f150ac2a369ab44aec62241f5e497cdf01e3c9e0fc4",
+      "after": "4d27ad77d0c9958d7326bd3107b3283762861ecf524a67ec53adcb3d163e1d8a"
+    },
+    "src/sql/optimizer/ob_log_plan.cpp": {
+      "before": "05f2447757edef54e8a4bfad7d0ebe72388b66e4a2fa2d2340d4e4123145cf47",
+      "after": "c189ef8d6e2c25da6056816b5d6f4a09d4668302e2a9bca2520c843ea2c2bb8a"
+    },
+    "src/sql/optimizer/ob_optimizer_util.cpp": {
+      "before": "8a5a3ffb8a3fc581fa8a42cf0d913d130f746c44843044cf9099051dd8617553",
+      "after": "9d229eb38aa6046923b3831412eaba2b1830b907892282cc53214264a62a046a"
+    },
+    "src/sql/rewrite/ob_transform_utils.cpp": {
+      "before": "95e0e9036a6b8b0f9816512b5e135c621ac07a0422463d870fb62d8102e4f67d",
+      "after": "d578be0d3f647a50f98640c443870be76ed12b32664c908aac0cc8d5672cda43"
+    },
+    "src/sql/rewrite/ob_transform_utils.h": {
+      "before": "5461956420e9374dc563fe904c84dfc4803445aed7545d4a045df5789ff5a197",
+      "after": "d7f935ba23df3f0710fa78933ddcf7c78aa14c8c6eddb4e9d83c87a3b9812664"
+    },
+    "src/storage/retrieval/ob_sparse_daat_iter.cpp": {
+      "before": "7a3cb2763d02a1fbeb4429dc63d0a9ce9f5e7e632080de89091fcdadab18d37e",
+      "after": "f9fda2e0446d8e52586c8b276b5445ffe71625a49352467b48b93c76b751a269"
+    },
+    "src/storage/retrieval/ob_sparse_daat_iter.h": {
+      "before": "c30b762ccc50bdb52343f1aba700be29ec64f95374b7492f75cc9644e73cbd70",
+      "after": "b07c68aadb3c6df24adc7ebf6a650d89281f46b3359f4ea70975281cfbbb18fe"
+    },
+    "src/storage/retrieval/ob_sparse_utils.h": {
+      "before": "a72a53beecc4a7a6038f39d50b8c95f2d0d3d1e18f48a9507dc6ff8777bc060d",
+      "after": "8bc706a27f63106fe07059902c0761f8b859698117fec060f3b1c81bb951c844"
+    },
+    "src/storage/retrieval/ob_spiv_daat_iter.cpp": {
+      "before": "16195949665710aed7ddac859b9f5e214d701578579d79e2230678efeec222ed",
+      "after": "79a9610984e4c4f8f2075e5d041254acb4c9cb14889d270f9431b2618ebbc59c"
+    },
+    "src/storage/retrieval/ob_text_daat_iter.cpp": {
+      "before": "17590000c1f5422bb8cad665debf67df8d4093a00edd5bc840ace1527b2ceabb",
+      "after": "9cbf8d2af647cf4fd3cce6b4f65c177be654000b520f90ab503c0a1fe199e798"
+    },
+    "src/storage/retrieval/ob_text_daat_iter.h": {
+      "before": "4c52cfba4d5890e8f88d13180bf6caa92f0d2525de4edf7d1bf48e2ffaa9c03b",
+      "after": "e5dcd91400da682021065242cac4922f536a678a28a1dadf379b385457100aaa"
+    },
+    "src/storage/retrieval/ob_text_retrieval_token_iter.cpp": {
+      "before": "537a63f0cb1bc697f4aefcb3108a478ff20045ce29bf57f4dabb2de6f4e63804",
+      "after": "b9c8480ca72aeb4bb8bc2873cc874f95a09903d4bb121f41d8404089ff2f6271"
+    },
+    "src/storage/retrieval/ob_text_retrieval_token_iter.h": {
+      "before": "251e4baf81e84f29d059dab8e51ba1a95d719e53a965c7f87d81c4a4f8bbe5e7",
+      "after": "2e6fdc371981adeac5e5247f958b8cde38b9aea5d2e7b79767723941c6f7d7ea"
+    },
+    "src/storage/retrieval/ob_text_taat_iter.cpp": {
+      "before": "5b9fdedca1f4f20f407e958f8684f49de5b54e10fa4f2f86d1744ca2b5e16167",
+      "after": "0dce474c767a0d96b9d707591bc481e688de3561cfbbea568ec7fbf1d962224d"
+    }
+  },
+  "applied_sources_at_unix": 1793959980.402554,
+  "build_pid": 778808,
+  "build_exit": 0,
+  "build_seconds": 461.3546278629801,
+  "changed_storage_object_recompiled": "/root/oceanbase2026/seekdb/build_release/src/storage/CMakeFiles/ob_storage.dir/Unity/unity_ob_storage_ob_storage_retrieval_0_c___cxx.cxx.o",
+  "reclaimed_generated_intermediates": [
+    {
+      "path": "/root/oceanbase2026/seekdb/build_release/src/observer/liboceanbase_static.a",
+      "bytes": 262510210
+    },
+    {
+      "path": "/root/oceanbase2026/seekdb/build_release/src/sql/libob_sql_static.a",
+      "bytes": 711655272
+    },
+    {
+      "path": "/root/oceanbase2026/seekdb/build_release/src/share/libob_share_static.a",
+      "bytes": 884829994
+    }
+  ],
+  "candidate_binary_sha256": "e849ffa399c6411a1ab10fd9239ec123df5921b0a1dd95e6196bd9937bd1c6a0",
+  "finished_at_unix": 1793960445.159528,
+  "production_source_restored": true,
+  "restored_product_files": 6936
+}

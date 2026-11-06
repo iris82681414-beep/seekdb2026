@@ -1,0 +1,22 @@
+{
+  "complete": true,
+  "phase": "complete",
+  "diagnostic_only": true,
+  "performance_score": null,
+  "primary_updated": false,
+  "started_at_unix": 1793960614.4759154,
+  "primary_pid": "3892",
+  "candidate_sha256": "e849ffa399c6411a1ab10fd9239ec123df5921b0a1dd95e6196bd9937bd1c6a0",
+  "comparison_pid": "783168",
+  "debugger_pid": 783369,
+  "workload_exit": 0,
+  "debugger_exit": 0,
+  "posting_run_hit": true,
+  "observed_run_size": 2,
+  "probe_conclusion": "At least two additional buffered IDs were copied in the frozen workload",
+  "finished_at_unix": 1793960660.5243607,
+  "comparison_stopped": true,
+  "validation_link_restored_to_original": true,
+  "log_archive_exit": 0,
+  "log_archive_result": "{\n  \"complete\": true,\n  \"primary_updated\": false,\n  \"source_logs_removed\": false,\n  \"files\": [\n    {\n      \"source\": \"/root/oceanbase2026/instances/fts-score-usage-nov5-r2/log/seekdb.log\",\n      \"archive\": \"/root/oceanbase2026/archives/comparison-logs/20261106-182420/seekdb.log.gz\",\n      \"sha256\": \"ab72ab8956cb207702efb40994c35a89154fa2019d06593be1dc155a630e0a0b\"\n    }\n  ]\n}"
+}
