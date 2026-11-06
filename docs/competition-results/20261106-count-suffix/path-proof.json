@@ -1,0 +1,35 @@
+{
+  "complete": true,
+  "phase": "complete",
+  "diagnostic_only": true,
+  "performance_score": null,
+  "primary_updated": false,
+  "started_at_unix": 1793966900.8441718,
+  "primary_pid": "3892",
+  "candidate_sha256": "ed2dc65da33103fac4cc1e12c82f47f2e28a5bcec85cdd8dbd8f87c9b4e9bd74",
+  "workload_sha256": {
+    "tools/benchmark/fts_large_bench.sh": "596ea5d1c0038e666b78aa94bef22d2dfb87ffc9e84dbc7e2a1da1f746424462",
+    "tools/benchmark/fts_large_bench_gen.py": "b0c816dd8211ac0471f60b72a37a3fb5c62580357a5b6d7ac95f5a8c2e3f143d",
+    "tools/benchmark/fts_large_bench_setup.sql": "311826751df7f51ac45156fb4284aeca9bd9197370aceb88f4fb92832b458108",
+    "tools/benchmark/fts_large_bench_baseline.json": "f4e97eddb2e49c982b967fc8047f7cf37177eebe53d648f6746d85aacda91f0c",
+    "tools/benchmark/fts_large_bench_score.py": "bea52eb1c68d05693bb3ac5b910ab0e2fa0e70e01582f40466898ee1e2e3ef55"
+  },
+  "comparison_pid": "826672",
+  "debugger_pid": 826878,
+  "workload_exit": 0,
+  "debugger_exit": 0,
+  "count_path_hit": true,
+  "bitmap_used": true,
+  "workload_hits": {
+    "query_cn_hits": 8001.0,
+    "query_beng_hits": 11000.0,
+    "query_mixed_hits": 7332.0,
+    "query_limit_hits": 20.0
+  },
+  "probe_conclusion": "Bounded exact bitmap count executed; frozen workload counts agree",
+  "finished_at_unix": 1793967285.4651203,
+  "comparison_stopped": true,
+  "validation_link_restored_to_original": true,
+  "log_archive_exit": 0,
+  "log_archive_result": "{\n  \"complete\": true,\n  \"primary_updated\": false,\n  \"source_logs_removed\": false,\n  \"files\": [\n    {\n      \"source\": \"/root/oceanbase2026/instances/fts-score-usage-nov5-r2/log/seekdb.log\",\n      \"archive\": \"/root/oceanbase2026/archives/comparison-logs/20261106-201445/seekdb.log.gz\",\n      \"sha256\": \"32fb82eaa4346cd8aa18f04f19b5bc3579deaf2c94499f8543e69c01ce26bbc0\"\n    }\n  ]\n}"
+}

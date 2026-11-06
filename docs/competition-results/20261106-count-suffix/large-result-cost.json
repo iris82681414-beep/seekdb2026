@@ -1,0 +1,162 @@
+{
+  "complete": true,
+  "phase": "complete",
+  "official_score": null,
+  "primary_updated": false,
+  "runs": [
+    {
+      "label": "parent-a",
+      "binary_sha256": "d19f70277aaeb5272d63bacd1559c416eba8b064a94856d009bb66447194f5f3",
+      "cases": {
+        "beta": {
+          "expected_count": 33024,
+          "rounds": 30,
+          "samples_ms": [
+            3.855552699921342,
+            3.845216600651232,
+            2.3741516003307575
+          ],
+          "mean_ms": 3.358306966967777
+        },
+        "alpha": {
+          "expected_count": 66049,
+          "rounds": 30,
+          "samples_ms": [
+            7.161789699845637,
+            4.791541933082044,
+            4.787730066648995
+          ],
+          "mean_ms": 5.580353899858892
+        },
+        "alpha beta": {
+          "expected_count": 66049,
+          "rounds": 30,
+          "samples_ms": [
+            6.8908563669538125,
+            8.415444466906289,
+            8.814832866967967
+          ],
+          "mean_ms": 8.040377900276022
+        }
+      },
+      "log_archive": {
+        "complete": true,
+        "primary_updated": false,
+        "source_logs_removed": false,
+        "files": [
+          {
+            "source": "/root/oceanbase2026/instances/fts-score-usage-nov5-r2/log/seekdb.log",
+            "archive": "/root/oceanbase2026/archives/comparison-logs/20261106-202735/seekdb.log.gz",
+            "sha256": "e32f7055ff8cbde6b18ec6f871a899a66394c961dcfb362522b79fb27c4febe7"
+          }
+        ]
+      }
+    },
+    {
+      "label": "candidate",
+      "binary_sha256": "ed2dc65da33103fac4cc1e12c82f47f2e28a5bcec85cdd8dbd8f87c9b4e9bd74",
+      "cases": {
+        "beta": {
+          "expected_count": 33024,
+          "rounds": 30,
+          "samples_ms": [
+            1.6052779334131628,
+            1.7609317670576274,
+            1.770613466699918
+          ],
+          "mean_ms": 1.7122743890569028
+        },
+        "alpha": {
+          "expected_count": 66049,
+          "rounds": 30,
+          "samples_ms": [
+            3.1538470337788262,
+            2.2486919993146635,
+            2.311538467377735
+          ],
+          "mean_ms": 2.5713591668237417
+        },
+        "alpha beta": {
+          "expected_count": 66049,
+          "rounds": 30,
+          "samples_ms": [
+            4.88753769993006,
+            5.009580833332923,
+            4.991176466379936
+          ],
+          "mean_ms": 4.962764999880973
+        }
+      },
+      "log_archive": {
+        "complete": true,
+        "primary_updated": false,
+        "source_logs_removed": false,
+        "files": [
+          {
+            "source": "/root/oceanbase2026/instances/fts-score-usage-nov5-r2/log/seekdb.log",
+            "archive": "/root/oceanbase2026/archives/comparison-logs/20261106-202821/seekdb.log.gz",
+            "sha256": "26967e253a5214de02fd6ff8c7dc2b386ff1bfdfb5575dd1c7f05c5c880c336a"
+          }
+        ]
+      }
+    },
+    {
+      "label": "parent-b",
+      "binary_sha256": "d19f70277aaeb5272d63bacd1559c416eba8b064a94856d009bb66447194f5f3",
+      "cases": {
+        "beta": {
+          "expected_count": 33024,
+          "rounds": 30,
+          "samples_ms": [
+            3.8573197671212256,
+            3.7677991999468454,
+            2.3616161003398397
+          ],
+          "mean_ms": 3.3289116891359702
+        },
+        "alpha": {
+          "expected_count": 66049,
+          "rounds": 30,
+          "samples_ms": [
+            6.991193966435579,
+            5.040757399789679,
+            4.7498562664259225
+          ],
+          "mean_ms": 5.593935877550393
+        },
+        "alpha beta": {
+          "expected_count": 66049,
+          "rounds": 30,
+          "samples_ms": [
+            6.989097233357218,
+            8.435377899634963,
+            8.688315866553845
+          ],
+          "mean_ms": 8.037596999848676
+        }
+      },
+      "log_archive": {
+        "complete": true,
+        "primary_updated": false,
+        "source_logs_removed": false,
+        "files": [
+          {
+            "source": "/root/oceanbase2026/instances/fts-score-usage-nov5-r2/log/seekdb.log",
+            "archive": "/root/oceanbase2026/archives/comparison-logs/20261106-202907/seekdb.log.gz",
+            "sha256": "65f5560036e48dc51850b0f4ad7ac0f0e08056eaee1d38ea91a7b107776330b3"
+          }
+        ]
+      }
+    }
+  ],
+  "started_at_unix": 1793967762.3946745,
+  "setup_sha256": "2e84c23653da2923c4160b71151f16f08e475f6dc7fa1ffe5f9960b27267c60f",
+  "relative_to_two_parent_means": {
+    "beta": 0.48789639546359764,
+    "alpha": 0.5397722418077651,
+    "alpha beta": 0.38266292481368624
+  },
+  "finished_at_unix": 1793968148.5396059,
+  "comparison_stopped": true,
+  "managed_restored": true
+}
