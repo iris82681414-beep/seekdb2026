@@ -109,6 +109,7 @@ private:
   int init_block_max_iter_param();
   int init_doc_length_est_param();
   int get_count_row();
+  int try_bitmap_count(int64_t &count, bool &used);
 private:
   static const int64_t INV_IDX_ROWKEY_COL_CNT = 2;
 private:

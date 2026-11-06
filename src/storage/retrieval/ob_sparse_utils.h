@@ -28,6 +28,61 @@ struct ObFtsEvalNode;
 namespace storage
 {
 
+// A bounded exact set for nearby IDs within one document-ID scope. Unsupported
+// inputs invalidate the whole result; callers must use their general algorithm.
+class DenseIdCounter final
+{
+public:
+  static constexpr uint64_t BIT_COUNT = 1ULL << 18;
+  static constexpr uint64_t WORD_COUNT = BIT_COUNT / 64;
+
+  explicit DenseIdCounter(uint64_t *words)
+    : words_(words), scope_(0), base_(0), count_(0), initialized_(false),
+      supported_(nullptr != words)
+  {
+    if (supported_) {
+      for (uint64_t i = 0; i < WORD_COUNT; ++i) {
+        words_[i] = 0;
+      }
+    }
+  }
+
+  bool add(const uint64_t scope, const uint64_t id)
+  {
+    if (supported_ && !initialized_) {
+      scope_ = scope;
+      base_ = id & ~(BIT_COUNT - 1);
+      initialized_ = true;
+    }
+    if (!supported_ || scope != scope_ || id < base_ || id - base_ >= BIT_COUNT) {
+      supported_ = false;
+    } else {
+      const uint64_t offset = id - base_;
+      const uint64_t mask = 1ULL << (offset & 63);
+      uint64_t &word = words_[offset >> 6];
+      count_ += (word & mask) == 0;
+      word |= mask;
+    }
+    return supported_;
+  }
+
+  bool get_count(int64_t &count) const
+  {
+    if (supported_) {
+      count = count_;
+    }
+    return supported_;
+  }
+
+private:
+  uint64_t *words_;
+  uint64_t scope_;
+  uint64_t base_;
+  int64_t count_;
+  bool initialized_;
+  bool supported_;
+};
+
 struct ObSRDaaTRelevanceCollector
 {
   ObSRDaaTRelevanceCollector() {}

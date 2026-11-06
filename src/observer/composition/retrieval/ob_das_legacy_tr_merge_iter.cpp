@@ -935,6 +935,11 @@ int ObDASLegacyTRMergeIter::get_count_row()
              || sr_iter_param_.limit_param_->is_valid()) {
     ret = OB_ERR_UNEXPECTED;
   } else {
+    bool bitmap_used = false;
+    if (OB_FAIL(try_bitmap_count(total, bitmap_used))) {
+    } else {
+      done = bitmap_used;
+    }
     while (OB_SUCC(ret) && !done) {
       int64_t rows = 0;
       if ((batches++ & 0x3F) == 0 && OB_FAIL(THIS_WORKER.check_status())) {
@@ -963,6 +968,92 @@ int ObDASLegacyTRMergeIter::get_count_row()
       }
       expr->set_evaluated_projected(ctx);
       count_row_emitted_ = true;
+    }
+  }
+  return ret;
+}
+
+int ObDASLegacyTRMergeIter::try_bitmap_count(int64_t &count, bool &used)
+{
+  int ret = OB_SUCCESS;
+  count = 0;
+  used = false;
+  const ObDatumMeta &id_meta = ir_ctdef_->inv_scan_domain_id_col_->datum_meta_;
+  const bool integer_id = ObUInt64Type == id_meta.type_;
+  const bool binary_id = ObVarcharType == id_meta.type_ && CS_TYPE_BINARY == id_meta.cs_type_;
+  if (!daat_mode_ || topk_mode_ || function_lookup_mode_
+      || ir_ctdef_->need_calc_relevance()
+      || NATURAL_LANGUAGE_MODE != ir_ctdef_->mode_flag_
+      || ir_rtdef_->minimum_should_match_ > 1 || (!integer_id && !binary_id)) {
+    // Keep the existing collector and stream merge for all other cases.
+  } else {
+    common::ObArenaAllocator scratch(common::ObMemAttr("FTSCountBits"));
+    uint64_t *words = static_cast<uint64_t *>(
+        scratch.alloc(storage::DenseIdCounter::WORD_COUNT * sizeof(uint64_t)));
+    if (nullptr != words) {
+      storage::DenseIdCounter counter(words);
+      bool supported = true;
+      bool touched = false;
+      int64_t postings = 0;
+      int64_t batches = 0;
+      // Bound speculative work as well as memory before replaying a sparse set.
+      static constexpr int64_t MAX_POSTINGS = 1LL << 16;
+      for (int64_t i = 0; OB_SUCC(ret) && supported && i < dim_iters_.count(); ++i) {
+        ObTextRetrievalDaaTTokenIter *iter =
+            static_cast<ObTextRetrievalDaaTTokenIter *>(dim_iters_.at(i));
+        bool end = false;
+        while (OB_SUCC(ret) && supported && !end) {
+          const ObDocIdExt *ids = nullptr;
+          int64_t size = 0;
+          if ((batches++ & 0x3F) == 0 && OB_FAIL(THIS_WORKER.check_status())) {
+          } else {
+            touched = true;
+            ret = iter->get_next_doc_id_batch(ids, size);
+            if (OB_ITER_END == ret) {
+              end = true;
+              ret = OB_SUCCESS;
+            } else if (OB_NOT_SUPPORTED == ret) {
+              supported = false;
+              ret = OB_SUCCESS;
+            }
+          }
+          for (int64_t j = 0; OB_SUCC(ret) && supported && j < size; ++j) {
+            const ObDatum &datum = ids[j].get_datum();
+            uint64_t scope = 0;
+            uint64_t id = 0;
+            if (++postings > MAX_POSTINGS || datum.is_null()) {
+              supported = false;
+            } else if (integer_id && datum.len_ != sizeof(uint64_t)) {
+              supported = false;
+            } else if (integer_id) {
+              id = datum.get_uint();
+            } else if (datum.len_ != sizeof(common::ObDocId)) {
+              supported = false;
+            } else {
+              common::ObDocId doc_id;
+              if (OB_FAIL(doc_id.from_string(datum.get_string()))) {
+              } else if (!doc_id.is_valid()) {
+                supported = false;
+              } else {
+                scope = doc_id.tablet_id_;
+                id = doc_id.seq_id_;
+              }
+            }
+            if (OB_SUCC(ret) && supported && !counter.add(scope, id)) {
+              supported = false;
+            }
+          }
+        }
+      }
+      if (OB_SUCC(ret) && supported) {
+        used = counter.get_count(count);
+      } else if (OB_SUCC(ret) && touched) {
+        // No aggregate row has escaped. Rewind every term under the same read
+        // snapshot before using the general collector; never use a partial set.
+        if (OB_FAIL(inner_reuse())) {
+        } else if (OB_FAIL(rescan())) {
+        }
+      }
     }
   }
   return ret;

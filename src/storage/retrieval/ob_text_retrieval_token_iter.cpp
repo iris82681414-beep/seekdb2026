@@ -545,6 +545,24 @@ int ObTextRetrievalDaaTTokenIter::get_next_batch(const int64_t capacity, int64_t
   return OB_NOT_IMPLEMENT;
 }
 
+int ObTextRetrievalDaaTTokenIter::get_next_doc_id_batch(const ObDocIdExt *&ids, int64_t &count)
+{
+  int ret = OB_SUCCESS;
+  ids = nullptr;
+  count = 0;
+  if (OB_NOT_NULL(relevance_expr_)) {
+    ret = OB_NOT_SUPPORTED;
+  } else if (OB_FAIL(get_next_row())) {
+  } else if (OB_UNLIKELY(cur_idx_ < 0 || cur_idx_ >= count_)) {
+    ret = OB_ERR_UNEXPECTED;
+  } else {
+    ids = &doc_id_[cur_idx_];
+    count = count_ - cur_idx_;
+    cur_idx_ = count_ - 1;
+  }
+  return ret;
+}
+
 int ObTextRetrievalDaaTTokenIter::advance_to(const ObDatum &id_datum)
 {
   int ret = OB_SUCCESS;
