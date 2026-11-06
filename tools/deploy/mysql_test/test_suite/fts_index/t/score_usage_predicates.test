@@ -28,3 +28,53 @@ set @query='';
 execute long_query using @query;
 deallocate prepare long_query;
 drop database fts_score_predicates;
+
+# Posting unions cross input/output batch boundaries, deduplicate overlapping
+# terms, and retain their row sets after prepared-statement reuse and DML.
+create database fts_union_regression;
+use fts_union_regression;
+create table digits(n int primary key);
+insert into digits values(0),(1),(2),(3),(4),(5),(6),(7),(8),(9);
+create table docs(id int primary key, content varchar(512));
+--disable_query_log
+insert into docs
+select id, case id % 7
+ when 0 then 'alpha beta gamma'
+ when 1 then 'beta delta epsilon'
+ when 2 then 'theta lambda mu'
+ when 3 then 'alpha'
+ when 4 then 'zeta omega'
+ when 5 then null else '' end
+from (select a.n*1000+b.n*100+c.n*10+d.n+1 as id
+      from digits a, digits b, digits c, digits d) s where id <= 1203;
+--enable_query_log
+alter table docs add fulltext index words(content) with parser beng;
+select count(*), sum(id), min(id), max(id) from docs where match(content) against('alpha beta gamma');
+select count(*), sum(id) from docs where match(content) against('alpha alpha beta');
+select count(*), sum(id) from docs where match(content) against('missing alpha absent');
+select count(*) from docs where match(content) against('missing absent');
+select count(*), sum(id) from docs where match(content) against('alpha beta gamma delta epsilon theta lambda mu');
+select count(*), sum(id) from docs where match(content) against('alpha beta gamma delta epsilon theta lambda mu zeta omega');
+select sum(case when match(content) against('alpha beta gamma') > 0 then 1 else 0 end) from docs;
+select count(*) from docs where match(content) against('+alpha -beta' in boolean mode);
+select id, round(match(content) against('alpha beta gamma'), 6) as score
+from docs where match(content) against('alpha beta gamma') order by score desc, id limit 5;
+prepare union_q from 'select count(*), sum(id) from docs where match(content) against(?)';
+set @q='alpha beta gamma';
+execute union_q using @q;
+set @q='alpha beta gamma delta epsilon theta lambda mu zeta omega';
+execute union_q using @q;
+set @q='';
+execute union_q using @q;
+set @q='missing alpha absent';
+execute union_q using @q;
+deallocate prepare union_q;
+delete from docs where id % 5 = 0;
+update docs set content='phi alpha' where id % 17 = 0;
+select count(*), sum(id) from docs where match(content) against('alpha beta gamma');
+start transaction;
+insert into docs values(5001,'alpha beta gamma'),(5002,'delta epsilon');
+select count(*), sum(id) from docs where match(content) against('alpha beta gamma');
+rollback;
+select count(*), sum(id) from docs where match(content) against('alpha beta gamma');
+drop database fts_union_regression;

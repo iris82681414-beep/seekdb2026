@@ -78,6 +78,81 @@ int ObTextDaaTIter::pre_process()
   return ret;
 }
 
+int ObTextDaaTIter::do_one_merge_round(int64_t &count)
+{
+  // A short, unscored natural-language match is a sorted union of postings.
+  // Keep the pending iterator heads directly instead of removing and rebuilding
+  // a merge heap for every document. The collector still checks minimum-match
+  // constraints, even when no numeric relevance is projected.
+  if (mode_flag_ != sql::ObMatchAgainstMode::NATURAL_LANGUAGE_MODE
+      || function_lookup_mode_
+      || iter_param_->need_project_relevance()
+      || iter_param_->need_filter()
+      || dim_iters_->count() > 8) {
+    return ObSRDaaTIterImpl::do_one_merge_round(count);
+  }
+
+  int ret = OB_SUCCESS;
+  for (int64_t i = 0; OB_SUCC(ret) && i < next_round_cnt_; ++i) {
+    const int64_t idx = next_round_iter_idxes_[i];
+    ObISRDaaTDimIter *iter = dim_iters_->at(idx);
+    if (OB_ISNULL(iter)) {
+      ret = OB_ERR_UNEXPECTED;
+    } else if (OB_FAIL(iter->get_next_row())) {
+      if (ret == OB_ITER_END) {
+        iter_domain_ids_[idx] = nullptr;
+        ret = OB_SUCCESS;
+      }
+    } else if (OB_FAIL(iter->get_curr_id(iter_domain_ids_[idx]))) {
+    } else if (OB_ISNULL(iter_domain_ids_[idx])) {
+      ret = OB_ERR_UNEXPECTED;
+    }
+  }
+
+  int64_t winner = -1;
+  next_round_cnt_ = 0;
+  for (int64_t i = 0; OB_SUCC(ret) && i < dim_iters_->count(); ++i) {
+    if (iter_domain_ids_[i] == nullptr) {
+      continue;
+    }
+    int64_t cmp = -1;
+    if (winner >= 0) {
+      ObSRMergeItem candidate;
+      ObSRMergeItem current;
+      candidate.iter_idx_ = i;
+      current.iter_idx_ = winner;
+      ret = merge_cmp_.cmp(candidate, current, cmp);
+    }
+    if (OB_SUCC(ret)) {
+      if (cmp < 0) {
+        winner = i;
+        next_round_cnt_ = 0;
+      }
+      if (cmp <= 0) {
+        next_round_iter_idxes_[next_round_cnt_++] = i;
+      }
+    }
+  }
+  if (OB_SUCC(ret)) {
+    if (winner < 0) {
+      ret = OB_ITER_END;
+    } else {
+      bool got_valid_id = false;
+      double relevance = 0.0;
+      for (int64_t i = 0; OB_SUCC(ret) && i < next_round_cnt_; ++i) {
+        ret = relevance_collector_->collect_one_dim(next_round_iter_idxes_[i], 0.0);
+      }
+      if (OB_FAIL(ret)) {
+      } else if (OB_FAIL(relevance_collector_->get_result(relevance, got_valid_id))) {
+      } else if (got_valid_id) {
+        // Copy the winning ID before any pending stream can refill its buffer.
+        ret = cache_result(count, *iter_domain_ids_[winner], relevance);
+      }
+    }
+  }
+  return ret;
+}
+
 ObTextBMWIter::ObTextBMWIter()
   : ObSRBMWIterImpl(),
     bm25_param_estimator_() {}
