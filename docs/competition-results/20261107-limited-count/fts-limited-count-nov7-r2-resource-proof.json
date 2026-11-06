@@ -1,0 +1,43 @@
+{
+  "complete": true,
+  "performance_report_sha256": "0e7b343d132bb425deba80d6477c88436a422e11faed382d067123ee40aa57a4",
+  "runs": [
+    {
+      "label": "parent-a",
+      "pid": "967608",
+      "startup_memory_budget_bytes": 4294967296,
+      "last_reload": {
+        "time": "2026-11-07 03:28:44.552761",
+        "memory_budget": 4294967296,
+        "configured_memory_budget": 4294967296
+      },
+      "runtime_builder_threads": 2
+    },
+    {
+      "label": "limited-count",
+      "pid": "968203",
+      "startup_memory_budget_bytes": 4294967296,
+      "last_reload": {
+        "time": "2026-11-07 03:29:30.583392",
+        "memory_budget": 4294967296,
+        "configured_memory_budget": 4294967296
+      },
+      "runtime_builder_threads": 2
+    },
+    {
+      "label": "parent-b",
+      "pid": "968791",
+      "startup_memory_budget_bytes": 4294967296,
+      "last_reload": {
+        "time": "2026-11-07 03:30:15.592151",
+        "memory_budget": 4294967296,
+        "configured_memory_budget": 4294967296
+      },
+      "runtime_builder_threads": 2
+    }
+  ],
+  "primary_unchanged": true,
+  "primary_pid": "3892",
+  "baseline_product_files_verified": 6936,
+  "created_at_unix": 1793993572.4315484
+}
