@@ -94,6 +94,43 @@ static_assert(sizeof(type_maps_) / sizeof(ObMySQLTypeMap) == ObMaxType, "Not eno
 
 namespace {
 
+// JSON wire rendering is a function of the complete binary value. Keep one
+// bounded, owned entry per worker; never expose this storage to a row or cell.
+class JsonTextMemo {
+public:
+  JsonTextMemo() : binary_len_(0), text_len_(0) {}
+
+  bool matches(const ObString &binary) const
+  {
+    return binary_len_ > 0 && binary.length() == binary_len_
+        && 0 == MEMCMP(binary.ptr(), binary_, binary_len_);
+  }
+
+  const char *text() const { return text_; }
+  int64_t text_length() const { return text_len_; }
+
+  void store(const ObString &binary, const char *text, int64_t text_len)
+  {
+    if (binary.length() > 0 && binary.length() <= BINARY_CAPACITY
+        && text_len >= 0 && text_len <= TEXT_CAPACITY) {
+      MEMCPY(binary_, binary.ptr(), binary.length());
+      if (text_len > 0) {
+        MEMCPY(text_, text, text_len);
+      }
+      text_len_ = text_len;
+      binary_len_ = binary.length();
+    }
+  }
+
+private:
+  static constexpr int64_t BINARY_CAPACITY = 4 * 1024;
+  static constexpr int64_t TEXT_CAPACITY = 16 * 1024;
+  int64_t binary_len_;
+  int64_t text_len_;
+  char binary_[BINARY_CAPACITY];
+  char text_[TEXT_CAPACITY];
+};
+
 int set_borrowed_lenenc_bytes(const ObString &value, ObMySQLCellValue &out) {
   int ret = OB_SUCCESS;
   if (OB_UNLIKELY(value.length() < 0 ||
@@ -462,18 +499,26 @@ int ObSMUtils::build_cell_value(const ObObj &obj, MYSQL_PROTOCOL_TYPE type,
       } else if (OB_UNLIKELY(value.length() < 0 || NULL == value.ptr())) {
         ret = OB_ERR_UNEXPECTED;
       } else {
-        lib::ObMemAttr mem_attr("JsonAlloc");
-        ObArenaAllocator allocator(mem_attr);
-        ObJsonBin json_bin(value.ptr(), value.length(), &allocator);
-        ObIJsonBase *json_base = &json_bin;
-        ObJsonBuffer json_buf(&allocator);
-        json_bin.set_seek_flag(true);
-        if (OB_FAIL(json_bin.reset_iter())) {
-        } else if (OB_FAIL(json_base->print(json_buf, true, value.length()))) {
-        } else {
+        static thread_local JsonTextMemo memo;
+        if (memo.matches(value)) {
           ret = set_copied_bytes(scratch_allocator,
+                                ObMySQLCellValueKind::LENENC_BYTES,
+                                memo.text(), memo.text_length(), out);
+        } else {
+          lib::ObMemAttr mem_attr("JsonAlloc");
+          ObArenaAllocator allocator(mem_attr);
+          ObJsonBin json_bin(value.ptr(), value.length(), &allocator);
+          ObIJsonBase *json_base = &json_bin;
+          ObJsonBuffer json_buf(&allocator);
+          json_bin.set_seek_flag(true);
+          if (OB_FAIL(json_bin.reset_iter())) {
+          } else if (OB_FAIL(json_base->print(json_buf, true, value.length()))) {
+          } else if (OB_FAIL(set_copied_bytes(scratch_allocator,
                                  ObMySQLCellValueKind::LENENC_BYTES,
-                                 json_buf.ptr(), json_buf.length(), out);
+                                 json_buf.ptr(), json_buf.length(), out))) {
+          } else {
+            memo.store(value, json_buf.ptr(), json_buf.length());
+          }
         }
       }
       break;
