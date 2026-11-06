@@ -20,7 +20,7 @@
 #include "sql/das/iter/ob_das_text_retrieval_eval_node.h"
 #include "sql/das/iter/sparse_retrieval/ob_das_text_retrieval_engine.h"
 #include "sql/das/ob_das_ir_define.h"
-#include "sql/engine/ob_exec_context.h"
+#include "lib/worker.h"
 
 namespace oceanbase
 {
@@ -925,6 +925,7 @@ int ObDASLegacyTRMergeIter::get_count_row()
 {
   int ret = OB_SUCCESS;
   int64_t total = 0;
+  int64_t batches = 0;
   bool done = false;
   if (count_row_emitted_) {
     ret = OB_ITER_END;
@@ -936,7 +937,7 @@ int ObDASLegacyTRMergeIter::get_count_row()
   } else {
     while (OB_SUCC(ret) && !done) {
       int64_t rows = 0;
-      if (OB_FAIL(exec_ctx_->fast_check_status())) {
+      if ((batches++ & 0x3F) == 0 && OB_FAIL(THIS_WORKER.check_status())) {
       } else if (OB_FAIL(sparse_retrieval_iter_->get_next_rows(sr_iter_param_.max_batch_size_, rows))) {
         if (OB_ITER_END == ret) {
           done = true;
