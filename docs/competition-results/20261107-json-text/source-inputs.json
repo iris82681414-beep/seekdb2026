@@ -1,0 +1,128 @@
+{
+  "base_commit": "b84454603d7d36b3195b03657c123b4c220b457c",
+  "parent_commit": "91636f565c11c3c2962fae7884098c3e8ca15cb5",
+  "source_checkpoint": "ee4232fa713f14878452478c14c7822362d801ac",
+  "files": {
+    "src/data_plane/api/data_plane/fts/ob_fts_parser_helper.h": {
+      "before": "3c3a8bbb09e369d2d396a14bfc391282657573d581be67b6def5048f6c1211dc",
+      "after": "3cfe2c7e03c92578dc2878e85bd724eba772f10cb2328e0d73fd1fec6c887973"
+    },
+    "src/oblib/lib/charset/ob_ctype_utf8.cc": {
+      "before": "1e437f1a88cb43ac9921e8e6beaf9cb393ff1d52e251977b3dc457650d6cc451",
+      "after": "0786369098730ebfa75379722eb6c463613f95e36d3a961b98f4b706e91f45ec"
+    },
+    "src/observer/composition/retrieval/ob_das_legacy_tr_merge_iter.cpp": {
+      "before": "476eff31bed4f4377f8e833d542d65f7307cae37fbd58df127770a7a9d2b69ef",
+      "after": "b10988d4306151826640e2b98671dc66f1298fa26592dfea4bc56bfdac64f19a"
+    },
+    "src/observer/composition/retrieval/ob_das_legacy_tr_merge_iter.h": {
+      "before": "45618e99a9144a1f0fc2edf7b45c791afb0111d9766096b3f16feda24aefc335",
+      "after": "f29461e1a99dcb14637377bbb040247fa547550b6d8f6646ca556a2ab10543c4"
+    },
+    "src/query/protocol/ob_mysql_protocol_util.cpp": {
+      "before": "965292467542fab1ef8272a34e0ee9cf200e31d3a3c0d0da7288c29f8c7d2fcf",
+      "after": "0e4863e72f51f3b5114d4eccaf6db91474d27e2b521f9eb7fa419ea1c25c1ce9"
+    },
+    "src/rootserver/ddl_task/ob_ddl_common_rs_impl.cpp": {
+      "before": "1e50e4dc3a1a9ac1cd06bc6fbfe980dfbb437adb2d2ede16e65c9ed4024dbef1",
+      "after": "2b627dff01f76131ee67cd4e35c306a01ad0221aa7510cce585f3c4c4d2c1e1c"
+    },
+    "src/share/ob_ddl_task_executor.cpp": {
+      "before": "64c30b0ce6892d9381a1b461bf8ea769973f158987afe532256f384b6c319e8d",
+      "after": "9f7e2fd95485fb12406b8c254c24186314527118d59a7dc629189f48c1ef518e"
+    },
+    "src/sql/code_generator/ob_tsc_cg_service.cpp": {
+      "before": "2fda5f29f5bf5bae96ca7052dd36175c829830bd35c3aa16d66ff1f443949fbb",
+      "after": "cbcfc279019fed1bf03cd8f3cdff3a2ba6736468483753cfde5d86df0a0a933c"
+    },
+    "src/sql/das/iter/ob_das_iter_utils.cpp": {
+      "before": "0326581b1928b07fc21e1f150ac2a369ab44aec62241f5e497cdf01e3c9e0fc4",
+      "after": "4d27ad77d0c9958d7326bd3107b3283762861ecf524a67ec53adcb3d163e1d8a"
+    },
+    "src/sql/das/ob_das_ir_define.cpp": {
+      "before": "8ae2fa86ca7857c6ecf703ba10617d3193ca31881be0049daa954f2ea2f5ba95",
+      "after": "19ac2a35113d95851adfcbde5a4b4143d0b3ce45c8ff41fc8e54e95e726e2287"
+    },
+    "src/sql/das/ob_das_ir_define.h": {
+      "before": "4ebe22172660a13d03b66aa5a05774cf48b6c86e11ee11a89ce1f989ae778df9",
+      "after": "419a1d30d166331104d7e13128fa711ad0692f10e4f194115b1d4683a9ea4baf"
+    },
+    "src/sql/engine/expr/ob_expr_tokenize.cpp": {
+      "before": "73190434bdc4e73edf4621b90f5c72f26f037c0d01553e14e735b5ef096f24b5",
+      "after": "9dded2f5e6c2c97fa5649a46df3950d781057d22b0840a649a9c6b1a8a7fc677"
+    },
+    "src/sql/engine/expr/ob_expr_tokenize.h": {
+      "before": "de05786d84bf973a6ddc46179425efadb971d2b46739ed35aa4eca01b016c5b1",
+      "after": "32902d7d74eef2db54d5cde53e884feca7b367fbf06b871e7822dcc4fe68100b"
+    },
+    "src/sql/engine/sort/ob_sort_op_impl.h": {
+      "before": "ee580ffb1058d053a523f06186e72ead90138d2b226b2e4e8c0f89430b4ff7e7",
+      "after": "ee580ffb1058d053a523f06186e72ead90138d2b226b2e4e8c0f89430b4ff7e7"
+    },
+    "src/sql/optimizer/ob_log_plan.cpp": {
+      "before": "05f2447757edef54e8a4bfad7d0ebe72388b66e4a2fa2d2340d4e4123145cf47",
+      "after": "0f5217e0428e719776294687804e5c186295b8d40c70e8d8014613de41e25cfe"
+    },
+    "src/sql/optimizer/ob_log_table_scan.cpp": {
+      "before": "258cfb32c6694c7c9983d128eb3057a8974c6a5b938064c2dd63dedb5ad365e3",
+      "after": "33a073575deac824a6cd0d10bd8a3d65f27aab14c997094f668a47a2b008a482"
+    },
+    "src/sql/optimizer/ob_log_table_scan.h": {
+      "before": "e438b85307abbc9f1c6f2c757f8716bf620c8497ee0b5b807885f37da532f052",
+      "after": "7118b64de201f11edc178b90731d7d7361086ad6e5b8e6af079f8ac266905d24"
+    },
+    "src/sql/optimizer/ob_optimizer_util.cpp": {
+      "before": "8a5a3ffb8a3fc581fa8a42cf0d913d130f746c44843044cf9099051dd8617553",
+      "after": "9d229eb38aa6046923b3831412eaba2b1830b907892282cc53214264a62a046a"
+    },
+    "src/sql/rewrite/ob_transform_pre_process.cpp": {
+      "before": "a8ef9c6e2ff3a6b8835d4a647bdc2585267c7c2940f9769d44a7c4cd54c8c8b0",
+      "after": "178e601815d937e40454879c2945e10a6d97004bf48d94cefef75e950bc34905"
+    },
+    "src/sql/rewrite/ob_transform_pre_process.h": {
+      "before": "ad86ff424ab32eef7eed2a6af2266b25535a72d79aa5c3b8f6d659e0b26524c0",
+      "after": "ca5530c8c42750c7e65c047b725201fc752990c56894986f7aef078f39050a46"
+    },
+    "src/sql/rewrite/ob_transform_utils.cpp": {
+      "before": "95e0e9036a6b8b0f9816512b5e135c621ac07a0422463d870fb62d8102e4f67d",
+      "after": "7aeb594dda0079bfbd9182092240bc927f2c68e2f03777b1baf5400aebe1270e"
+    },
+    "src/sql/rewrite/ob_transform_utils.h": {
+      "before": "5461956420e9374dc563fe904c84dfc4803445aed7545d4a045df5789ff5a197",
+      "after": "d7f935ba23df3f0710fa78933ddcf7c78aa14c8c6eddb4e9d83c87a3b9812664"
+    },
+    "src/storage/fts/ob_fts_parser_helper.cpp": {
+      "before": "deef82c8ce2e0fd123d823bb91b784f99f6d4e92998838f98c4438880308f11c",
+      "after": "d74ef42050936ee7ac6bc15d1804c248b573c178689a1fcd58fde1cb88713770"
+    },
+    "src/storage/retrieval/ob_i_sparse_retrieval_iter.h": {
+      "before": "5941d27371eae864dec72c111c188ae7c7d4914579874e894ce48d3d44078e71",
+      "after": "fec1dc2617d5e7cc82a4d73a82cca7d7c41402e58486ebd6b53f4430502794a1"
+    },
+    "src/storage/retrieval/ob_sparse_daat_iter.cpp": {
+      "before": "7a3cb2763d02a1fbeb4429dc63d0a9ce9f5e7e632080de89091fcdadab18d37e",
+      "after": "160483596eebef65db560f6544daa8e1e7aadd60b9135389f9ab442582df6e62"
+    },
+    "src/storage/retrieval/ob_sparse_utils.h": {
+      "before": "a72a53beecc4a7a6038f39d50b8c95f2d0d3d1e18f48a9507dc6ff8777bc060d",
+      "after": "14cff638b9c022582bf24e7a7e88b2353fabd0d2df9ac65c8df18161d0a2f36a"
+    },
+    "src/storage/retrieval/ob_text_daat_iter.cpp": {
+      "before": "17590000c1f5422bb8cad665debf67df8d4093a00edd5bc840ace1527b2ceabb",
+      "after": "ae14a0155dddf8c9dcddfe70dbbd1f125d22342052244751b29af58e5abc6143"
+    },
+    "src/storage/retrieval/ob_text_retrieval_token_iter.cpp": {
+      "before": "537a63f0cb1bc697f4aefcb3108a478ff20045ce29bf57f4dabb2de6f4e63804",
+      "after": "163af336f37c8618d34314cca475fb0ab6c3fb00f8c198f73fbe3a5c4afda5a7"
+    },
+    "src/storage/retrieval/ob_text_retrieval_token_iter.h": {
+      "before": "251e4baf81e84f29d059dab8e51ba1a95d719e53a965c7f87d81c4a4f8bbe5e7",
+      "after": "c25309c1d24a1f8fb3c0addd89a1923ada76dedcde056f2e9480cd7523df9a6c"
+    },
+    "src/storage/retrieval/ob_text_taat_iter.cpp": {
+      "before": "5b9fdedca1f4f20f407e958f8684f49de5b54e10fa4f2f86d1744ca2b5e16167",
+      "after": "0dce474c767a0d96b9d707591bc481e688de3561cfbbea568ec7fbf1d962224d"
+    }
+  },
+  "full_input_manifest_sha256": "47e895544e9d78064fc0aab1f76464ff48f972a779102155bae13d179e3dcfb8"
+}

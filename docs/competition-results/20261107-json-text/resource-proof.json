@@ -1,0 +1,75 @@
+{
+  "complete": true,
+  "primary_unchanged": true,
+  "primary_pid": "3892",
+  "baseline_product_files_verified": 6936,
+  "performance_report_sha256": "19b48aa347a414ab30f8a3e59c93a9e772fbd7ef0d661201fe99e3fb166f5f40",
+  "runs": [
+    {
+      "label": "parent-a",
+      "pid": "987089",
+      "startup_memory_budget_bytes": 4294967296,
+      "last_reload": {
+        "time": "2026-11-07 04:29:07.773511",
+        "memory_budget": 4294967296,
+        "configured_memory_budget": 4294967296
+      },
+      "runtime": {
+        "label": "parent-a",
+        "pid": "987089",
+        "tids": [
+          "987124",
+          "987125"
+        ],
+        "count": 2,
+        "cgroup": "/system.slice/ob2026-fts-json-text-nov7-r5-pipeline.service",
+        "cpu_max": "400000 100000",
+        "memory_max": "5368709120"
+      }
+    },
+    {
+      "label": "json-text",
+      "pid": "987673",
+      "startup_memory_budget_bytes": 4294967296,
+      "last_reload": {
+        "time": "2026-11-07 04:29:52.646176",
+        "memory_budget": 4294967296,
+        "configured_memory_budget": 4294967296
+      },
+      "runtime": {
+        "label": "json-text",
+        "pid": "987673",
+        "tids": [
+          "987708",
+          "987709"
+        ],
+        "count": 2,
+        "cgroup": "/system.slice/ob2026-fts-json-text-nov7-r5-pipeline.service",
+        "cpu_max": "400000 100000",
+        "memory_max": "5368709120"
+      }
+    },
+    {
+      "label": "parent-b",
+      "pid": "988225",
+      "startup_memory_budget_bytes": 4294967296,
+      "last_reload": {
+        "time": "2026-11-07 04:30:39.463913",
+        "memory_budget": 4294967296,
+        "configured_memory_budget": 4294967296
+      },
+      "runtime": {
+        "label": "parent-b",
+        "pid": "988225",
+        "tids": [
+          "988260",
+          "988261"
+        ],
+        "count": 2,
+        "cgroup": "/system.slice/ob2026-fts-json-text-nov7-r5-pipeline.service",
+        "cpu_max": "400000 100000",
+        "memory_max": "5368709120"
+      }
+    }
+  ]
+}

@@ -1,0 +1,142 @@
+{
+  "phase": "complete",
+  "complete": true,
+  "primary_updated": false,
+  "cases": [
+    {
+      "case": "covering_count",
+      "exit": 0,
+      "seconds": 13.238469028001418
+    },
+    {
+      "case": "ddl_batch_boundaries",
+      "exit": 0,
+      "seconds": 12.033150378003484
+    },
+    {
+      "case": "post_build_sort",
+      "exit": 0,
+      "seconds": 23.117010354006197
+    },
+    {
+      "case": "ascii_collation_loop",
+      "exit": 0,
+      "seconds": 1.9674802719964646
+    },
+    {
+      "case": "collation_expr",
+      "exit": 0,
+      "seconds": 1.0667373210017104
+    },
+    {
+      "case": "tokenize_null_options",
+      "exit": 0,
+      "seconds": 0.11408613398089074
+    },
+    {
+      "case": "tokenize_lob",
+      "exit": 0,
+      "seconds": 0.16431919299066067
+    },
+    {
+      "case": "tokenize_function",
+      "exit": 0,
+      "seconds": 1.066126746009104
+    },
+    {
+      "case": "parser_properties",
+      "exit": 0,
+      "seconds": 4.876156740996521
+    },
+    {
+      "case": "cn_word",
+      "exit": 0,
+      "seconds": 9.03046571899904
+    },
+    {
+      "case": "basic_dml",
+      "exit": 0,
+      "seconds": 20.212335390009684
+    },
+    {
+      "case": "simple_query",
+      "exit": 0,
+      "seconds": 4.125963269994827
+    },
+    {
+      "case": "score_usage",
+      "exit": 0,
+      "seconds": 2.017598097008886
+    },
+    {
+      "case": "score_usage_predicates",
+      "exit": 0,
+      "seconds": 2.017515275016194
+    },
+    {
+      "case": "ddl_concurrency",
+      "exit": 0,
+      "seconds": 10.883817611000268
+    },
+    {
+      "case": "limited_count_views",
+      "exit": 0,
+      "seconds": 6.678361372993095
+    },
+    {
+      "case": "json_wire_rendering",
+      "exit": 0,
+      "seconds": 0.31431432100362144
+    }
+  ],
+  "started_at_unix": 1793996640.4398026,
+  "controller_pid": 984906,
+  "candidate_binary_sha256": "77844c9f038d2cd012e117ccb8182c0609407df7e1e212cdf82da35f12272768",
+  "parent_binary_sha256": "d19f70277aaeb5272d63bacd1559c416eba8b064a94856d009bb66447194f5f3",
+  "json_parent_binary_sha256": "3f2fe54055979eb13c4ba3739dcee6286157c3ed950b02ef21058f7fac8ab3bd",
+  "source_checkpoint": "ee4232fa713f14878452478c14c7822362d801ac",
+  "original_workarea_percentage": 5,
+  "validation_input_sha256": {
+    "/root/oceanbase2026/ops/fts-count-nov6-r6.test": "366ab231453eef71f6a77b8d57ccbce16843c0a088ae12a05a249c093120d577",
+    "/root/oceanbase2026/results/fts-count-nov6-original-r6/covering_count.result": "8f63a40c3c31f23b19a5cb75302875d3dc7fc83d4d673704dc551e44bcf14daa",
+    "/root/oceanbase2026/ops/fts-batch-nov6.test": "6128b42cb5e6ac2ea2b7cede72eb37420baee525b3e2c58ae7198f75f9b5dce7",
+    "/root/oceanbase2026/results/fts-batch-nov6-original/ddl_batches.result": "676c3151e73e51320383d9f84958fd2f3d453416ea3b4f74973fe8a32dd56eda",
+    "/root/oceanbase2026/ops/fts-prescan-nov7-r1.test": "f92be8465fcfff30b1642515b2374133524ecc4ea71b2b7f13a4064d0cf1894f",
+    "/root/oceanbase2026/results/fts-prescan-nov7-original-r3/post_build_prescan.result": "52df511a64f492dc676ead320b300f1310cdb6e9349a27a2e82a7183a77e3ba6",
+    "/root/oceanbase2026/ops/fts-ascii-nov5.test": "e8b1ff88130b2e199cf6f674059e892486d374ba882bf18fedc38f490e3d0159",
+    "/root/oceanbase2026/results/fts-ascii-nov5-original/ascii_collation_loop.result": "5481b968a1fa4474e023fb315f87eabb157fc76cc3374506248aecda9c09bfc0",
+    "/root/oceanbase2026/seekdb/tools/deploy/mysql_test/test_suite/expr/t/collation_expr.test": "37729d9dc7d61d85f85d41fdfaf6187e8169c29dfe8ef7adffc36d51585217ad",
+    "/root/oceanbase2026/seekdb/tools/deploy/mysql_test/test_suite/expr/r/mysql/collation_expr.result": "6c106fc412d3288f27c16f16b39845d47db54d5e4f80ac04abb3aa37b94536a7",
+    "/root/oceanbase2026/seekdb/tools/deploy/mysql_test/test_suite/fts_index/t/tokenize_null_options.test": "f3546e2bc6e830d84092b5f35574f816b5e9a6952eb25ea1faeeb6215a83ccdb",
+    "/root/oceanbase2026/seekdb/tools/deploy/mysql_test/test_suite/fts_index/r/mysql/tokenize_null_options.result": "033bf3181129cacfcd3a656e2d0c7ada4ebc1c8201fab1f81116f8ed76dd2648",
+    "/root/oceanbase2026/seekdb/tools/deploy/mysql_test/test_suite/fts_index/t/tokenize_lob.test": "98e47d82ed704bae001fde529b7c6837e830f353e6ef69f20aaec4639860de2b",
+    "/root/oceanbase2026/seekdb/tools/deploy/mysql_test/test_suite/fts_index/r/mysql/tokenize_lob.result": "f788ea722bbdc4da7f33dde80103124b602eeccc7ffebe6df771e9301bacc0d8",
+    "/root/oceanbase2026/ops/fts-tokenize-memo-nov7-r2.test": "d81ed94edf8988e90126bd79ba577441b7e522fba982e71bbb44cdb90b32fde7",
+    "/root/oceanbase2026/results/fts-tokenize-memo-nov7-original-r2/tokenize_memo.result": "260fd28b27170d9b401c650138d478d3fe277b8b68cdf65857fb3f1bd7ecaa61",
+    "/root/oceanbase2026/seekdb/tools/deploy/mysql_test/test_suite/fts_index/t/parser_properties.test": "ee487212fa2fcaf75f0892b50839b6c4309309d9853f16fc0b782685ebd732f6",
+    "/root/oceanbase2026/seekdb/tools/deploy/mysql_test/test_suite/fts_index/r/mysql/parser_properties.result": "e6dbc1e407e909d83d571c840c3292c766e70c2da173594fa1c98b090f03d60a",
+    "/root/oceanbase2026/seekdb/tools/deploy/mysql_test/test_suite/fts_index/t/cn_word.test": "f5d690270366efe5197f073d6928d20b3ec9ca106e4b65ac92339082f32834f2",
+    "/root/oceanbase2026/seekdb/tools/deploy/mysql_test/test_suite/fts_index/r/mysql/cn_word.result": "37568de31d9632eacda4f13332fb6b190922b27f1ed53fb1093cfc03cbef1b03",
+    "/root/oceanbase2026/seekdb/tools/deploy/mysql_test/test_suite/fts_index/t/basic_dml.test": "1ce4330eb1c7d32553cebd5b0f92ed9ba11f0f35ddb6a10bc0f693bf111d0d96",
+    "/root/oceanbase2026/seekdb/tools/deploy/mysql_test/test_suite/fts_index/r/mysql/basic_dml.result": "6686ab5340271fd3772d145ecb98ba5d69bda1d7d3266277d79c4c6ca84629d0",
+    "/root/oceanbase2026/seekdb/tools/deploy/mysql_test/test_suite/fts_index/t/simple_query.test": "4786c566b8862bbbfab6a4b6de2f8940f41fed6aae943be020f83969617dcd07",
+    "/root/oceanbase2026/ops/fts-simple-query-nov5-candidate.result": "03a49642e010f52ac23d60127a897267b9ae88665b68fa90e746c1c19ca62156",
+    "/root/oceanbase2026/ops/fts-score-usage-nov5.test": "5f4c7a1b430bba1df7861558657df9f6398ccc5a8586d403b5e7323f74ed3fd7",
+    "/root/oceanbase2026/results/fts-score-usage-nov5-r2-before/score_usage.result": "d168e97383f9030a632fb85d6aa579a7922c4a74b8f70a540b59196dd354e2a1",
+    "/root/oceanbase2026/ops/fts-score-predicates-nov5.test": "a98626f257738f3a67c90169ba70428931ec75eccc3f145d418a8831db9149c4",
+    "/root/oceanbase2026/results/fts-score-predicates-nov5-before/score_usage_predicates.result": "867db81c65adfc4df637ac48fa68d6f65daa73abe716d20e47c16b66f8e296ba",
+    "/root/oceanbase2026/ops/fts-build-concurrency-nov7-r1.test": "27316c05c19b5c3d209692387c89e70c02bf3974dd69360c0462bb552ea5e73b",
+    "/root/oceanbase2026/results/fts-build-concurrency-nov7-original-r1/ddl_concurrency.result": "5dffe51fc03552dbfc80efcf146006f60bddc3a23582a9e8692d0c91f0be2285",
+    "/root/oceanbase2026/ops/fts-limited-count-nov7-r1.test": "bec0aa4bdd973753d3ca72d0365ed077222abadab6e6608a9128b5bb46c472f9",
+    "/root/oceanbase2026/results/fts-limited-count-nov7-original-r1/limited_count.result": "31d2e9774cad1982d5844ecdd035a2fe3b8e17932e46120565a3d8c7105697d3",
+    "/root/oceanbase2026/ops/fts-json-text-nov7-r2.test": "c5ec7569a42586ac7205569b9e4fbde5f74c9b3ebe19b922332c1904160c0a47",
+    "/root/oceanbase2026/results/fts-json-text-nov7-original-r2/json_text.result": "139b9c7bf04c4396f10ca8f6051242ef22a11c07d8d5e97bbc8be7aa1884ca2d"
+  },
+  "strict_cases_passed": 17,
+  "finished_at_unix": 1793996789.4185917,
+  "workarea_percentage_restored": true,
+  "comparison_stopped": true,
+  "validation_link_restored_to_original": true,
+  "log_archive_exit": 0,
+  "log_archive_result": "{\n  \"complete\": true,\n  \"primary_updated\": false,\n  \"source_logs_removed\": false,\n  \"files\": [\n    {\n      \"source\": \"/root/oceanbase2026/instances/fts-score-usage-nov5-r2/log/seekdb.log\",\n      \"archive\": \"/root/oceanbase2026/archives/comparison-logs/20261107-042629/seekdb.log.gz\",\n      \"sha256\": \"833ce7ad175bf676e93e65f63bf82baa492d5bdf2381715f352ae2f5e431f935\"\n    }\n  ]\n}"
+}
