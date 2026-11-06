@@ -176,3 +176,85 @@ select count(*) from docs where match(content) against('gamma delta');
 rollback;
 select count(*) from docs where match(content) against('gamma delta');
 drop database fts_count_prefix_boundary;
+
+# Counting a limited view observes its cardinality, while projections, nullable
+# counts, outer filters and score-dependent consumers still observe row values.
+create database fts_limited_count_regression;
+use fts_limited_count_regression;
+create table digits(n int primary key);
+insert into digits values(0),(1),(2),(3),(4),(5),(6),(7),(8),(9);
+create table docs(id int primary key, content varchar(512), category int);
+--disable_query_log
+insert into docs
+select id, case when id % 5 = 0 then 'omega' else
+ concat(repeat('alpha ', id % 7 + 1), 'beta ', repeat('tail ', id % 11)) end,
+ if(id % 3 = 0, null, id % 7)
+from (select a.n*1000+b.n*100+c.n*10+d.n+1 as id
+ from digits a, digits b, digits c, digits d) s where id <= 1031;
+--enable_query_log
+alter table docs add fulltext index words(content) with parser beng;
+select count(*) from (select id from docs where match(content) against('alpha beta') limit 20) d;
+select count(*) from (select id, category from docs where match(content) against('alpha beta') limit 20) d;
+select count(*) from (select 1 from docs where match(content) against('alpha beta') limit 20) d;
+select count(*) from (select id from docs where match(content) against('alpha beta') limit 0) d;
+select count(*) from (select id from docs where match(content) against('alpha beta') limit 20 offset 3) d;
+select count(*) from (select id from docs where match(content) against('alpha beta') limit 20 offset 820) d;
+select count(*) from (select id from docs where match(content) against('alpha beta') limit 20 offset 2000) d;
+select count(*) from (select id from docs where match(content) against('alpha beta') limit 2000) d;
+select count(*) from (select id from docs where match(content) against('missing absent') limit 20) d;
+select count(*) from (select id from docs where match(content) against('') limit 20) d;
+select count(*) from (select id from docs where match(content) against(null) limit 20) d;
+select /*+ use_das(d) */ count(*) from (select /*+ use_das(docs) */ id from docs where match(content) against('alpha beta') limit 20) d;
+select /*+ no_use_das(d) */ count(*) from (select /*+ no_use_das(docs) */ id from docs where match(content) against('alpha beta') limit 20) d;
+prepare limited_count_q from 'select count(*) from (select id from docs where match(content) against(?) limit ? offset ?) d';
+set @q='alpha beta', @n=20, @off=0;
+execute limited_count_q using @q, @n, @off;
+set @q='missing', @n=7, @off=0;
+execute limited_count_q using @q, @n, @off;
+set @q='alpha beta', @n=20, @off=820;
+execute limited_count_q using @q, @n, @off;
+set @n=0, @off=0;
+execute limited_count_q using @q, @n, @off;
+set @q=null, @n=20;
+execute limited_count_q using @q, @n, @off;
+set @q='alpha beta', @n=7, @off=3;
+execute limited_count_q using @q, @n, @off;
+deallocate prepare limited_count_q;
+select count(category) from (select category from docs where match(content) against('alpha beta') order by id limit 20) d;
+select count(*) from (select distinct category from docs where match(content) against('alpha beta') limit 20) d;
+select count(*) from (select category, count(*) from docs where match(content) against('alpha beta') group by category limit 20) d;
+select count(*), sum(id) from (select id from docs where match(content) against('alpha beta') order by id limit 20) d;
+select group_concat(id order by id) from (select id from docs where match(content) against('alpha beta') order by match(content) against('alpha beta') desc, id limit 7) d;
+select count(*) from (select id from docs where match(content) against('alpha beta') order by match(content) against('alpha beta') desc limit 20) d;
+select count(*) from (select id from docs where match(content) against('alpha beta') order by match(content) against('alpha beta') asc limit 20) d;
+select count(*) from (select id from docs where match(content) against('alpha beta') order by id desc limit 20) d;
+select count(*) from (select id from docs where match(content) against('alpha beta') > 0.12 limit 20) d;
+select count(*) from (select id from docs where match(content) against('+alpha -beta' in boolean mode) limit 20) d;
+select count(*) from (select id from docs where match(content) against('alpha beta') and id < 100 limit 20) d;
+select count(*) from (select match(content) against('alpha beta') score from docs where match(content) against('alpha beta') limit 20) d;
+set @limited_seen=0;
+select count(*) from (select @limited_seen:=@limited_seen+1 as n from docs where match(content) against('alpha beta') limit 20) d;
+select @limited_seen;
+start transaction;
+delete from docs where match(content) against('alpha beta');
+select count(*) from (select id from docs where match(content) against('alpha beta') limit 20) d;
+rollback;
+select count(*) from (select id from docs where match(content) against('alpha beta') limit 20) d;
+create table no_key(content varchar(512), fulltext index words(content) with parser beng);
+insert into no_key select content from docs;
+select count(*) from (select content from no_key where match(content) against('alpha beta') limit 20 offset 820) d;
+create table split_docs(id int primary key, content varchar(512), category int,
+ fulltext index words(content) with parser beng) partition by hash(id) partitions 2;
+insert into split_docs select * from docs;
+select count(*) from (select id from split_docs where match(content) against('alpha beta') limit 20 offset 820) d;
+select count(*) from (select id from split_docs where match(content) against('alpha beta') limit 20 offset 2000) d;
+create table ranked_docs(id int primary key, content varchar(512),
+ fulltext index words(content) with parser beng);
+insert into ranked_docs values(1,'alpha beta beta beta beta'),
+ (2,'alpha alpha gamma gamma'),(3,'alpha alpha alpha delta'),
+ (4,'alpha epsilon'),(5,'unmatched');
+select id from ranked_docs where match(content) against('alpha') order by match(content) against('alpha') desc, id;
+select count(*) from (select id from ranked_docs where match(content) against('alpha') limit 1) d where id=3;
+select count(*) from (select id from ranked_docs where match(content) against('alpha') limit 1) d where id=1;
+select count(*), min(id) from (select id from ranked_docs where match(content) against('alpha') limit 1) d;
+drop database fts_limited_count_regression;
