@@ -12049,25 +12049,6 @@ int ObLogPlan::prepare_text_retrieval_scan(const ObIArray<ObRawExpr *> &scan_mat
     }
   }
 
-  // Hybrid vector search consumes text scores, so only plain text retrieval may skip them.
-  if (OB_SUCC(ret) && !table_scan->is_vec_idx_scan() && !table_scan->is_vec_adaptive_scan()) {
-    bool need_calc_relevance = true;
-    ObSEArray<ObExprConstraint, 2> constraints;
-    if (OB_ISNULL(get_optimizer_context().get_query_ctx())) {
-      ret = OB_ERR_UNEXPECTED;
-    } else if (OB_FAIL(ObTransformUtils::check_need_calc_match_score(get_optimizer_context().get_exec_ctx(),
-                                                                     get_stmt(),
-                                                                     match_against,
-                                                                     need_calc_relevance,
-                                                                     constraints))) {
-    } else if (!need_calc_relevance &&
-               OB_FAIL(append_array_no_dup(get_optimizer_context().get_query_ctx()->all_expr_constraints_,
-                                           constraints))) {
-    } else {
-      table_scan->get_text_retrieval_info().need_calc_relevance_ = need_calc_relevance;
-    }
-  }
-
   for (int64_t i = 0; OB_SUCC(ret) && i < all_match_filters.count(); ++i) {
     ObRawExpr *curr_filter = all_match_filters.at(i);
     if (curr_filter != match_pred) {

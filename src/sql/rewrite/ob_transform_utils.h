@@ -2000,17 +2000,10 @@ private:
                             ObIArray<ObRawExpr*> &view_exprs);
 
 public:
-  static int extract_shared_exprs(ObDMLStmt *parent,
+  static int extract_shared_exprs(ObDMLStmt *parent, 
                                   ObSelectStmt *view_stmt,
                                   ObIArray<ObRawExpr *> &common_exprs,
                                   const ObIArray<ObRawExpr *> *extra_view_exprs = NULL);
-  // Natural-language BM25 scores are positive for every matched document, so scoring can be
-  // skipped when the statement uses MATCH only as a boolean or "> 0" filter.
-  static int check_need_calc_match_score(ObExecContext *exec_ctx,
-                                         const ObDMLStmt *stmt,
-                                         ObRawExpr *match_expr,
-                                         bool &need_calc,
-                                         ObIArray<ObExprConstraint> &constraints);
 private:
   static int is_scalar_expr(ObRawExpr* expr, bool &is_scalar);
 
