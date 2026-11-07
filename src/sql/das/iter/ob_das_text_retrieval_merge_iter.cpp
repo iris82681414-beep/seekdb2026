@@ -624,9 +624,8 @@ int ObDASTextRetrievalMergeIter::init_total_doc_cnt_param(
   int ret = OB_SUCCESS;
   const ObDASScanCtDef *ctdef = ir_ctdef_->get_doc_agg_ctdef();
   ObDASScanRtDef *rtdef = ir_rtdef_->get_doc_agg_rtdef();
-  if (!ir_ctdef_->need_calc_relevance()) {
-    // no need to do total doc cnt
-  } else if (OB_ISNULL(ctdef) || OB_ISNULL(rtdef)) {
+  // TAAT needs the total document count to size hash partitions even without scores.
+  if (OB_ISNULL(ctdef) || OB_ISNULL(rtdef)) {
     ret = OB_ERR_UNEXPECTED;
   } else {
     ObTableScanParam &scan_param = whole_doc_agg_param_;
@@ -1151,7 +1150,8 @@ int ObDASTRTaatIter::fill_chunk_store_by_tr_iter()
   } else {
     ObSEArray<ObExpr *, 2> exprs;
     if (OB_FAIL(exprs.push_back(ir_ctdef_->inv_scan_domain_id_col_))) {
-    } else if (ir_ctdef_->need_proj_relevance_score()) {
+    } else if (ir_ctdef_->need_calc_relevance()) {
+      // A projected match filter without scoring only needs doc IDs; each hit projects 1.
       if (OB_FAIL(exprs.push_back(ir_ctdef_->relevance_expr_))) {
       }
     }
@@ -1316,7 +1316,8 @@ int ObDASTRTaatIter::load_next_hashmap()
 int ObDASTRTaatIter::inner_load_next_hashmap()
 {
   int ret = OB_SUCCESS;
-  const bool need_relevance = ir_ctdef_->need_proj_relevance_score();
+  // Must match the columns stored by fill_chunk_store_by_tr_iter.
+  const bool need_relevance = ir_ctdef_->need_calc_relevance();
   if (OB_UNLIKELY(hash_maps_[cur_map_idx_]->size() != 0)) {
     ret = OB_ERR_UNEXPECTED;
   }
@@ -1363,8 +1364,10 @@ int ObDASTRTaatIter::inner_load_next_hashmap()
           }
         } else if (OB_FAIL(map->set_refactored(doc_id, cur_relevance + last_relevance, 1/*overwrite*/))) {
         }
-      } else {
-        if (OB_FAIL(map->set_refactored(doc_id, 1, 0/*overwrite*/))) {
+      } else if (OB_FAIL(map->set_refactored(doc_id, 1, 0/*overwrite*/))) {
+        if (OB_HASH_EXIST == ret) {
+          // Another query token already matched this document.
+          ret = OB_SUCCESS;
         }
       }
     }

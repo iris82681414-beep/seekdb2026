@@ -1884,11 +1884,27 @@ int ObTscCgService::generate_text_ir_ctdef(const ObLogTableScan &op,
       }
     }
   } else {
-    if (OB_ISNULL(ir_scan_ctdef->children_ = OB_NEW_ARRAY(ObDASBaseCtDef*, &ctdef_alloc, 1))) {
+    // Without scores, per-token document counts are unnecessary. TAAT still sizes its hash
+    // partitions by the total document count, and DAAT simply leaves this child unused.
+    ObDASScanCtDef *doc_agg_ctdef = nullptr;
+    if (OB_FAIL(ObDASTaskFactory::alloc_das_ctdef(DAS_OP_TABLE_SCAN, ctdef_alloc, doc_agg_ctdef))) {
+    } else {
+      doc_agg_ctdef->ref_table_id_ = op.need_skip_rowkey_doc() ? tr_info.data_table_id_ : tr_info.doc_id_idx_tid_;
+      doc_agg_ctdef->pd_expr_spec_.pd_storage_flag_.set_aggregate_pushdown(true);
+      doc_agg_ctdef->ir_scan_type_ = ObTSCIRScanType::OB_IR_DOC_ID_IDX_AGG;
+      if (OB_FAIL(generate_das_scan_ctdef(op, cg_ctx, *doc_agg_ctdef, has_rowscn))) {
+      }
+    }
+    if (OB_FAIL(ret)) {
+    } else if (OB_ISNULL(ir_scan_ctdef->children_ = OB_NEW_ARRAY(ObDASBaseCtDef*, &ctdef_alloc, 2))) {
       ret = OB_ALLOCATE_MEMORY_FAILED;
     } else {
-      ir_scan_ctdef->children_cnt_ = 1;
-      ir_scan_ctdef->children_[0] = &scan_ctdef;
+      ir_scan_ctdef->children_cnt_ = 2;
+      ir_scan_ctdef->children_[0] = inv_idx_scan_ctdef;
+      ir_scan_ctdef->children_[1] = doc_agg_ctdef;
+      ir_scan_ctdef->has_inv_agg_ = false;
+      ir_scan_ctdef->has_doc_id_agg_ = true;
+      ir_scan_ctdef->has_block_max_scan_ = false;
     }
   }
 
