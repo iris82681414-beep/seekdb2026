@@ -326,6 +326,12 @@ void ObIndependentDag::post_signal()
   (void) cond_.signal();
 }
 
+void ObIndependentDag::broadcast_signal()
+{
+  ObThreadCondGuard guard(cond_);
+  (void) cond_.broadcast();
+}
+
 // If there is no ready task but waiting task list is not empty, try to update ready task list and get next ready task
 int ObIndependentDag::try_get_next_ready_task(ObITask *&task)
 {
@@ -465,6 +471,12 @@ int ObIndependentDag::deal_with_finish_task(
       ObIDag::ObDagStatus status = is_dag_failed() ? ObIDag::DAG_STATUS_ABORT : ObIDag::DAG_STATUS_FINISH;
       set_dag_status(status);
       COMMON_LOG(INFO, "dag finished", K(ret), K_(dag_ret), K(status), "runtime", ObTimeUtility::fast_current_time() - start_time_, KPC(this));
+    }
+    if (is_final_status()) {
+      // Idle workers wait with a timeout; wake them so they observe the final status now.
+      ObThreadCondGuard cond_guard(cond_);
+      if (OB_TMP_FAIL(cond_.broadcast())) {
+      }
     }
   }
   COMMON_LOG(INFO, "finish deal with finish task", K(ret), K(error_code), K(task_is_suspended));

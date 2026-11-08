@@ -19,6 +19,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include "share/datum/ob_datum_cmp_func_def.h"
 #include "storage/fts/ob_beng_ft_parser.h"
 #include "storage/fts/ob_fts_parser_helper.h"
 #include "storage/fts/ob_fts_parser_property.h"
@@ -371,6 +372,61 @@ TEST(BENGTokenPipeline, invalid_parser_input_and_eof_outputs)
   EXPECT_EQ(0, length);
   EXPECT_EQ(0, char_length);
   EXPECT_EQ(0, frequency);
+}
+
+// Fulltext sort keys and document-id merges compare strings through ObDatumStrCmp; its fast
+// paths must keep the exact result of the charset comparison they replace.
+int reference_str_cmp(ObCollationType collation, const std::string &l, const std::string &r,
+                      bool with_end_space)
+{
+  const int res = ObCharset::strcmpsp(collation, l.data(), l.size(), r.data(), r.size(),
+                                      with_end_space);
+  return res > 0 ? 1 : (res < 0 ? -1 : 0);
+}
+
+template <ObCollationType CS_TYPE, bool WITH_END_SPACE>
+void expect_datum_str_cmp_matches(const std::vector<std::string> &values)
+{
+  for (const std::string &l : values) {
+    for (const std::string &r : values) {
+      ObDatum left;
+      ObDatum right;
+      left.set_string(l.data(), static_cast<uint32_t>(l.size()));
+      right.set_string(r.data(), static_cast<uint32_t>(r.size()));
+      int cmp_ret = 2;
+      ASSERT_EQ(OB_SUCCESS, (datum_cmp::ObDatumStrCmp<CS_TYPE, WITH_END_SPACE>::cmp(left, right, cmp_ret)));
+      EXPECT_EQ(reference_str_cmp(CS_TYPE, l, r, WITH_END_SPACE), cmp_ret)
+          << "collation=" << static_cast<int>(CS_TYPE) << " end_space=" << WITH_END_SPACE
+          << " left_len=" << l.size() << " right_len=" << r.size();
+    }
+  }
+  ObDatum empty;
+  ObDatum null_ptr;
+  empty.set_string("", 0);
+  null_ptr.set_string(nullptr, 0);
+  int cmp_ret = 2;
+  ASSERT_EQ(OB_SUCCESS, (datum_cmp::ObDatumStrCmp<CS_TYPE, WITH_END_SPACE>::cmp(null_ptr, empty, cmp_ret)));
+  EXPECT_EQ(0, cmp_ret);
+}
+
+TEST(DatumStringCompare, fast_paths_match_charset_comparison)
+{
+  const std::vector<std::string> values = {
+      "", " ", "  ", "a", "a ", "a  ", "A", "b", "ab", "abc", "ab c", "a\tb",
+      std::string("a\0b", 3), std::string("a\0", 2), std::string("\0", 1),
+      "\x7f", "\x80", "\xff", "\xff\xfe", "\xe5\x85",
+      "e", "\xc3\xa9", "\xc3\x89", "\xc3\x9f", "ss", "\xf0\x9f\x98\x80",
+      "\xe7\xa8\xb3\xe5\xae\x9a", "\xe5\x85\xa8\xe6\x96\x87\xe7\xb4\xa2\xe5\xbc\x95",
+      "\xe5\x85\xa8\xe6\x96\x87\xe7\xb4\xa2\xe5\xbc\x95 ",
+      "database", "DATABASE", "datab", "z", std::string(300, 'x'), std::string(300, 'x') + "y"};
+  expect_datum_str_cmp_matches<CS_TYPE_BINARY, false>(values);
+  expect_datum_str_cmp_matches<CS_TYPE_BINARY, true>(values);
+  expect_datum_str_cmp_matches<CS_TYPE_UTF8MB4_BIN, false>(values);
+  expect_datum_str_cmp_matches<CS_TYPE_UTF8MB4_BIN, true>(values);
+  expect_datum_str_cmp_matches<CS_TYPE_UTF8MB4_GENERAL_CI, false>(values);
+  expect_datum_str_cmp_matches<CS_TYPE_UTF8MB4_GENERAL_CI, true>(values);
+  expect_datum_str_cmp_matches<CS_TYPE_UTF8MB4_UNICODE_CI, false>(values);
+  expect_datum_str_cmp_matches<CS_TYPE_UTF8MB4_UNICODE_CI, true>(values);
 }
 } // namespace
 
