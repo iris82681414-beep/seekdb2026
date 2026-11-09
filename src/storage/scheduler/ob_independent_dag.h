@@ -44,9 +44,6 @@ public:
   int process();
   void dump_dag_status(const char *log_info = "Print the status of independent dag");
   void post_signal();
-  // Wakes every worker blocked in wait_signal(), e.g. right after the dag is stopped, instead
-  // of letting each one sleep until DAG_COND_TIMEOUT_MS expires.
-  void broadcast_signal();
   VIRTUAL_TO_STRING_KV(KP(this), K_(id), "type", get_dag_type_str(type_),
       K_(is_inited), K_(is_stop), K_(dag_status), K_(start_time), K_(dag_ret),
       "ready_task_count", task_list_.get_size(), "waiting_task_count", waiting_task_list_.get_size(),

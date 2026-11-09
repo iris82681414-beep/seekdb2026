@@ -34,20 +34,6 @@ using namespace share;
 using namespace share::schema;
 namespace sql
 {
-namespace
-{
-// Short DDLs finish well within a second, so a fixed 100ms poll adds about half an interval to
-// every statement. Poll more often at first, then keep the original interval for long DDLs.
-int64_t ddl_finish_poll_interval_us(const int64_t wait_start_ts)
-{
-  const int64_t FAST_POLL_DURATION_US = 10L * 1000L * 1000L;
-  const int64_t FAST_POLL_INTERVAL_US = 10L * 1000L;
-  const int64_t DEFAULT_POLL_INTERVAL_US = 100L * 1000L;
-  return ObTimeUtility::current_time() - wait_start_ts < FAST_POLL_DURATION_US
-      ? FAST_POLL_INTERVAL_US : DEFAULT_POLL_INTERVAL_US;
-}
-} // namespace
-
 int ObDDLExecutorUtil::handle_session_exception(ObSQLSessionInfo &session)
 {
   int ret = OB_SUCCESS;
@@ -72,7 +58,7 @@ int ObDDLExecutorUtil::wait_ddl_finish(const int64_t task_id,
     const bool is_support_cancel)
 {
   int ret = OB_SUCCESS;
-  const int64_t wait_start_ts = ObTimeUtility::current_time();
+  const int64_t retry_interval = 100 * 1000;
   ObAddr unused_addr;
   bool is_table_exist = false;
   int64_t unused_user_msg_len = 0;
@@ -130,7 +116,7 @@ int ObDDLExecutorUtil::wait_ddl_finish(const int64_t task_id,
           ret = OB_TIMEOUT;
           FORWARD_USER_ERROR(ret, "DDL execution status is undecided, please check later if it finishes successfully or not.");
         } else {
-          ob_usleep(ddl_finish_poll_interval_us(wait_start_ts));
+          ob_usleep(retry_interval);
         }
       }
     }
@@ -186,7 +172,7 @@ int ObDDLExecutorUtil::wait_ddl_retry_task_finish(const int64_t task_id,
 {
   int ret = OB_SUCCESS;
   affected_rows = 0;
-  const int64_t wait_start_ts = ObTimeUtility::current_time();
+  const int64_t retry_interval = 100 * 1000;
   ObAddr unused_addr;
   bool is_table_exist = false;
   int64_t forward_user_msg_len = 0;
@@ -259,7 +245,7 @@ int ObDDLExecutorUtil::wait_ddl_retry_task_finish(const int64_t task_id,
           ret = OB_TIMEOUT;
           FORWARD_USER_ERROR(ret, "DDL execution status is undecided, please check later if it finishes successfully or not.");
         } else {
-          ob_usleep(ddl_finish_poll_interval_us(wait_start_ts));
+          ob_usleep(retry_interval);
         }
       }
     }

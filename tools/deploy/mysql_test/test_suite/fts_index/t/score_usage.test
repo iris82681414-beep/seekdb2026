@@ -1,0 +1,43 @@
+# Score-free retrieval must preserve matching rows and every use of actual scores.
+--disable_warnings
+drop database if exists fts_score_usage;
+create database fts_score_usage;
+--enable_warnings
+use fts_score_usage;
+create table docs(id int primary key, content varchar(512));
+insert into docs values
+ (1, 'alpha beta'), (2, 'gamma gamma gamma alpha'), (3, 'alpha'),
+ (4, 'gamma delta epsilon theta alpha beta'), (5, 'beta delta'),
+ (6, 'theta epsilon'), (7, ''), (8, null);
+alter table docs add fulltext index words(content) with parser beng;
+select count(*) from docs where match(content) against('alpha');
+select id from docs where match(content) against('alpha') order by id;
+select count(*) from docs where match(content) against('missingword');
+select count(*) from docs where match(content) against('');
+select count(*) from docs where match(content) against('alpha') > 0;
+select count(*) from docs where 0 < match(content) against('alpha');
+select count(*) from docs where match(content) against('alpha') > 0.5;
+select id, round(match(content) against('gamma'), 6) as score
+ from docs where match(content) against('gamma') order by score desc, id;
+select id from docs where match(content) against('gamma') limit 1;
+select count(*) from (select id from docs where match(content) against('gamma') limit 1) t;
+select count(*) from docs where match(content) against('+alpha -beta' in boolean mode);
+select id, case when match(content) against('gamma') > 0 then 1 else 0 end as matched
+ from docs where match(content) against('gamma') order by id;
+prepare predicate from 'select count(*) from docs where match(content) against(?) > ?';
+set @query='alpha', @threshold=0;
+execute predicate using @query, @threshold;
+set @threshold=100;
+execute predicate using @query, @threshold;
+set @threshold=0;
+execute predicate using @query, @threshold;
+set @query='missingword';
+execute predicate using @query, @threshold;
+deallocate prepare predicate;
+prepare projection from 'select id, round(match(content) against(?), 6) as score from docs where match(content) against(?) order by score desc, id';
+set @query='gamma';
+execute projection using @query, @query;
+set @query='alpha';
+execute projection using @query, @query;
+deallocate prepare projection;
+drop database fts_score_usage;

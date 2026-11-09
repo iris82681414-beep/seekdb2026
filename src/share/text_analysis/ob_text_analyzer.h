@@ -64,8 +64,7 @@ protected:
   int add_tokenizer(const ObTextTokenizer::TokenizerType &type);
   int add_normalizer(
       const ObTokenNormalizer::TokenNormalizerType &type,
-      const ObTextAnalysisCtx &ctx,
-      ObIAllocator *output_allocator = nullptr);
+      const ObTextAnalysisCtx &ctx);
   ObITokenStream *get_tail_token_stream();
 private:
   template<typename T>
@@ -80,18 +79,12 @@ protected:
 class ObEnglishTextAnalyzer final : public ObITextAnalyzer
 {
 public:
-  ObEnglishTextAnalyzer() : ObITextAnalyzer(), output_allocator_(nullptr) {}
+  ObEnglishTextAnalyzer() : ObITextAnalyzer() {}
   virtual ~ObEnglishTextAnalyzer() {}
 
-  virtual void reset() override;
-  virtual int init(const ObTextAnalysisCtx &ctx, ObIAllocator &allocator) override;
-  // Basic normalization uses caller-owned storage; later grouping retains its own storage.
-  int init(const ObTextAnalysisCtx &ctx, ObIAllocator &allocator, ObIAllocator &output_allocator);
   virtual int analyze(const ObDatum &document, ObITokenStream *&token_stream) override;
 protected:
   virtual int inner_init(const ObTextAnalysisCtx &ctx, ObIAllocator &allocator) override;
-private:
-  ObIAllocator *output_allocator_;
 };
 
 } // namespace share

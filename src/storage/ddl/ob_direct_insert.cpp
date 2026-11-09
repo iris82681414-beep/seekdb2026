@@ -282,9 +282,6 @@ public:
       if (nullptr != dag_) {
         if (dag_initialized_) {
           dag_->simply_set_stop();
-          // Idle workers wait on the dag condition with a timeout; wake them so that joining the
-          // pool does not add that timeout to every direct insert session.
-          dag_->broadcast_signal();
           if (pool_started_) {
             thread_pool_.stop();
             thread_pool_.wait();

@@ -345,12 +345,10 @@ private:
 class ObAIFuncModel
 {
 public:
-  ObAIFuncModel(ObIAllocator &allocator, const ObAIFuncExprInfo &info,
-                const share::ObAiModelEndpointInfo &endpoint_info, bool enable_retry = true)
+  ObAIFuncModel(ObIAllocator &allocator, const ObAIFuncExprInfo &info, const share::ObAiModelEndpointInfo &endpoint_info)
   : allocator_(&allocator),
     info_(info),
-    endpoint_info_(endpoint_info),
-    enable_retry_(enable_retry)
+    endpoint_info_(endpoint_info)
   {}
    virtual ~ObAIFuncModel() {}
    // completion
@@ -371,7 +369,6 @@ public:
    ObIAllocator *allocator_;
    const ObAIFuncExprInfo &info_;
    const share::ObAiModelEndpointInfo &endpoint_info_;
-   bool enable_retry_;
    DISALLOW_COPY_AND_ASSIGN(ObAIFuncModel);
 };
 

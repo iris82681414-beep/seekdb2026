@@ -227,12 +227,7 @@ int oceanbase::storage::ObDDLStorageUtil::report_ddl_sstable_checksum(
         break;
       }
     }
-    // The checksum update is a committed inner transaction, and the task reads it only after
-    // this session reports completion, so a successful report needs no extra delay. Keep the
-    // original pause when every retry failed.
-    if (OB_FAIL(ret)) {
-      ob_usleep(100L * 1000L);
-    }
+    ob_usleep(100L * 1000L);
   }
   return ret;
 }

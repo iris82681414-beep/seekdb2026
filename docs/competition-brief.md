@@ -107,11 +107,14 @@
 
 ## 当前项目与交付状态
 
-- 当前 seekdb 工作目录为 `/Users/liwangsheng/.codex/worktrees/issue-1477/oceanbase`；原目录 `/Users/liwangsheng/project/oceanbase` 保留私有测试产物，PowerContext 位于其 `.competition/powercontext`。
-- 用户远端为 `git@github.com:iris82681414-beep/seekdb2026.git`。2026 年 10 月 27 日经 GitHub 接口重新核验为私有仓库；两套产品均已保留官方历史并推送私有答题分支。
-- seekdb 使用私有 `2026-competition` 分支；PowerContext 使用私有 `powercontext-2026-competition` 分支，后者也是仓库当前默认分支。正式提测应明确选择产品对应的分支与 commit，不能直接依赖默认分支。
-- 同日重新核对官方 `2026-competition`：seekdb 为 `5bce9e06d1281347ad61344e4b01fab9158c58a2`，PowerContext 为 `dab240063bfcfa7917898dc44da4baadb3747bd0`，与采用的赛题基线一致。
-- 用户要求暂缓 AI 生态题、正式提测及公开上传。私有导入仓库没有 GitHub Fork 关系，不满足公开 Fork 子题；指定 Bug #1477 的独立私有修复也尚未提交官方 PR。
+- 当前 master 独立工作目录为 `/Users/liwangsheng/.codex/worktrees/issue-1535/oceanbase`；原答题目录 `/Users/liwangsheng/project/oceanbase` 保留实现与私有测试产物，PowerContext 位于其 `.competition/powercontext`。
+- 2026 年 11 月 3 日核验的官方 master 为 `977315404c8f1c66b371714b6ed5eba0f8eb5e38`。该官方原样基线已完整构建，并在原生实例上复现 #1535：展开条件 p50 为 133.965 ms，原始条件为 4.795 ms，召回率均为 100%。独立私有修复分支提交为 `0bb05997390da348d1bbe748e1706e20633c0fb8`，其完整构建、四项原生回归和同库对照均已通过。展开条件 p50 降至 3.590 ms，约快 37.32 倍；完整命中集合、8 个精确 Top-10 及表和索引定义未变，两个条件 Recall@10 均为 100%。该结果与比赛整合版分开保存，尚无正式分数。
+- 原远端 `git@github.com:iris82681414-beep/seekdb2026.git` 在 2026 年 11 月 3 日核验时仍为公开。用户已授权恢复私有后继续推送，但当前账号没有管理权限，原仓库继续停推。新私有答题副本为 [wsaitr/seekdb2026-answers](https://github.com/wsaitr/seekdb2026-answers)，保留两套产品的官方历史。
+- seekdb 使用新私有仓库的 `2026-competition` 分支；PowerContext 使用 `powercontext-2026-competition` 分支。正式提测应明确选择产品对应的分支与完整 commit，不能依赖默认分支。
+- 2026 年 11 月 2 日重新核对官方 `2026-competition`：seekdb 为 `5bce9e06d1281347ad61344e4b01fab9158c58a2`，PowerContext 为 `dab240063bfcfa7917898dc44da4baadb3747bd0`，与采用的赛题基线一致。
+- 用户要求暂缓 AI 生态题、正式提测及公开上传。新私有仓库没有 GitHub Fork 关系，不满足公开 Fork 子题。#1477 已由官方 #1586 合入，独立修复与测试留作历史记录。#1535 私有修复已完成原生回归和同库 20 万行对照，复杂等价条件 p50 从 133.936 ms 降至 2.744 ms，两个条件 Recall@10 均为 100%；官方 master 对应修复版的完整构建及回归也已完成，官方 PR 仍暂缓。
+- seekdb 本轮完整答题代码为 `d49bff3746ebaed45d75cf87a279ffa7c7c96951`，加入回填完成后的结构遍历缓存；10 项 AI 列原生回归通过，同实例稳态空闲 CPU 开销观测下降 75.88%，不等同于全文索引正式性能分数。原生主实例已受控更新，89 个 AI 列定义标识和部署 UUID 保持一致。新机另完成此前 `3c273804…` 代码的全新构建及 PowerContext 的 1 项原生冒烟和 9 项 Pi 回归，证据范围详见实施进度。
+- 后续 UTF-8 短键实验 `8dccd5ce…` 通过 8 项原生回归，默认全文索引同机综合耗时观测下降 2.67%，但普通排序对照出现最高 4.72% 的退化，保留在私有实验分支，未合入或部署。服务器源码已恢复生产基线。历史实例的锁等待在冷恢复的两个版本上均未复现，最初原因仍未确定；原数据与日志保留。
 - 已实现内容、各题证据与剩余门槛以 [实施进度](competition-progress.md) 为准。当前没有平台确认分数，公开回归和独立测量不能折算成正式成绩。
 
 官方基线：[seekdb 比赛分支](https://github.com/oceanbase/seekdb/tree/2026-competition)、[PowerContext 比赛分支](https://github.com/oceanbase/powercontext/tree/2026-competition)。

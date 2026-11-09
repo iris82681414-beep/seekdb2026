@@ -2,6 +2,10 @@
 
 对应 [oceanbase/seekdb #1477](https://github.com/oceanbase/seekdb/issues/1477)。2026-10-27 核对时，Issue 为 open，带有 `2026-competition`、`type: bug`、`help wanted` 标签。选题符合[大赛 Bug 修复说明](https://oceanbase.yuque.com/org-wiki-obtech-vh7w9r/hc3pio/xom0q8ni2ow8t9py)的标签要求。本文及代码仅保存在用户私有仓库，尚未创建官方 PR，也未提测；不据此宣称获得基础题分数。
 
+## 2026-11-02 状态更新
+
+重新读取官方 Issue 和当前 master 后确认：#1477 已于 2026-10-27 关闭，官方修复通过 [PR #1586](https://github.com/oceanbase/seekdb/pull/1586) 合入，提交为 `4b28bcbff0a476b25f2f668c2560a1b77b2095e5`。本文以下保留当时的私有修复与验证范围，当前不作为待提交的重复修复。后续准备仍开放的比赛选题 #1535，进度见 [实施进度](competition-progress.md)。尚未创建官方 PR 或执行正式提测。
+
 ## 复现与原因
 
 ```sql

@@ -387,51 +387,7 @@ struct ObDatumStrCmp : public ObDefined<SupportedCollection<CS_TYPE>::defined_>
 {
   inline static int cmp(const ObDatum &l, const ObDatum &r, int &cmp_ret)
   {
-    int ret = OB_SUCCESS;
-    // Charsets are process-wide and never released, so resolve this collation once instead of
-    // validating and looking it up on every comparison, as ObCharset::strcmpsp does.
-    static const ObCharsetInfo *cs = ObCharset::get_charset(CS_TYPE);
-    if (OB_UNLIKELY(nullptr == cs || (nullptr == l.ptr_ && 0 != l.len_)
-                    || (nullptr == r.ptr_ && 0 != r.len_))) {
-      // Keep the generic path, including its diagnostics, for unsupported collations and
-      // malformed datums.
-      ret = ObDatumStrCmpImpl::cmp(l, r, cmp_ret, CS_TYPE, WITH_END_SPACE);
-    } else {
-      const int res = cs->coll->strnncollsp(cs,
-                                            reinterpret_cast<const unsigned char *>(l.ptr_),
-                                            l.len_,
-                                            reinterpret_cast<const unsigned char *>(r.ptr_),
-                                            r.len_,
-                                            WITH_END_SPACE);
-      cmp_ret = res > 0 ? 1 : (res < 0 ? -1 : 0);
-    }
-    return ret;
-  }
-};
-
-// Binary collation (ob_strnncollsp_binary) compares the common prefix with memcmp, then the
-// lengths, and ignores the end-space flag. Doing so inline avoids per-call argument validation
-// and charset lookups on hot paths such as document-id merges and rowkey comparisons.
-template <bool WITH_END_SPACE>
-struct ObDatumStrCmp<CS_TYPE_BINARY, WITH_END_SPACE>
-    : public ObDefined<SupportedCollection<CS_TYPE_BINARY>::defined_>
-{
-  inline static int cmp(const ObDatum &l, const ObDatum &r, int &cmp_ret)
-  {
-    int ret = OB_SUCCESS;
-    if (OB_UNLIKELY((nullptr == l.ptr_ && 0 != l.len_) || (nullptr == r.ptr_ && 0 != r.len_))) {
-      // Keep the generic path, including its diagnostics, for malformed datums.
-      ret = ObDatumStrCmpImpl::cmp(l, r, cmp_ret, CS_TYPE_BINARY, WITH_END_SPACE);
-    } else {
-      const uint32_t common_len = l.len_ < r.len_ ? l.len_ : r.len_;
-      const int res = 0 == common_len ? 0 : MEMCMP(l.ptr_, r.ptr_, common_len);
-      if (0 != res) {
-        cmp_ret = res > 0 ? 1 : -1;
-      } else {
-        cmp_ret = l.len_ > r.len_ ? 1 : (l.len_ < r.len_ ? -1 : 0);
-      }
-    }
-    return ret;
+    return ObDatumStrCmpImpl::cmp(l, r, cmp_ret, CS_TYPE, WITH_END_SPACE);
   }
 };
 

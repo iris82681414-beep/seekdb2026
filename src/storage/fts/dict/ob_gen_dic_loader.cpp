@@ -125,19 +125,6 @@ int ObGenDicLoader::get_dic_loader(const ObString &parser_name,
     ret = OB_INVALID_ARGUMENT;
   } else if (OB_FAIL(dic_loader_key.init(parser_name, charset))) {
   } else {
-    // Loaders are only inserted and the map keeps its own reference, so existing loaders can be
-    // returned under the shared lock; every IK TOKENIZE call reaches this lookup.
-    TCRLockGuard guard(lock_);
-    if (OB_FAIL(dic_loader_map_.get_refactored(dic_loader_key, dic_loader))) {
-      if (OB_HASH_NOT_EXIST == ret) {
-        ret = OB_SUCCESS;
-        dic_loader = nullptr;
-      }
-    } else if (OB_FAIL(loader_handle.set_loader(dic_loader))) {
-    }
-  }
-  if (OB_FAIL(ret) || loader_handle.is_valid()) {
-  } else {
     TCWLockGuard guard(lock_);
     if (OB_FAIL(dic_loader_map_.get_refactored(dic_loader_key, dic_loader))) {
       if (OB_HASH_NOT_EXIST == ret) {

@@ -1,0 +1,85 @@
+drop database if exists fts_score_usage;
+create database fts_score_usage;
+use fts_score_usage;
+create table docs(id int primary key, content varchar(512));
+insert into docs values
+(1, 'alpha beta'), (2, 'gamma gamma gamma alpha'), (3, 'alpha'),
+(4, 'gamma delta epsilon theta alpha beta'), (5, 'beta delta'),
+(6, 'theta epsilon'), (7, ''), (8, null);
+alter table docs add fulltext index words(content) with parser beng;
+select count(*) from docs where match(content) against('alpha');
+count(*)
+4
+select id from docs where match(content) against('alpha') order by id;
+id
+1
+2
+3
+4
+select count(*) from docs where match(content) against('missingword');
+count(*)
+0
+select count(*) from docs where match(content) against('');
+count(*)
+0
+select count(*) from docs where match(content) against('alpha') > 0;
+count(*)
+4
+select count(*) from docs where 0 < match(content) against('alpha');
+count(*)
+4
+select count(*) from docs where match(content) against('alpha') > 0.5;
+count(*)
+0
+select id, round(match(content) against('gamma'), 6) as score
+from docs where match(content) against('gamma') order by score desc, id;
+id	score
+2	1.723053
+4	1.142459
+select id from docs where match(content) against('gamma') limit 1;
+id
+2
+select count(*) from (select id from docs where match(content) against('gamma') limit 1) t;
+count(*)
+1
+select count(*) from docs where match(content) against('+alpha -beta' in boolean mode);
+count(*)
+2
+select id, case when match(content) against('gamma') > 0 then 1 else 0 end as matched
+from docs where match(content) against('gamma') order by id;
+id	matched
+2	1
+4	1
+prepare predicate from 'select count(*) from docs where match(content) against(?) > ?';
+set @query='alpha', @threshold=0;
+execute predicate using @query, @threshold;
+count(*)
+4
+set @threshold=100;
+execute predicate using @query, @threshold;
+count(*)
+0
+set @threshold=0;
+execute predicate using @query, @threshold;
+count(*)
+4
+set @query='missingword';
+execute predicate using @query, @threshold;
+count(*)
+0
+deallocate prepare predicate;
+prepare projection from 'select id, round(match(content) against(?), 6) as score from docs where match(content) against(?) order by score desc, id';
+set @query='gamma';
+execute projection using @query, @query;
+id	score
+2	1.723053
+4	1.142459
+set @query='alpha';
+execute projection using @query, @query;
+id	score
+3	0.395683
+1	0.371622
+2	0.331325
+4	0.298913
+deallocate prepare projection;
+drop database fts_score_usage;

@@ -83,8 +83,7 @@ int ObITextAnalyzer::add_tokenizer(const ObTextTokenizer::TokenizerType &type)
 
 int ObITextAnalyzer::add_normalizer(
     const ObTokenNormalizer::TokenNormalizerType &type,
-    const ObTextAnalysisCtx &ctx,
-    ObIAllocator *output_allocator)
+    const ObTextAnalysisCtx &ctx)
 {
   int ret = OB_SUCCESS;
   if (OB_UNLIKELY(analyze_pipeline_.empty())) {
@@ -104,8 +103,6 @@ int ObITextAnalyzer::add_normalizer(
     }
     case ObTokenNormalizer::ENG_BASIC_NORM: {
       if (OB_FAIL(add_token_stream<ObBasicEnglishNormalizer>(token_stream))) {
-      } else {
-        static_cast<ObBasicEnglishNormalizer *>(token_stream)->set_output_allocator(output_allocator);
       }
       break;
     }
@@ -145,36 +142,13 @@ ObITokenStream *ObITextAnalyzer::get_tail_token_stream()
   return tail_stream;
 }
 
-void ObEnglishTextAnalyzer::reset()
-{
-  ObITextAnalyzer::reset();
-  output_allocator_ = nullptr;
-}
-
-int ObEnglishTextAnalyzer::init(const ObTextAnalysisCtx &ctx, ObIAllocator &allocator)
-{
-  if (IS_NOT_INIT) {
-    output_allocator_ = nullptr;
-  }
-  return ObITextAnalyzer::init(ctx, allocator);
-}
-
-int ObEnglishTextAnalyzer::init(
-    const ObTextAnalysisCtx &ctx, ObIAllocator &allocator, ObIAllocator &output_allocator)
-{
-  if (IS_NOT_INIT) {
-    output_allocator_ = &output_allocator;
-  }
-  return ObITextAnalyzer::init(ctx, allocator);
-}
-
 int ObEnglishTextAnalyzer::inner_init(const ObTextAnalysisCtx &ctx, ObIAllocator &allocator)
 {
   int ret = OB_SUCCESS;
   UNUSEDx(ctx); // TODO: generate specific analyse pipeline by ctx
   if (OB_FAIL(add_tokenizer(ObTextTokenizer::WHITESPACE))) {
   } else if (ctx.filter_stopword_ && OB_FAIL(add_normalizer(ObTokenNormalizer::STOPWORD_FILTER, ctx))) {
-  } else if (OB_FAIL(add_normalizer(ObTokenNormalizer::ENG_BASIC_NORM, ctx, output_allocator_))) {
+  } else if (OB_FAIL(add_normalizer(ObTokenNormalizer::ENG_BASIC_NORM, ctx))) {
   } else if (ctx.need_grouping_ && OB_FAIL(add_normalizer(ObTokenNormalizer::TEXT_GROUPING_FILTER, ctx))) {
   }
   return ret;

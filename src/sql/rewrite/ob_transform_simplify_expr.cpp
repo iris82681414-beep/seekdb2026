@@ -2258,6 +2258,43 @@ int ObTransformSimplifyExpr::recursive_canonicalize_join_conditions(ObDMLStmt *s
   return ret;
 }
 
+int ObTransformSimplifyExpr::canonicalize_vector_search_filters(ObDMLStmt *stmt,
+                                                               bool &trans_happened)
+{
+  int ret = OB_SUCCESS;
+  trans_happened = false;
+  bool is_valid = true;
+  if (OB_ISNULL(stmt) || OB_ISNULL(ctx_)) {
+    ret = OB_ERR_UNEXPECTED;
+  } else if (!stmt->is_select_stmt() || !stmt->has_vec_approx() ||
+             stmt->get_table_items().count() != 1 || !stmt->get_joined_tables().empty() ||
+             !stmt->get_match_exprs().empty()) {
+    is_valid = false;
+  } else if (OB_ISNULL(stmt->get_table_items().at(0))) {
+    ret = OB_ERR_UNEXPECTED;
+  } else if (!stmt->get_table_items().at(0)->is_basic_table()) {
+    is_valid = false;
+  }
+  for (int64_t i = 0; OB_SUCC(ret) && is_valid && i < stmt->get_condition_size(); ++i) {
+    const ObRawExpr *expr = stmt->get_condition_exprs().at(i);
+    if (OB_ISNULL(expr)) {
+      ret = OB_ERR_UNEXPECTED;
+    } else if (expr->has_flag(CNT_SUB_QUERY) || expr->has_flag(CNT_STATE_FUNC) ||
+               expr->has_flag(CNT_RAND_FUNC) || expr->has_flag(CNT_DYNAMIC_USER_VARIABLE) ||
+               expr->has_flag(CNT_ASSIGN_EXPR) || expr->has_flag(CNT_VOLATILE_CONST) ||
+               expr->has_flag(CNT_PL_UDF)) {
+      // Preserve evaluations with side effects or values that can change.
+      is_valid = false;
+    }
+  }
+  if (OB_SUCC(ret) && is_valid) {
+    if (OB_FAIL(do_canonicalize(stmt, stmt->get_condition_exprs(), trans_happened))) {
+      LOG_WARN("failed to canonicalize vector search filters", K(ret));
+    }
+  }
+  return ret;
+}
+
 int ObTransformSimplifyExpr::do_canonicalize(ObDMLStmt *stmt, ObIArray<ObRawExpr*> &conditions, bool &trans_happened)
 {
   int ret = OB_SUCCESS;

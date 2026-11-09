@@ -36,6 +36,8 @@ public:
   virtual int transform_one_stmt(common::ObIArray<ObParentDMLStmt> &parent_stmts,
                                  ObDMLStmt *&stmt,
                                  bool &trans_happened) override;
+
+  int canonicalize_vector_search_filters(ObDMLStmt *stmt, bool &trans_happened);
 private:
   int replace_is_null_condition(ObDMLStmt *stmt, bool &trans_happened);
   int inner_replace_is_null_condition(ObDMLStmt *stmt,

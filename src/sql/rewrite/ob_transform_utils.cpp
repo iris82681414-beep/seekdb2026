@@ -12804,6 +12804,59 @@ bool ObTransformUtils::is_full_group_by(ObSelectStmt& stmt, ObSQLMode mode)
   return !stmt.has_order_by() && is_only_full_group_by_on(mode);
 }
 
+int ObTransformUtils::check_need_calc_match_score(ObExecContext *exec_ctx,
+                                                  const ObDMLStmt *stmt,
+                                                  ObMatchFunRawExpr *match_expr,
+                                                  bool &need_calc,
+                                                  ObIArray<ObExprConstraint> &constraints)
+{
+  int ret = OB_SUCCESS;
+  need_calc = true;
+  ObSEArray<ObRawExpr *, 16> exprs;
+  ObStmtExprGetter visitor;
+  visitor.set_relation_scope();
+  visitor.remove_scope(SCOPE_WHERE);
+  if (OB_ISNULL(exec_ctx) || OB_ISNULL(stmt) || OB_ISNULL(match_expr)) {
+    ret = OB_INVALID_ARGUMENT;
+  } else if (!stmt->is_select_stmt() || stmt->has_limit()
+             || T_FUN_MATCH_AGAINST != match_expr->get_expr_type()
+             || NATURAL_LANGUAGE_MODE != match_expr->get_mode_flag()
+             || !match_expr->get_columns_boosts().empty()
+             || nullptr != match_expr->get_param_text_expr()) {
+    // LIMIT can implicitly order by relevance. Other search modes and boosts
+    // retain their existing scoring semantics.
+  } else if (OB_FAIL(stmt->get_relation_exprs(exprs, visitor))) {
+  } else {
+    // Even Boolean projections must retain their original expression values.
+    // Only WHERE predicates can be satisfied by the matching document set alone.
+    need_calc = false;
+    for (int64_t i = 0; OB_SUCC(ret) && !need_calc && i < exprs.count(); ++i) {
+      need_calc = exprs.at(i)->has_flag(CNT_MATCH_EXPR)
+                  || exprs.at(i)->has_flag(IS_MATCH_EXPR);
+    }
+    for (int64_t i = 0; OB_SUCC(ret) && !need_calc && i < stmt->get_condition_size(); ++i) {
+      ObRawExpr *condition = stmt->get_condition_exprs().at(i);
+      if (!condition->has_flag(CNT_MATCH_EXPR) && !condition->has_flag(IS_MATCH_EXPR)) {
+        // A predicate on another column does not consume the match score.
+      } else if (!((T_OP_BOOL == condition->get_expr_type()
+                    && 1 == condition->get_param_count()
+                    && condition->get_param_expr(0) == match_expr)
+                   || (T_OP_GT == condition->get_expr_type()
+                       && 2 == condition->get_param_count()
+                       && condition->get_param_expr(0) == match_expr)
+                   || (T_OP_LT == condition->get_expr_type()
+                       && 2 == condition->get_param_count()
+                       && condition->get_param_expr(1) == match_expr))) {
+        // Only direct membership predicates can omit their score expression.
+        need_calc = true;
+      } else if (OB_FAIL(inner_check_need_calc_match_score(exec_ctx, condition, match_expr,
+                                                         need_calc, constraints))) {
+      }
+    }
+  }
+  return ret;
+}
+
 int ObTransformUtils::inner_check_need_calc_match_score(ObExecContext *exec_ctx,
                                                         ObRawExpr* expr, 
                                                         ObRawExpr* match_expr, 
