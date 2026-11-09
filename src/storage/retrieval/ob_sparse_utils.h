@@ -28,6 +28,101 @@ struct ObFtsEvalNode;
 namespace storage
 {
 
+// Merge a few ascending streams without per-row iterator or heap operations.
+// Each fetched batch belongs to its source and stays valid until that source is
+// fetched again. The returned row must be consumed before the next next() call.
+// Equal heads are consumed together, in source order; duplicates within a single
+// source remain separate rounds, just as in the row-at-a-time DaaT merger.
+template <typename T>
+class SmallBatchUnion
+{
+public:
+  static constexpr int64_t MAX_STREAMS = 3;
+  SmallBatchUnion() { reuse(); }
+  void reuse()
+  {
+    for (int64_t i = 0; i < MAX_STREAMS; ++i) {
+      batches_[i] = nullptr;
+      counts_[i] = positions_[i] = 0;
+      ended_[i] = false;
+    }
+  }
+
+  // fetch(source, batch, count) may return OB_ITER_END with a final nonempty
+  // batch. compare(left, right, result) retains the caller's ordering semantics.
+  // matches has one bit for every source contributing to the returned row.
+  template <typename Fetch, typename Compare>
+  int next(const int64_t stream_count, Fetch &&fetch, Compare &&compare,
+           const T *&row, uint64_t &matches)
+  {
+    int ret = OB_SUCCESS;
+    row = nullptr;
+    matches = 0;
+    if (OB_UNLIKELY(stream_count < 0 || stream_count > MAX_STREAMS)) {
+      ret = OB_INVALID_ARGUMENT;
+    }
+    for (int64_t i = 0; OB_SUCC(ret) && i < stream_count; ++i) {
+      if (positions_[i] == counts_[i] && !ended_[i]) {
+        const T *batch = nullptr;
+        int64_t count = 0;
+        const int fetch_ret = fetch(i, batch, count);
+        if (OB_SUCCESS != fetch_ret && OB_ITER_END != fetch_ret) {
+          ret = fetch_ret;
+        } else if (OB_UNLIKELY(count < 0 || (count > 0 && nullptr == batch)
+                              || (0 == count && OB_SUCCESS == fetch_ret))) {
+          ret = OB_ERR_UNEXPECTED;
+        } else {
+          batches_[i] = batch;
+          counts_[i] = count;
+          positions_[i] = 0;
+          ended_[i] = OB_ITER_END == fetch_ret;
+        }
+      }
+    }
+    const T *candidate = nullptr;
+    uint64_t candidate_matches = 0;
+    for (int64_t i = 0; OB_SUCC(ret) && i < stream_count; ++i) {
+      if (positions_[i] < counts_[i]) {
+        const T *head = &batches_[i][positions_[i]];
+        int cmp_ret = 0;
+        if (nullptr == candidate) {
+          candidate = head;
+          candidate_matches = uint64_t{1} << i;
+        } else if (OB_FAIL(compare(*head, *candidate, cmp_ret))) {
+        } else if (cmp_ret < 0) {
+          candidate = head;
+          candidate_matches = uint64_t{1} << i;
+        } else if (0 == cmp_ret) {
+          // The original heap breaks ties by source index and returns the last
+          // equal head, so retain the same representative even for equal keys
+          // whose byte representations differ under the comparator.
+          candidate = head;
+          candidate_matches |= uint64_t{1} << i;
+        }
+      }
+    }
+    if (OB_SUCC(ret)) {
+      if (nullptr == candidate) {
+        ret = OB_ITER_END;
+      } else {
+        row = candidate;
+        matches = candidate_matches;
+        for (int64_t i = 0; i < stream_count; ++i) {
+          if (0 != (matches & (uint64_t{1} << i))) {
+            ++positions_[i];
+          }
+        }
+      }
+    }
+    return ret;
+  }
+private:
+  const T *batches_[MAX_STREAMS];
+  int64_t counts_[MAX_STREAMS];
+  int64_t positions_[MAX_STREAMS];
+  bool ended_[MAX_STREAMS];
+};
+
 struct ObSRDaaTRelevanceCollector
 {
   ObSRDaaTRelevanceCollector() {}

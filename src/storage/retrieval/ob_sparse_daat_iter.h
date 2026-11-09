@@ -45,6 +45,10 @@ struct ObSRMergeCmp
 
   int init(sql::ObDatumMeta id_meta, const ObFixedArray<const ObDatum *, ObIAllocator> *iter_ids);
   int cmp(const ObSRMergeItem &l, const ObSRMergeItem &r, int64_t &cmp_ret);
+  int cmp(const ObDatum &l, const ObDatum &r, int &cmp_ret) const
+  {
+    return is_inited_ ? cmp_func_(l, r, cmp_ret, nullptr) : OB_NOT_INIT;
+  }
 private:
   inline const ObDatum &get_id_datum(const int64_t iter_idx)
   {

@@ -35,12 +35,27 @@ int ObTextDaaTIter::init(const ObTextDaaTParam &param)
   } else {
     mode_flag_ = param.mode_flag_;
     function_lookup_mode_ = param.function_lookup_mode_;
+    // Keep ranked, boolean, lookup and non-vectorized queries on the existing
+    // merger. A small score-free union needs neither per-posting score reads
+    // nor a sorted heap; the collector still enforces minimum_should_match.
+    use_batch_union_ = sql::ObMatchAgainstMode::NATURAL_LANGUAGE_MODE == mode_flag_
+        && !function_lookup_mode_
+        && nullptr == iter_param_->relevance_expr_
+        && !iter_param_->need_project_relevance()
+        && !iter_param_->need_filter()
+        && !iter_param_->need_pushdown_topk()
+        && iter_param_->eval_ctx_->is_vectorized()
+        && dim_iters_->count() > 0
+        && dim_iters_->count() <= SmallBatchUnion<ObDocIdExt>::MAX_STREAMS;
+    batch_union_.reuse();
   }
   return ret;
 }
 
 void ObTextDaaTIter::reset()
 {
+  use_batch_union_ = false;
+  batch_union_.reuse();
   bm25_param_estimator_.reset();
   // this class can know the type of dim_iters_, but ObSRDaaTIterImpl maybe not
   if (OB_NOT_NULL(dim_iters_)) {
@@ -53,6 +68,7 @@ void ObTextDaaTIter::reset()
 
 void ObTextDaaTIter::reuse(const bool switch_tablet)
 {
+  batch_union_.reuse();
   if ((OB_NOT_NULL(dim_iters_) && 0 == dim_iters_->count())) {
     // do nothing
   } else {
@@ -73,6 +89,42 @@ int ObTextDaaTIter::pre_process()
     ret = OB_ITER_END;
   } else if (iter_param_->need_project_relevance()) {
     if (OB_FAIL(bm25_param_estimator_.do_estimation(*iter_param_->eval_ctx_))) {
+    }
+  }
+  return ret;
+}
+
+int ObTextDaaTIter::do_one_merge_round(int64_t &count)
+{
+  int ret = OB_SUCCESS;
+  if (!use_batch_union_) {
+    ret = ObSRDaaTIterImpl::do_one_merge_round(count);
+  } else {
+    const ObDocIdExt *id = nullptr;
+    uint64_t matches = 0;
+    auto fetch = [&](const int64_t idx, const ObDocIdExt *&ids, int64_t &size) {
+      auto *iter = static_cast<ObTextRetrievalDaaTTokenIter *>(dim_iters_->at(idx));
+      return nullptr == iter ? OB_ERR_UNEXPECTED : iter->get_next_doc_id_batch(ids, size);
+    };
+    auto compare = [&](const ObDocIdExt &left, const ObDocIdExt &right, int &result) {
+      return merge_cmp_.cmp(left.get_datum(), right.get_datum(), result);
+    };
+    if (OB_FAIL(batch_union_.next(dim_iters_->count(), fetch, compare, id, matches))) {
+    } else {
+      // Retain collector order and validity checks, including minimum_should_match.
+      // No source is refilled until the following round, after cache_result has
+      // copied this ID into the output batch's owned buffer.
+      for (int64_t i = 0; OB_SUCC(ret) && i < dim_iters_->count(); ++i) {
+        if (0 != (matches & (uint64_t{1} << i))
+            && OB_FAIL(relevance_collector_->collect_one_dim(i, 0.0))) {
+        }
+      }
+      double relevance = 0.0;
+      bool is_valid = false;
+      if (OB_FAIL(ret)) {
+      } else if (OB_FAIL(relevance_collector_->get_result(relevance, is_valid))) {
+      } else if (is_valid && OB_FAIL(cache_result(count, id->get_datum(), relevance))) {
+      }
     }
   }
   return ret;

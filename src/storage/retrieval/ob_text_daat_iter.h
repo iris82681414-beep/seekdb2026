@@ -55,7 +55,9 @@ public:
   ObTextDaaTIter() : ObSRDaaTIterImpl(),
       bm25_param_estimator_(),
       mode_flag_(sql::ObMatchAgainstMode::NATURAL_LANGUAGE_MODE),
-      function_lookup_mode_(false) {}
+      function_lookup_mode_(false),
+      use_batch_union_(false),
+      batch_union_() {}
   virtual ~ObTextDaaTIter() { reset(); }
 
   int init(const ObTextDaaTParam &param);
@@ -63,10 +65,13 @@ public:
   virtual void reset() override;
 protected:
   virtual int pre_process() override;
+  virtual int do_one_merge_round(int64_t &count) override;
 protected:
   ObBM25ParamEstimator bm25_param_estimator_;
   sql::ObMatchAgainstMode mode_flag_;
   bool function_lookup_mode_;
+  bool use_batch_union_;
+  SmallBatchUnion<ObDocIdExt> batch_union_;
 private:
   DISALLOW_COPY_AND_ASSIGN(ObTextDaaTIter);
 };

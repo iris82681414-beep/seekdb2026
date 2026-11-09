@@ -134,6 +134,9 @@ public:
   virtual int get_curr_id(const ObDatum *&id_datum) const override;
 public:
   int get_token_doc_cnt(int64_t &token_doc_cnt) const { return token_iter_->get_token_doc_cnt(token_doc_cnt); }
+  // Score-free bulk consumption. The returned owned IDs remain valid until the
+  // next read/reuse/reset of this iterator, independently of other token scans.
+  int get_next_doc_id_batch(const ObDocIdExt *&ids, int64_t &count);
   virtual int get_dim_max_score(double &score) override {
     int ret = OB_SUCCESS;
     score = token_iter_->get_max_token_relevance();
