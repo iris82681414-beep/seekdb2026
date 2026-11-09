@@ -428,6 +428,120 @@ TEST(DatumStringCompare, fast_paths_match_charset_comparison)
   expect_datum_str_cmp_matches<CS_TYPE_UTF8MB4_UNICODE_CI, false>(values);
   expect_datum_str_cmp_matches<CS_TYPE_UTF8MB4_UNICODE_CI, true>(values);
 }
+// Preserve the scalar general-ci algorithm independently of the optimized handlers. In
+// particular, invalid UTF-8 compares the remaining bytes, and PAD SPACE examines raw bytes.
+int reference_general_ci_cmp(const ObCharsetInfo *cs, const std::string &left,
+                            const std::string &right, bool pad_space, bool option)
+{
+  const auto *s = reinterpret_cast<const unsigned char *>(left.data());
+  const auto *t = reinterpret_cast<const unsigned char *>(right.data());
+  const auto *se = s + left.size();
+  const auto *te = t + right.size();
+  auto sort_weight = [cs](ob_wc_t wc) {
+    if (wc > cs->caseinfo->maxchar) {
+      return static_cast<ob_wc_t>(OB_CS_REPLACEMENT_CHARACTER);
+    }
+    const auto *page = cs->caseinfo->page[wc >> 8];
+    return page == nullptr ? wc : static_cast<ob_wc_t>(
+        (cs->state & OB_CS_LOWER_SORT) ? page[wc & 0xff].tolower : page[wc & 0xff].sort);
+  };
+  while (s < se && t < te) {
+    ob_wc_t sw = 0;
+    ob_wc_t tw = 0;
+    const int sn = cs->cset->mb_wc(cs, &sw, s, se);
+    const int tn = cs->cset->mb_wc(cs, &tw, t, te);
+    if (sn <= 0 || tn <= 0) {
+      const int cmp = memcmp(s, t, std::min(se - s, te - t));
+      return cmp != 0 ? cmp : static_cast<int>((se - s) - (te - t));
+    }
+    sw = sort_weight(sw);
+    tw = sort_weight(tw);
+    if (sw != tw) {
+      return sw > tw ? 1 : -1;
+    }
+    s += sn;
+    t += tn;
+  }
+  if (!pad_space) {
+    return static_cast<int>(option ? t - te : (se - s) - (te - t));
+  }
+  if (se - s == te - t) {
+    return 0;
+  }
+  const int sign = se - s > te - t ? 1 : -1;
+  const auto *rest = sign > 0 ? s : t;
+  const auto *end = sign > 0 ? se : te;
+  for (; rest < end; ++rest) {
+    if (*rest != ' ') {
+      return !option && *rest < ' ' ? -sign : sign;
+    }
+  }
+  return option ? sign : 0;
+}
+
+void expect_general_ci_cmp_matches(const ObCharsetInfo *cs, const std::string &left,
+                                   const std::string &right)
+{
+  for (const bool option : {false, true}) {
+    const auto *s = reinterpret_cast<const unsigned char *>(left.data());
+    const auto *t = reinterpret_cast<const unsigned char *>(right.data());
+    ASSERT_EQ(reference_general_ci_cmp(cs, left, right, false, option),
+              cs->coll->strnncoll(cs, s, left.size(), t, right.size(), option));
+    ASSERT_EQ(reference_general_ci_cmp(cs, left, right, true, option),
+              cs->coll->strnncollsp(cs, s, left.size(), t, right.size(), option));
+  }
+}
+
+TEST(UTF8GeneralCompare, ascii_fast_path_matches_scalar_reference)
+{
+  const ObCharsetInfo *cs = ObCharset::get_charset(CS_TYPE_UTF8MB4_GENERAL_CI);
+  ASSERT_NE(nullptr, cs);
+  // All byte pairs include controls, ASCII case folding, invalid leads and continuations.
+  for (int a = 0; a < 256; ++a) {
+    for (int b = 0; b < 256; ++b) {
+      expect_general_ci_cmp_matches(cs, std::string(1, static_cast<char>(a)),
+                                    std::string(1, static_cast<char>(b)));
+    }
+  }
+  const std::vector<std::string> suffixes = {
+      "", " ", "  ", "a", "A", "e", "É", "é", "ß", "ss", "中文", "😀",
+      std::string("\0 ", 2), "\t", "\x7f", "\x80", "\xc0\x80", "\xc2",
+      "\xe0\x80\x80", "\xed\xa0\x80", "\xe5\x85", "\xf0\x80\x80\x80",
+      "\xf4\x90\x80\x80", "\xf0\x9f\x98", "\xff ", "\xff!"};
+  for (const std::string &prefix : {std::string(), std::string("database"),
+                                    std::string("中A"), std::string(300, 'x')}) {
+    for (const auto &left : suffixes) {
+      for (const auto &right : suffixes) {
+        expect_general_ci_cmp_matches(cs, prefix + left, prefix + right);
+      }
+    }
+  }
+  // A fixed generator keeps this differential corpus reproducible without global RNG state.
+  uint64_t state = 0x6a09e667f3bcc909ULL;
+  auto next = [&state]() {
+    state ^= state << 13;
+    state ^= state >> 7;
+    state ^= state << 17;
+    return state;
+  };
+  for (int i = 0; i < 20000; ++i) {
+    std::string prefix(next() % 32, 'a');
+    for (auto &ch : prefix) {
+      ch = static_cast<char>(next() & 0x7f);
+    }
+    std::string left = prefix;
+    std::string right = prefix;
+    const size_t left_len = next() % 24;
+    const size_t right_len = next() % 24;
+    for (size_t j = 0; j < left_len; ++j) {
+      left += static_cast<char>(next() & 0xff);
+    }
+    for (size_t j = 0; j < right_len; ++j) {
+      right += static_cast<char>(next() & 0xff);
+    }
+    expect_general_ci_cmp_matches(cs, left, right);
+  }
+}
 } // namespace
 
 int main(int argc, char **argv)
